@@ -8,7 +8,7 @@
 " C-Q c  - pYchecker
 
 "        - repeat python searchcode; Next
-" K      - python help on word under cursor
+" K      - python help on word under cursor, cword
 " Alt-t  - :!!  Run/Repeat last shell command
 " \e     - list python def / classes; functions
 " ,o     - python run current buffer; file
@@ -38,14 +38,14 @@
 " C-Q g  - django syntax highlight; html
 " _U     - align equal signs or comments; code, line up
 " Alt-l  - :, colon, start command mode
-"        - open all folds under cursor recursively; fully, current
+"        - open all folds under cursor recursively; fully, current, cword
 " Ctrl-k - cycle to next window; c-w w
 " \w     - open all folds; increase, fold level, zR
 " \v     - close all folds; minimize, decrease, fold level, zM
 " \h     - interactive search for vim commands (vimcmds.py v)
 " _J     - interactive search for django commands (vimcmds.py d)
 
-" ,gg    - grep word under cursor in current file (,G same but type pattern)
+" ,gg    - grep word under cursor in current file (,G same but type pattern), cword
 " k+/-   - next/prev quickfix error (+ctrl first/last), k* - focus curr. error
 " C-Q z  - fold everything but the search pattern; find, all
 " C-J P  - run python on current file; execute
@@ -180,7 +180,9 @@
 " [c      - search for class, find class name
 " _O      - edit notes
 " _A      - fix camelcase variable names to snakecase; change, replace
-" ]f      - search for def or class under cursor; find, python, function
+" ]f      - search for def or class under cursor; find, python, function, cword
+" ]s      - global replace word under cursor; substitute, cword, replace
+" [o,[O   - save view, close all folds, load view; mkview, outline, list
 "
 "endlist
 "===============================================================================================
@@ -192,15 +194,19 @@
 " g     - 1 4 5 7 n x z  (gz something with folding?!)
 " \     - a x  \ 0 4 6 7 9
 " _     - A E K, 012345679, _
-" [     - / [ ]   a b d g h i j k l m n o p q r u v w x y       A B E F G H I J K L M N O P Q R T U V W X Y
+" [     - / [ ]   a b d g h i j k l m n p q r u v w x y       A B E F G H I J K L M N P Q R T U V W X Y
 " ]     - / [ ]   a b e g h i j k l m n o p q r t u v w x y   A B E F G H I J K L M N O P Q R S T U V W X Y
 "
 " Available after ,g    - a b g i j t u x z  ABCDEFGHIJKLMNOPQRTUVWXYZ [and some others...]
 
 " Fix camelcase
 nnoremap _A :%s/\(\l\)\(\u\)/\1\_\l\2/g
+nnoremap [o :mkview<cr>zMgg
+nnoremap [O :loadview<cr>
+nnoremap ]s yiw:%s/<c-r>"/<c-r>"/g<left><left>
 
 nnoremap ]f m':exe '/^\s*\(def\\|class\) ' . expand('<cword>') \| <cr>
+nnoremap ]f m':call search('^\s*\(def\\|class\) ' . expand('<cword>'), 'ws')<cr>
 
 command! DiffOrig vert new | set bt=nofile | r # | 0d_ | diffthis | wincmd p | diffthis
 
@@ -370,7 +376,7 @@ nnoremap <c-up> k<c-y>
 nnoremap <c-s> :write<CR>
 " nnoremap <c-p> "+gp
 nnoremap <c-n> :cd ~/links/
-nnoremap <silent> <C-l> :set invhlsearch<CR><C-l>
+" nnoremap <silent> <C-l> :set invhlsearch<CR><C-l>
 nnoremap <c-a> :!python ~/mypython/ifilter.py<CR><CR>
 nnoremap <c-h> :call NextWin()<CR>
 

@@ -22,5 +22,13 @@ class Loc(object):
     def __str__(self):
         return str(self.loc)
 
+    def __repr__(self):
+        return str(self.loc)
+
     def __iter__(self):
         return iter(self.loc)
+
+    def move(self, dir):
+        self.x += dir[0]
+        self.y += dir[1]
+        self.loc = self.x, self.y
