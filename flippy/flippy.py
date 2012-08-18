@@ -55,6 +55,10 @@ class Piece(Item):
     def draw(self, loc):
         pygame.draw.circle(reversi.display, self.rgb, loc, int(spacesize / 2) - 4)
 
+    def flip(self):
+        self.colour_int = 1 - self.colour_int
+        self.__init__(self.colour_int)
+
     def opposite(self):
         return Piece(int(not self.colour_int))
 
@@ -204,10 +208,22 @@ class Board(object):
         self[ Loc(3,4) ] = Piece(1)
         self[ Loc(4,3) ] = Piece(1)
 
+    def get_line(self, board, loc, dir):
+        line = ''
+        while 1:
+            loc.x += xdir
+            loc.y += ydir
+            if not is_on_board(loc):
+                return line
+            item = board[loc]
+            if item == blank: line += ' '
+            elif item.is_piece: line += item.colour[0]
+
+
     def is_valid_move(self, piece, loc, board=None):
         """If it is a valid move, returns a list of spaces of the captured pieces."""
         start_loc   = copy(loc)
-        board       = self.board
+        board       = board or self.board
         is_on_board = self.is_on_board
         board[loc]  = piece
 
@@ -218,7 +234,8 @@ class Board(object):
         pieces_to_flip = []
 
         # check each of the eight directions:
-        for xdir, ydir in [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]:
+        for dir in [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]:
+            line = self.get_line(board, loc, dir)
             loc.x += xdir
             loc.y += ydir
             if is_on_board(loc) and board[loc] == opposite_piece:
@@ -244,7 +261,7 @@ class Board(object):
                         loc.y -= ydir
                         if loc == start_loc:
                             break
-                        pieces_to_flip.append(loc)
+                        pieces_to_flip.append(board[loc])
 
         board[loc] = blank
         return pieces_to_flip or False
