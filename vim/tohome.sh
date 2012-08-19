@@ -1,0 +1,1 @@
+cp maps.vim ~/.vim/

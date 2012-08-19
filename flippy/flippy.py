@@ -6,6 +6,9 @@
 
 import random, sys, pygame, time
 from copy import copy, deepcopy
+import logging
+from logging import info, debug
+
 from pygame.locals import *
 # from board import Board
 from board import Loc
@@ -33,7 +36,11 @@ brown          = (174,  94,   0)
 
 colours        = Container(bg1=brightblue, bg2=green, grid=cblack, text=cwhite, hint=brown, white=cwhite, black=cblack)
 piece_colours  = ["white", "black"]
+logging.basicConfig(filename="out.log", level=logging.DEBUG, format="%(message)s")
 # }}}
+
+def writeln(*args):
+    debug(', '.join([str(a) for a in args]))
 
 class Container(object):
     def __init__(self, **kwds)  : self.__dict__.update(kwds)
@@ -198,9 +205,9 @@ class Board(object):
             dupe_board[loc] = hint_tile
         return dupe_board
 
-    def is_valid_move(self, piece, loc, board=None, ok=0):
+    def is_valid_move(self, piece, start_loc, board=None, dbg=0):
         """If it is a valid move, returns a list of spaces of the captured pieces."""
-        start = copy(loc)
+        loc         = copy(start_loc)
         board       = board or self.board
         is_on_board = self.is_on_board
 
@@ -208,56 +215,48 @@ class Board(object):
             return False
 
         opposite_piece = piece.opposite()
+        ok=dbg
         # ok = loc.loc==(5,3)
-        # ok=0
-        if ok: print "opposite_piece", opposite_piece
+        # if ok: writeln("opposite_piece", opposite_piece)
         pieces_to_flip = []
 
         # check each of the eight directions:
-        for dir in [[-1,0]]:
-            pass
-        for dir in [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]]:
-            ok2 = ok and dir == [-1,0]
+        for dir in [(0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1)]:
+            ok2 = 0
             fliplst = []
-            if ok2: print "dir", dir
-            if ok2 and dir == [-1,0]: print "dir", dir
+            # if ok2: writeln("dir", dir)
+            # if ok2 and dir == [-1,0]: writeln("dir", dir)
 
             loc.move(dir)
-            if ok2:
-                print "dir", dir
-                # line = self.get_line(board, loc, dir)
-                print "loc", loc
+            if 0:
                 if is_on_board(loc):
-                    print "self[loc]", self[loc]
                 # print "is opp:", self[loc] == opposite_piece
 
             while is_on_board(loc) and self[loc] == opposite_piece:
+                fliplst.append(copy(loc))
+                ok2 = ok and fliplst
                 if ok2:
-                    print "loc", loc
-                fliplst.append(loc)
                 loc.move(dir)
 
             if ok2:
-                print "piece", piece
                 # print "self[loc]", self[loc]
                 # print "self[loc]!=piece", self[loc]!=piece
                 # print "self[loc]==piece", self[loc]==piece
-                print "fliplst", fliplst
-                print "is_on_board(loc)", is_on_board(loc)
+                if fliplst: writeln("fliplst", fliplst)
             if not is_on_board(loc) or self[loc] != piece:
-                if ok2: print "Resetting fliplst"
+                if ok2: writeln("Resetting fliplst")
                 fliplst = []
-            if ok2: print "\n"
-            if ok2 and fliplst: print "fliplst", fliplst
+            if ok2: writeln("\n")
+            if ok2 and fliplst: writeln("fliplst", fliplst)
             pieces_to_flip.extend(fliplst)
-            loc = copy(start)
+            loc = copy(start_loc)
 
-        if ok2 and pieces_to_flip: print "pieces_to_flip", pieces_to_flip
+        if ok2 and pieces_to_flip: writeln("pieces_to_flip", pieces_to_flip)
         return pieces_to_flip or False
 
-    def get_valid_moves(self, piece, board=None):
+    def get_valid_moves(self, piece, board=None, dbg=0):
         board = board or self.board
-        return [loc for loc in self if self.is_valid_move(piece, loc, board)]
+        return [loc for loc in self if self.is_valid_move(piece, loc, board, dbg=dbg)]
 
     def get_score(self, player_piece, computer_piece, board=None):
         """Determine the score by counting the tiles."""
@@ -314,7 +313,7 @@ class Reversi(object):
 
         while True:
             if turn == "player":
-                print board.get_valid_moves(self.player_piece)
+                # print "board.get_valid_moves(self.player_piece)", board.get_valid_moves(self.player_piece)
 
                 if not board.get_valid_moves(self.player_piece):
                     break
@@ -332,7 +331,6 @@ class Reversi(object):
                                 show_hints = not show_hints
 
                             move_to = board.get_clicked_tile(event.pos)
-                            print "move_to", move_to
                             if move_to and not board.is_valid_move(self.player_piece, move_to):
                                 move_to = None
 
@@ -361,7 +359,8 @@ class Reversi(object):
                 # Make the move and end the turn.
                 loc = self.get_computer_move()
                 self.make_move(self.computer_piece, loc, True)
-                if board.get_valid_moves(self.player_piece):
+
+                if board.get_valid_moves(self.player_piece, dbg=1):
                     turn = "player"
 
         board.draw()
@@ -421,14 +420,10 @@ class Reversi(object):
         """ Place the piece on the board at xstart, ystart, and flip tiles
             Returns False if this is an invalid move, True if it is valid.
         """
-        print "in make_move()"
-        print "loc", loc
         current_board = current_board or board.board
-        ok = piece==white_piece
-        pieces_to_flip = board.is_valid_move(piece, loc, current_board, ok=ok)
+        dbg = piece==white_piece
+        pieces_to_flip = board.is_valid_move(piece, loc, current_board, dbg=0)
         if pieces_to_flip:
-            print "MM pieces_to_flip", pieces_to_flip
-            print "loc", loc
             board.setitem(current_board, loc, copy(piece))
             if real_move:
                 board.animate_move(pieces_to_flip, piece, loc)
@@ -449,7 +444,7 @@ class Reversi(object):
         best_score = -1
         for loc in possible_moves:
             dupe_board = deepcopy(board.board)
-            self.make_move(self.computer_piece, loc, dupe_board)
+            self.make_move(self.computer_piece, loc, False, dupe_board)
             score = board.get_score(self.player_piece, self.computer_piece, dupe_board).computer
             if score > best_score:
                 best_move = loc
