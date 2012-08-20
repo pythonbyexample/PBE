@@ -183,6 +183,7 @@
 " ]f      - search for def or class under cursor; find, python, function, cword
 " ]s      - global replace word under cursor; substitute, cword, replace
 " [o,[O   - save view, close all folds, load view; mkview, outline, list
+" ,h      - invert hlsearch; toggle, highlight
 "
 "endlist
 "===============================================================================================
@@ -190,7 +191,7 @@
 " F     - F2
 " Ctrl  - k
 " Alt   - b s
-" ,     - b i h  1 6 7
+" ,     - b i  1 6 7
 " g     - 1 4 5 7 n x z  (gz something with folding?!)
 " \     - a x  \ 0 4 6 7 9
 " _     - A E K, 012345679, _
@@ -200,12 +201,12 @@
 " Available after ,g    - a b g i j t u x z  ABCDEFGHIJKLMNOPQRTUVWXYZ [and some others...]
 
 " Fix camelcase
-nnoremap _A :%s/\(\l\)\(\u\)/\1\_\l\2/g
+nnoremap ,h :set invhlsearch<cr>
 nnoremap [o :mkview<cr>zMgg
 nnoremap [O :loadview<cr>
 nnoremap ]s yiw:%s/<c-r>"/<c-r>"/g<left><left>
+nnoremap _A :%s/\(\l\)\(\u\)/\1\_\l\2/g
 
-nnoremap ]f m':exe '/^\s*\(def\\|class\) ' . expand('<cword>') \| <cr>
 nnoremap ]f m':call search('^\s*\(def\\|class\) ' . expand('<cword>'), 'ws')<cr>
 
 command! DiffOrig vert new | set bt=nofile | r # | 0d_ | diffthis | wincmd p | diffthis

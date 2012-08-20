@@ -8,7 +8,6 @@ from copy import deepcopy
 from shared import *
 
 dimensions = 8, 8
-empty = ' '
 # }}}
 
 
@@ -32,3 +31,7 @@ class Loc(object):
         self.x += dir[0]
         self.y += dir[1]
         self.loc = self.x, self.y
+
+    def valid(self):
+        from reversi import dimensions
+        return bool( 0 <= self.x < dimensions[0] and 0 <= self.y < dimensions[1] )
