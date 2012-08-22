@@ -72,12 +72,12 @@ class Field(object):
             self.put(item)
             return loc2
 
-    def valid(self, x, y=None):
+    def valid(self, loc):
         x, y = unwrap(x, y)
         if x+1 <= self.maxx and y+1 <= self.maxy and x >= 0 and y >= 0:
             return True
 
-    def near_border(self, x, y=None):
+    def near_border(self, loc):
         x, y = unwrap(x, y)
         if x+1 == self.maxx or y+1 == self.maxy or x == 0 and y == 0:
             return True
@@ -94,7 +94,7 @@ class Field(object):
     def value(self, x, y=None):
         return self.values(x, y)[-1]
 
-    def values(self, x, y=None):
+    def values(self, loc):
         x, y = unwrap(x, y)
         if self.valid(x, y): return self.field[y][x]
 
@@ -129,7 +129,7 @@ class Field(object):
         return [x for x in self.neighbours(loc) if x.alive]
 
 
-class Location(object):
+class Loc(object):
     def __init__(self, x, y=None):
         x, y = unwrap(x, y)
         self.loc = x, y
@@ -140,3 +140,11 @@ class Location(object):
 
     def __iter__(self):
         return iter(self.loc)
+
+    def move(self, dir):
+        self.x += dir[0]
+        self.y += dir[1]
+        self.loc = self.x, self.y
+
+    def valid(self):
+        return bool( 0 <= self.x < dimensions[0] and 0 <= self.y < dimensions[1] )

@@ -13,14 +13,12 @@ if sys.platform.startswith("win"):
 if is_win:
     import winsound
 
-__version__ = "0.7"
+__version__ = "0.2"
 datafile = "conf.dat"
 break_time = 20
 def_data = {
-    "presets" : [(1,0),(1,30),(2,0),(2,30),(3,0),(3,30),(4,0),(4,30),(5,0),(5,30),
-        (6,0),(7,0),(8,0),(9,0),(10,0),(20,0),(30,0),(40,0),(50,0),(60,0)],
+    # "sound": "wav",
     "sound": "speaker",
-#    "sound": "wav",
     "wavfile" : "ECHOBEL2.wav",
     "spkr_freq" : 2200,
     "mp3fname": "",
@@ -28,35 +26,6 @@ def_data = {
     "repeatSound": 5,
     "break_time": 20,
 }
-
-
-def load_times():
-    """Load times from a text file, or, failing that, from default list."""
-    try:
-        fp = open(fname)
-        a = fp.readlines()
-        b = ""
-        for l in a:
-            if l.strip().startswith("#"):
-                continue
-            else:
-                b += l
-
-            a = b.split(",")
-            a = [x.strip() for x in a]
-    except IOError:
-        print "Error loading times file."
-        times = [x*60 for x in d_times]
-
-
-    global times
-    try:
-        for x in a:
-            y = int(eval(x)*60)
-            times.append(y)
-    except:
-
-        times = [x*60 for x in d_times]
 
 
 class ddTaskBarIcon(wx.TaskBarIcon):
@@ -75,7 +44,7 @@ class ddTaskBarIcon(wx.TaskBarIcon):
             self.frame.Show(True)
         self.frame.Raise()
 
-    def CreatePopupMenu(self):
+    def create_popup_menu(self):
         """
         Override with menu functionality, later.
         """
@@ -93,15 +62,16 @@ class Settings(wx.Frame):
         panel = wx.Panel(self, -1)
         self.parent = parent
 
+        # sz: 1 2 3 5 10
+
         # sizer10 - repeat sound at the end of countdown
         sizer10 = wx.BoxSizer(wx.HORIZONTAL)
         lbl = wx.StaticText(panel, -1, "Repeat sound at the end of countdown:")
-        self.repeatSound = wx.SpinCtrl(panel, -1, "Repeat sound at the end of countdown:",
-                (30, 20), (80, -1))
+        self.repeatSound = wx.SpinCtrl(panel, -1, "Repeat sound at the end of countdown:", (30, 20), (80, -1))
         self.repeatSound.SetRange(1,100)
         self.repeatSound.SetValue(data["repeatSound"])
         sizer10.Add(lbl, 0, wx.ALL)
-        sizer10.Add((5,10),0, wx.ALL)
+        sizer10.Add((5,10), 0, wx.ALL)
         sizer10.Add(self.repeatSound, 0, wx.ALL)
 
         # int. speaker sizer
@@ -180,6 +150,7 @@ class Settings(wx.Frame):
         sizer3.Add(buttonC, 0, wx.ALIGN_RIGHT)
         sizer3.Add((10,10),0, wx.ALL)
 
+
         box = wx.StaticBox(panel, -1, label = "Alarm sound")
         sizer = wx.StaticBoxSizer(box, wx.VERTICAL)
         sizer.Add(sizer10, proportion=0, flag=wx.ALIGN_CENTER_VERTICAL, border=5)
@@ -194,10 +165,12 @@ class Settings(wx.Frame):
         st = wx.StaticText(panel, -1, "Microbreak (seconds):")
         self.microbreak = wx.TextCtrl(panel, -1, str(data["break_time"]))
         box2 = wx.StaticBox(panel, -1, label = "")
+
         mbsizer = wx.StaticBoxSizer(box2, wx.VERTICAL)
         mbsizer.Add(st, 0, wx.ALIGN_LEFT)
         mbsizer.Add((5,5), 0, wx.ALIGN_LEFT)
         mbsizer.Add(self.microbreak, 0, wx.ALIGN_LEFT)
+
 
         outerSizer = wx.BoxSizer(wx.VERTICAL)
         outerSizer.Add(sizer,0, wx.ALL, border=5)
@@ -209,7 +182,7 @@ class Settings(wx.Frame):
         self.SetFocus()
 
 
-    def OnTest(self, event):
+    def on_test(self, event):
         try:
             freq = int(self.spkrFreq.GetValue())
             if freq < 37 or freq > 32767:
@@ -221,7 +194,7 @@ class Settings(wx.Frame):
             winsound.Beep(freq, 200)
 
 
-    def TestWav(self, event):
+    def test_wav(self, event):
         wav = self.wav.GetValue()
         try:
             winsound.PlaySound(wav, winsound.SND_ALIAS)
@@ -230,7 +203,7 @@ class Settings(wx.Frame):
             pass
 
 
-    def OnBrowse(self, event):
+    def on_browse(self, event):
         wildcard = "Wav file (*.wav)|*.wav|All files (*.*)|*.*"
         dialog = wx.FileDialog(None, "Choose a file", os.getcwd(),
             "", wildcard, wx.OPEN)
@@ -239,7 +212,7 @@ class Settings(wx.Frame):
         dialog.Destroy()
 
 
-    def OnBrowseMp3(self, event):
+    def on_browse_mp3(self, event):
         wildcard = "Mp3 file (*.mp3)|*.mp3|All files (*.*)|*.*"
         dialog = wx.FileDialog(None, "Choose a file", os.getcwd(),
             "", wildcard, wx.OPEN)
@@ -248,7 +221,7 @@ class Settings(wx.Frame):
         dialog.Destroy()
 
 
-    def OnOK(self, event):
+    def on_oK(self, event):
         a = self.speaker.GetValue()
         b = self.wavrb.GetValue()
         if a:
@@ -277,7 +250,7 @@ class Settings(wx.Frame):
         presets = data["presets"]
         self.Close(True)
 
-    def OnCancel(self, event):
+    def on_cancel(self, event):
         self.Close(True)
 
 
@@ -392,7 +365,7 @@ class PTimer(wx.Frame):
         self.FocusFrame()
 
 
-    def PlayMp3(self, event):
+    def play_mp3(self, event):
         """Play an mp3 file."""
         self.stopMp3 = False
         self.isPlaying = True
@@ -404,7 +377,7 @@ class PTimer(wx.Frame):
         th = thread.start_new_thread(self.Mp3Thread, (sName,))
 
 
-    def Mp3Thread(self, sName):
+    def mp3Thread(self, s_name):
         import pymedia.audio.acodec as acodec
         import pymedia.muxer as muxer
 
@@ -431,12 +404,12 @@ class PTimer(wx.Frame):
         self.isPlaying = False
 
 
-    def StopMp3(self, event=None):
+    def stop_mp3(self, event=None):
         self.stopMp3 = True
 
 
 
-    def FocusFrame(self, event=None):
+    def focus_frame(self, event=None):
         self.SetDefaultItem(self)
         self.SetFocus()
 
@@ -448,12 +421,12 @@ class PTimer(wx.Frame):
 
 
 
-    def TimeToQuit(self, event):
+    def time_to_quit(self, event):
         """Will also trigger OnClose through EVT_CLOSE."""
         self.Close(True)
 
 
-    def OnClose(self, event):
+    def on_close(self, event):
         """Close, clean up."""
         print "In OnClose."
         self.trayicon.RemoveIcon()
@@ -462,12 +435,12 @@ class PTimer(wx.Frame):
         sys.exit()
 
 
-    def OnSettings(self, event):
+    def on_settings(self, event):
         frame = Settings(self)
         frame.Show()
 
 
-    def Stop(self, event):
+    def stop(self, event):
         """Stop both timer and countdown."""
         self.do_stop = True
         if self.timer:
@@ -479,7 +452,7 @@ class PTimer(wx.Frame):
         self.gauge.SetValue(0)
 
 
-    def ParseEntries(self):
+    def parse_entries(self):
         text = self.etext.GetValue()
         lst = text.split("\n")
         lst = [x for x in lst if x.strip()]     # take out empty lines
@@ -512,7 +485,7 @@ class PTimer(wx.Frame):
         self.length += 60
 
 
-    def Start(self, event):
+    def start(self, event):
         """Start simple timer."""
 
         self.elapsed = 0
@@ -527,7 +500,7 @@ class PTimer(wx.Frame):
             self.length, self.item_name = self.items.pop()
             self.countdown.Start(200)
 
-    def RunCountdown(self, *event):
+    def run_countdown(self, *event):
         """Run countdown timer."""
 
         if self.last_time and not self.pause:
@@ -582,16 +555,16 @@ class PTimer(wx.Frame):
                 self.countdown.Start()
 
 
-    def OnSkip(self, event):
+    def on_skip(self, event):
         self.do_skip = True
 
-    def OnPause(self, event):
+    def on_pause(self, event):
         if self.pause:
             self.pause = False
         else:
             self.pause = True
 
-    def RunTimer(self, *event):
+    def run_timer(self, *event):
         """Run simple timer, updating time display."""
 
         a = time.time()-self.start
@@ -604,7 +577,7 @@ class PTimer(wx.Frame):
         self.text.SetValue(x)
 
 
-    def OnClick(self, event=None, length=None):
+    def on_click(self, event=None, length=None):
         """Start the countdown timer."""
         if self.timer:
             self.timer.Stop()
@@ -651,13 +624,13 @@ class PTimer(wx.Frame):
                 time.sleep(.2)
 
 
-def TestDisplayTime():
+def test_display_time():
     lst = [(500,5), (300,0), (68,30), (14,8),]
     for t in lst:
         print DisplayTime(t)
 
 
-def DisplayTime(timetp):
+def display_time(timetp):
     """Return string of time.
     2, 45 => '2:45'
     3, 0 =>  '3:00'"""
@@ -672,7 +645,7 @@ def DisplayTime(timetp):
     return "%s%s:%02s" % (h, m, str(int(s)).zfill(2))
 
 
-def ParseTimeEntry(text):
+def parse_time_entry(text):
     """Time can be either in form 'x' or 'x:x', we need to return (example):
     '2' -> (2,0)
     '2.5' -> (2, 30)
@@ -689,7 +662,7 @@ def ParseTimeEntry(text):
         return (a, b*100/60)
 
 
-def openData():
+def open_data():
     """Open shelve data file."""
     global data
     data = shelve.open(datafile)
@@ -704,7 +677,7 @@ def openData():
     if not data.has_key("repeatSound"):
         data["repeatSound"] = 5
 
-def closeData():
+def close_data():
     """Close shelve data file."""
     global data
     data.close()

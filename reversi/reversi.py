@@ -105,9 +105,6 @@ class Board(object):
     def __setitem__(self, loc, item):
         self.board[loc.y][loc.x] = item
 
-    # def getitem(self, board, loc): return board[loc.y][loc.x]
-    # def setitem(self, board, loc, item): board[loc.y][loc.x] = item
-
     def backup(self):
         self.backup_board = deepcopy(self.board)
 
