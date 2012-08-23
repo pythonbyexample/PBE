@@ -1,4 +1,6 @@
 import os, sys, wx, time, shelve
+from __future__ import division
+from time import time
 
 """Y-timer. See README for usage and licensing.
 
@@ -16,7 +18,7 @@ if is_win:
 __version__ = "0.2"
 datafile = "conf.dat"
 break_time = 20
-def_data = {
+defaults = {
     # "sound": "wav",
     "sound": "speaker",
     "wavfile" : "ECHOBEL2.wav",
@@ -49,7 +51,6 @@ class ddTaskBarIcon(wx.TaskBarIcon):
         Override with menu functionality, later.
         """
         return None
-
 
 
 class Settings(wx.Frame):
@@ -259,15 +260,23 @@ class PTimer(wx.Frame):
     """Main timer class."""
     def __init__(self, icon=None):
 
-        width = 1265
-        height = 940
-        wx.Frame.__init__(self, None, -1, 'Y-Timer',
-            size=(width, height))
+        width          = 1265
+        height         = 940
+        self.pause     = False
+        self.do_skip   = False
+        self.do_blink  = False
+        self.do_stop   = False
+        xdim           = 2
+        ydim           = 395
+        x              = y = 0
+        self.buttons   = []
+        times          = data["presets"]
+        self.timer     = self.countdown = None, None
+        self.stop_mp3   = False
+        self.is_playing = False
+
+        wx.Frame.__init__(self, None, -1, 'Y-Timer', size=(width, height))
         panel = wx.Panel(self, -1)
-        self.do_blink = False
-
-        xdim = 2
-
 
         self.minitext = wx.TextCtrl(panel, -1, "", (xdim, 1), (400, 20))
         font = wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL)
@@ -278,67 +287,47 @@ class PTimer(wx.Frame):
         self.text.SetFont(font)
         xdim += 1285
 
-        x = 0
-        y = 0
-        self.buttons = []
-        times = data["presets"]
-        self.do_stop = False
-        self.timer, self.countdown = None, None
         self.trayicon = ddTaskBarIcon(icon, "Y-Timer", self)
         # Handle the window being `iconized` (err minimized)
         self.Bind(wx.EVT_ICONIZE, self.on_iconify)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
-        self.stopMp3 = False
-        self.isPlaying = False
 
         self.gauge = wx.Gauge(panel, -1, 200, (2, 22), (1250, 165))
         self.gauge.SetBezelFace(3)
         self.gauge.SetShadowWidth(3)
 
-        ydim = 205
-        ydim += 190
-
-        self.etext = wx.TextCtrl(panel, -1, "", (300, ydim), (480, 500),
-                style=wx.TE_MULTILINE)
+        self.etext = wx.TextCtrl(panel, -1, "", (300, ydim), (480, 500), style=wx.TE_MULTILINE)
         font = wx.Font(10, wx.SWISS, wx.NORMAL, wx.NORMAL)
         self.etext.SetFont(font)
 
         xdim = 300 + 480 + 5
-
         buttonStop = wx.Button(panel, 201, label="stop", pos=(xdim, ydim), size=(60,96))
         wx.EVT_BUTTON(self, 201, self.Stop)
 
         xdim += 62
-
         buttonStart = wx.Button(panel, 202, label="start", pos=(xdim, ydim), size=(60,48))
         wx.EVT_BUTTON(self, 202, self.Start)
 
         bt_ydim = ydim
         ydim += 48
-
         wx.Button(panel, 206, label="pause", pos=(xdim, ydim), size=(60,24))
         wx.EVT_BUTTON(self, 206, self.OnPause)
 
         ydim += 24
-
         wx.Button(panel, 203, label="settings", pos=(xdim, ydim), size=(60,24))
         wx.EVT_BUTTON(self, 203, self.OnSettings)
 
         ydim += 26
         xdim -= 62
-
         wx.Button(panel, 207, label="skip", pos=(xdim, ydim), size=(124,24))
         wx.EVT_BUTTON(self, 207, self.OnSkip)
 
         ydim += 26
-
         self.elapsed_text = wx.TextCtrl(panel, -1, "0:00", (xdim, ydim), (124, 24))
         font = wx.Font(9, wx.DECORATIVE, wx.ITALIC, wx.NORMAL)
         self.elapsed_text.SetFont(font)
 
-
         btnsz = 42
-
         ydim = bt_ydim
         xdim = 1210
 
@@ -359,38 +348,32 @@ class PTimer(wx.Frame):
         wx.Button(panel, 213, label="+3m", pos=(3, ydim), size=(btnsz, 50))
         wx.EVT_BUTTON(self, 213, self.add3min)
 
-        self.pause = False
-        self.do_skip = False
-
         self.FocusFrame()
 
 
     def play_mp3(self, event):
         """Play an mp3 file."""
-        self.stopMp3 = False
-        self.isPlaying = True
-        self.event = event
-        if event:
-            sName = event.GetEventObject().mp3fld.GetValue()
-        else:
-            sName = data["mp3fname"]
-        th = thread.start_new_thread(self.Mp3Thread, (sName,))
+        self.stop_mp3   = False
+        self.is_playing = True
+        self.event      = event
+        fname           = event.GetEventObject().mp3fld.GetValue() if event else data["mp3fname"]
+        thread.start_new_thread(self.Mp3Thread, [fname])
 
 
     def mp3Thread(self, s_name):
         import pymedia.audio.acodec as acodec
         import pymedia.muxer as muxer
-
-        dm= muxer.Demuxer( str.split( str(sName), '.' )[ -1 ].lower() )
-        f = open( sName, 'rb' )
-        s = f.read( 8192 )
-        fr = dm.parse(s)
-        dec = acodec.Decoder(dm.streams[0])
-        r = dec.decode( s )
         import pymedia.audio.sound as sound
+
+        dm  = muxer.Demuxer( str.split( str(sName), '.' )[ -1 ].lower() )
+        f   = open( sName, 'rb' )
+        s   = f.read( 8192 )
+        fr  = dm.parse(s)
+        dec = acodec.Decoder(dm.streams[0])
+        r   = dec.decode( s )
         snd= sound.Output( r.sample_rate, r.channels, sound.AFMT_S16_LE )
         while len( s )>0:
-            if self.stopMp3:
+            if self.stop_mp3:
                 break
             if r: snd.play( r.data )
             s= f.read( 512 )
@@ -399,45 +382,44 @@ class PTimer(wx.Frame):
             except:
                 break
 
-        import time
-        while snd.isPlaying(): time.sleep( .05 )
-        self.isPlaying = False
+        while snd.is_playing(): time.sleep( .05 )
+        self.is_playing = False
 
 
     def stop_mp3(self, event=None):
-        self.stopMp3 = True
-
-
+        self.stop_mp3 = True
 
     def focus_frame(self, event=None):
         self.SetDefaultItem(self)
         self.SetFocus()
 
-
     def on_iconify(self, e):
-        """Being minimized, hide self, which removes the program from
-        the taskbar."""
+        """Being minimized, hide self, which removes the program from the taskbar."""
         self.Hide()
-
-
 
     def time_to_quit(self, event):
         """Will also trigger OnClose through EVT_CLOSE."""
         self.Close(True)
 
-
     def on_close(self, event):
         """Close, clean up."""
-        print "In OnClose."
         self.trayicon.RemoveIcon()
         closeData()
         self.Destroy()
         sys.exit()
 
-
     def on_settings(self, event):
         frame = Settings(self)
         frame.Show()
+
+    def add2min(self, event):
+        self.length += 2*60
+
+    def add3min(self, event):
+        self.length += 3*60
+
+    def add1min(self, event):
+        self.length += 60
 
 
     def stop(self, event):
@@ -453,60 +435,49 @@ class PTimer(wx.Frame):
 
 
     def parse_entries(self):
-        text = self.etext.GetValue()
-        lst = text.split("\n")
-        lst = [x for x in lst if x.strip()]     # take out empty lines
+        text       = self.etext.GetValue()
+        lst        = text.split("\n")
+        lst        = [x for x in lst if x.strip()]     # take out empty lines
         self.items = []
-        timel = 0
+        timel      = 0
+
         for line in lst:
             mins, txt = line.split(" ", 1)
-            mins = float(mins)*60
-            mins = int(round(mins))
+            mins      = float(mins)*60
+            mins      = int(round(mins))
             timel += mins + data["break_time"]
             self.items.append((mins, txt))
             self.items.append((data["break_time"], "..."))
+
         self.items.reverse()
         timel = timel / 60
         return timel
 
 
-    def add2min(self, event):
-        """"""
-        self.length += 2*60
-
-
-    def add3min(self, event):
-        """"""
-        self.length += 3*60
-
-
-    def add1min(self, event):
-        """"""
-        self.length += 60
-
-
     def start(self, event):
         """Start simple timer."""
 
-        self.elapsed = 0
+        self.elapsed       = 0
         self.elapsed_total = 0
-        self.last_time = None
-        timel = self.ParseEntries()
-        md = wx.MessageDialog(self, "Total length: %smin" % timel)
-        val = md.ShowModal()
-        if val == wx.ID_OK:
-            self.countdown = wx.PyTimer(self.RunCountdown)
-            self.do_stop = False
-            self.length, self.item_name = self.items.pop()
-            self.countdown.Start(200)
+        self.last_time     = None
+        timel              = self.ParseEntries()
+        self.countdown     = wx.PyTimer(self.RunCountdown)
+        self.do_stop       = False
+        self.length, self.item_name = self.items.pop()
+        self.countdown.Start(200)
+
+        # md = wx.MessageDialog(self, "Total length: %smin" % timel)
+        # val = md.ShowModal()
+        # if val == wx.ID_OK:
+
 
     def run_countdown(self, *event):
         """Run countdown timer."""
 
         if self.last_time and not self.pause:
-            self.elapsed_total += (time.time()-self.last_time)
-            self.elapsed += (time.time()-self.last_time)
-        self.last_time = time.time()
+            self.elapsed_total += intrnd(time() - self.last_time)
+            self.elapsed += intrnd(time() - self.last_time)
+        self.last_time = time()
 
         if self.pause:
             return None
@@ -518,32 +489,24 @@ class PTimer(wx.Frame):
             self.length = 1
             self.do_skip = False
 
-        d = int(self.elapsed_total)
         self.elapsed_text.SetValue("%s:%02s" % (d/60, str(d%60).zfill(2)))
 
-        c = self.elapsed/float(self.length)*200
-        left = self.length - self.elapsed
-        if 21 < int(left) <= 22 and self.item_name != "...":
-            if self.do_blink:
-                self.gauge.SetValue(0)
-                self.do_blink = False
-            else:
-                self.gauge.SetValue(int(c))
-                self.do_blink = True
+        progress = intrnd(self.elapsed/self.length * 200)
+        left = intrnd(self.length - self.elapsed)
+        if 21 < left <= 22 and self.item_name != "...":
+            self.gauge.SetValue(0 if self.do_blink else progress)
+            self.do_blink = not self.do_blink
         else:
-            self.gauge.SetValue(int(c))
-            self.do_blink = False
+            self.gauge.SetValue(progress)
 
         self.text.SetValue("%s" % self.item_name)
-        left = int(left)
-        self.minitext.SetValue("%s [%s:%s]" % (self.item_name, left/60,
-            str(left%60).zfill(2)) )
+        self.minitext.SetValue("%s [%s:%s]" % (self.item_name, left//60, str(left%60).zfill(2)) )
 
         if self.elapsed >= self.length:
             self.countdown.Stop()
             self.do_stop = False
             if data["sound"] == "mp3":
-                if not self.isPlaying:
+                if not self.is_playing:
                     self.PlayMp3(None)
             else:
                 import thread
@@ -668,7 +631,7 @@ def open_data():
     data = shelve.open(datafile)
     if not data.has_key("presets"):
         print "loading default data..."
-        for k,v in def_data.items():
+        for k,v in defaults.items():
             data[k] = v
     if not data.has_key("repeat"):
         data["repeat"] = False
@@ -676,6 +639,9 @@ def open_data():
         data["break_time"] = 20
     if not data.has_key("repeatSound"):
         data["repeatSound"] = 5
+
+def intrnd(val):
+    return int(round(value))
 
 def close_data():
     """Close shelve data file."""
