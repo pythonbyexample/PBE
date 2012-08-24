@@ -1,5 +1,7 @@
-import os, sys, wx, time, shelve
+# Imports {{{
 from __future__ import division
+import os, sys, wx, time, shelve
+import thread
 from time import time
 
 """Y-timer. See README for usage and licensing.
@@ -28,6 +30,7 @@ defaults = {
     "repeatSound": 5,
     "break_time": 20,
 }
+# }}}
 
 
 class ddTaskBarIcon(wx.TaskBarIcon):
@@ -255,11 +258,8 @@ class Settings(wx.Frame):
         self.Close(True)
 
 
-
-class PTimer(wx.Frame):
-    """Main timer class."""
+class ExTimer(wx.Frame):
     def __init__(self, icon=None):
-
         width          = 1265
         height         = 940
         self.pause     = False
@@ -449,7 +449,6 @@ class PTimer(wx.Frame):
             self.items.append((mins, txt))
             self.items.append((data["break_time"], "..."))
 
-        self.items.reverse()
         timel = timel / 60
         return timel
 
@@ -463,7 +462,7 @@ class PTimer(wx.Frame):
         timel              = self.ParseEntries()
         self.countdown     = wx.PyTimer(self.RunCountdown)
         self.do_stop       = False
-        self.length, self.item_name = self.items.pop()
+        self.length, self.item_name = self.items.pop(0)
         self.countdown.Start(200)
 
         # md = wx.MessageDialog(self, "Total length: %smin" % timel)
@@ -493,11 +492,10 @@ class PTimer(wx.Frame):
 
         progress = intrnd(self.elapsed/self.length * 200)
         left = intrnd(self.length - self.elapsed)
+        self.gauge.SetValue(progress)
         if 21 < left <= 22 and self.item_name != "...":
-            self.gauge.SetValue(0 if self.do_blink else progress)
+            if self.do_blink: self.gauge.SetValue(0)
             self.do_blink = not self.do_blink
-        else:
-            self.gauge.SetValue(progress)
 
         self.text.SetValue("%s" % self.item_name)
         self.minitext.SetValue("%s [%s:%s]" % (self.item_name, left//60, str(left%60).zfill(2)) )
@@ -509,11 +507,10 @@ class PTimer(wx.Frame):
                 if not self.is_playing:
                     self.PlayMp3(None)
             else:
-                import thread
                 thread.start_new_thread(self.alarm, ())
 
             if self.items:
-                self.length, self.item_name = self.items.pop()
+                self.length, self.item_name = self.items.pop(0)
                 self.elapsed = 0
                 self.countdown.Start()
 
@@ -522,22 +519,14 @@ class PTimer(wx.Frame):
         self.do_skip = True
 
     def on_pause(self, event):
-        if self.pause:
-            self.pause = False
-        else:
-            self.pause = True
+        self.pause = not self.pause
 
     def run_timer(self, *event):
         """Run simple timer, updating time display."""
-
-        a = time.time()-self.start
         if self.do_stop:
             self.timer.Stop()
-        a = int(a)
-
-        print (a/60, a%60)
-        x = DisplayTime((a/60,a%60))
-        self.text.SetValue(x)
+        a = intrnd(time() - self.start)
+        self.text.SetValue( display_time((a/60,a%60)) )
 
 
     def on_click(self, event=None, length=None):
@@ -546,7 +535,7 @@ class PTimer(wx.Frame):
             self.timer.Stop()
         if self.countdown:
             self.countdown.Stop()
-        self.countdown = wx.PyTimer(self.RunCountdown)
+        self.countdown = wx.PyTimer(self.run_countdown)
 
         try:
             # get time from preset button
@@ -556,35 +545,34 @@ class PTimer(wx.Frame):
             try:
                 # trying to get time from text entry field..
                 self.length = float(event.EventObject.GetValue())*60
-                self.length = int(self.length)
+                self.length = intrnd(self.length)
             except:
                 print "failed to get time, will do nothing.."
                 pass
 
-        self.start = time.time()
+        self.start = time()
         self.do_stop = False
         self.countdown.Start(200)
-
 
 
     def alarm(self):
         """Sound the alarm, needs to be in a separate thread to be possible to stop this."""
         for i in range(data["repeatSound"]):
-                # does not work right now, need to be in a sep. thread
-                if self.do_stop:
-                    break
-                # does not work right now, need to be in a sep. thread
-                if self.do_stop:
-                    break
+            # does not work right now, need to be in a sep. thread
+            if self.do_stop:
+                break
+            # does not work right now, need to be in a sep. thread
+            if self.do_stop:
+                break
 
-                if is_win:
-                    if data["sound"] == "speaker":
-                        winsound.Beep(data["spkr_freq"], 100)
-                    else:
-                        winsound.PlaySound(data["wavfile"], winsound.SND_ALIAS)
-                if self.do_stop:
-                    break
-                time.sleep(.2)
+            if is_win:
+                if data["sound"] == "speaker":
+                    winsound.Beep(data["spkr_freq"], 100)
+                else:
+                    winsound.PlaySound(data["wavfile"], winsound.SND_ALIAS)
+            if self.do_stop:
+                break
+            time.sleep(.2)
 
 
 def test_display_time():
@@ -593,15 +581,15 @@ def test_display_time():
         print DisplayTime(t)
 
 
-def display_time(timetp):
+def display_time(timetuple):
     """Return string of time.
     2, 45 => '2:45'
     3, 0 =>  '3:00'"""
 
-    m,s = timetp
+    m, s = timetuple
     h, m = m/60, m%60
     if h:
-        h = str(h) + ":"
+        h = str(h) + ':'
         m = str(int(m)).zfill(2)
     else:
         h = ""
@@ -615,14 +603,12 @@ def parse_time_entry(text):
     2:45 -> (2, 45)
     """
     if ':' in text:
-
         a = text.split(':')
-        a = [b.strip() for b in a]
-        return (int(a[0]), int(a[1]))
+        return [int(b.strip()) for b in a]
     else:
-        tmp = float(text)
-        a, b = int(tmp), tmp % 1
-        return (a, b*100/60)
+        mins = float(text)
+        m, s = int(mins), mins % 1
+        return m, s * 100 / 60
 
 
 def open_data():
@@ -649,12 +635,44 @@ def close_data():
     data.close()
 
 
+class Data:
+    def __init__(self, shelve_data):
+        self.shelve_data = shelve_data
+        self.__dict__.update(shelve_data)
+
+    def __setitem__(self, k, v):
+        self.__dict__[k] = v
+        self.shelve_data[k] = v
+
+    def __delitem__(self, k):
+        del self.__dict__[k]
+        del self.shelve_data[k]
+
+    def close(self):
+        self.shelve_data.close()
+
+    def __getitem__(self, k)    : return self.__dict__[k]
+    def __iter__(self)          : return iter(self.__dict__)
+    def __str__(self)           : return str(self.__dict__)
+    def __repr__(self)          : return u"Data: <%s>" % repr(self.__dict__)
+    def __unicode__(self)       : return unicode(self.__dict__)
+    def __nonzero__(self)       : return len(self.__dict__)
+    def pop(self, *args)        : return self.__dict__.pop(*args)
+    def get(self, *args)        : return self.__dict__.get(*args)
+    def update(self, arg)       : return self.__dict__.update(arg)
+    def items(self)             : return self.__dict__.items()
+    def keys(self)              : return self.__dict__.keys()
+    def values(self)            : return self.__dict__.values()
+    def dict(self)              : return self.__dict__
+    def pp(self)                : pprint(self.__dict__)
+
+
 if __name__ == "__main__":
     # load_times()
-    openData()
+    open_data()
     app = wx.PySimpleApp()
     icon = wx.Icon("ytimer.ico", wx.BITMAP_TYPE_ICO)
-    frame = PTimer(icon=icon)
+    frame = ExTimer(icon=icon)
     frame.SetIcon(icon)
     frame.Show()
     app.MainLoop()
