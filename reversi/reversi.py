@@ -377,14 +377,10 @@ class Reversi(object):
         black = render_text("Black", colours.text, colours.bg1, center=(int(width / 2) + 60, int(height / 2) + 40))
 
         while True:
-            # Keep looping until the player has clicked on a colour.
             self.check_for_quit()
-            for event in pygame.event.get(): # event handling loop
-                if event.type == MOUSEBUTTONUP:
-                    if white[1].collidepoint(event.pos):
-                        return [white_piece, black_piece]
-                    elif black[1].collidepoint(event.pos):
-                        return [black_piece, white_piece]
+            button = self.get_button_click(white, black)
+            if   button == white: return [white_piece, black_piece]
+            elif button == black: return [black_piece, white_piece]
             pygame.display.update()
             self.mainclock.tick(FPS)
 
@@ -426,9 +422,18 @@ class Reversi(object):
 
     def check_for_quit(self):
         for event in pygame.event.get((QUIT, KEYUP)):
-            if event.type==QUIT or key_up(event, K_ESCAPE):
+            if event.type==QUIT or (event.key==K_ESCAPE and event.type==KEYUP):
                 pygame.quit()
                 sys.exit()
+
+    def get_button_click(self, *buttons):
+        """If button is clicked, return it; if click is not over any button, return position; if no clicks, return None."""
+        for event in pygame.event.get():
+            if event.type == MOUSEBUTTONUP:
+                for button in buttons:
+                    if button[1].collidepoint(event.pos):
+                        return button
+                return event.pos
 
 
 def render_text(text, colour, bg=None, topright=None, center=None, bottomleft=None, font=None):
