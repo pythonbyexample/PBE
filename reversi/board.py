@@ -27,10 +27,13 @@ class Loc(object):
     def __iter__(self):
         return iter(self.loc)
 
-    def move(self, dir):
+    def move2(self, dir):   # unused
         self.x += dir[0]
         self.y += dir[1]
         self.loc = self.x, self.y
+
+    def move(self, dir):
+        return self.__class__(self.x + dir[0], self.y + dir[1])
 
     def valid(self):
         from reversi import dimensions
