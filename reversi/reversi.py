@@ -180,7 +180,7 @@ class Board(object):
 
     def get_captured_pieces(self, piece, start_loc, dbg=0):
         """If it is a valid move, returns a list of spaces of the captured pieces."""
-        if self[start_loc] != blank:
+        if isinstance(self[start_loc], Piece):
             return False
         captured_pieces = []
 
@@ -253,12 +253,12 @@ class Reversi(object):
                     return True
 
                 self.make_move(self.player_piece, move_to, real_move=True)
+                board.remove_hints()
 
                 if board.get_valid_moves(self.computer_piece):
                     self.turn = "computer"
                 elif not board.get_valid_moves(self.player_piece):
                     self.turn = None
-                board.remove_hints()
 
             elif self.turn == "computer":
                 move_to = self.computer_turn()
@@ -284,14 +284,15 @@ class Reversi(object):
             self.mainclock.tick(FPS)
 
     def player_turn(self, newgame, hints):
-        if board.hints: board.add_hints(self.player_piece)
-
         while True:
+            if board.hints : board.add_hints(self.player_piece)
+            else           : board.remove_hints()
             self.check_for_quit()
 
             # get button click or move click on a tile
             button = self.get_button_click(newgame, hints)
             if button == newgame:
+                board.reset()
                 return -1
             elif button == hints:
                 board.hints = not board.hints
@@ -303,8 +304,12 @@ class Reversi(object):
 
             board.draw()
             self.draw_info(self.turn)
+
+            add_border(newgame[1], 4)
             self.display.blit(*newgame)
+            add_border(hints[1], 4)
             self.display.blit(*hints)
+
             self.mainclock.tick(FPS)
             pygame.display.update()
 
@@ -412,15 +417,16 @@ def render_text(text, colour, bg=None, topright=None, center=None, bottomleft=No
     if topright     : rect.topright = topright
     elif center     : rect.center = center
     elif bottomleft : rect.bottomleft = bottomleft
-
-    if border:
-        x, y = rect.topleft
-        width, height = rect.width + border*2, rect.height + border*2
-        pygame.draw.rect(reversi.display, colours.border, (x-border, y-border, width, height))
+    add_border(rect, border)
 
     reversi.display.blit(surf, rect)
     return surf, rect
 
+def add_border(rect, border=0):
+    if border:
+        x, y = rect.topleft
+        width, height = rect.width + border*2, rect.height + border*2
+        pygame.draw.rect(reversi.display, colours.border, (x-border, y-border, width, height))
 
 def writeln(*args):
     debug(', '.join([str(a) for a in args]))
