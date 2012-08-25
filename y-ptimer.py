@@ -167,7 +167,7 @@ class Settings(wx.Frame):
         sizer.Add((10,5),0, wx.ALL)
 
         st = wx.StaticText(panel, -1, "Microbreak (seconds):")
-        self.microbreak = wx.TextCtrl(panel, -1, str(data["break_time"]))
+        self.microbreak = wx.TextCtrl(panel, -1, str(data.break_time))
         box2 = wx.StaticBox(panel, -1, label = "")
 
         mbsizer = wx.StaticBoxSizer(box2, wx.VERTICAL)
@@ -229,29 +229,30 @@ class Settings(wx.Frame):
         a = self.speaker.GetValue()
         b = self.wavrb.GetValue()
         if a:
-            data["sound"] = "speaker"
+            data.sound = "speaker"
         elif b:
-            data["sound"] = "wav"
-            data["wavfile"] = self.wav.GetValue()
+            data.sound = "wav"
+            data.wavfile = self.wav.GetValue()
         else:
-            data["sound"] = "mp3"
-            data["mp3fname"] = self.mp3.GetValue()
+            data.sound = "mp3"
+            data.mp3fname = self.mp3.GetValue()
+
 
         try:
-            data["spkr_freq"] = int(self.spkrFreq.GetValue())
+            data.spkr_freq = int(self.spkrFreq.GetValue())
         except ValueError:
             print "Error: spkr frequency must be a number"
             pass
 
         d = self.repeatSound.GetValue()
         if d:
-            data["repeatSound"] = d
+            data.repeatSound = d
 
         e = self.microbreak.GetValue()
         if e:
-            data["break_time"] = int(e)
+            data.break_time = int(e)
 
-        presets = data["presets"]
+        presets = data.presets
         self.Close(True)
 
     def on_cancel(self, event):
@@ -270,17 +271,16 @@ class ExTimer(wx.Frame):
         ydim           = 395
         x              = y = 0
         self.buttons   = []
-        times          = data["presets"]
+        times          = data.presets
         self.timer     = self.countdown = None, None
         self.stop_mp3   = False
         self.is_playing = False
 
         wx.Frame.__init__(self, None, -1, 'Y-Timer', size=(width, height))
-        panel = wx.Panel(self, -1)
+        panel = self.panel = wx.Panel(self, -1)
 
-        self.minitext = wx.TextCtrl(panel, -1, "", (xdim, 1), (400, 20))
-        font = wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL)
-        self.minitext.SetFont(font)
+
+        self.minitext = self.add_text_control('', (xdim, 1), (400, 20), 8)
 
         self.text = wx.TextCtrl(panel, -1, "0:00", (xdim, 190), (1250, 200))
         font = wx.Font(92, wx.SWISS, wx.NORMAL, wx.NORMAL)
@@ -351,12 +351,18 @@ class ExTimer(wx.Frame):
         self.FocusFrame()
 
 
+    def add_text_control(self, '', (self, xdim, 1), (self, 400, 20), 8):
+        self.minitext = wx.TextCtrl(panel, -1, "", (xdim, 1), (400, 20))
+        font = wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL)
+        self.minitext.SetFont(font)
+        return self.minitext
+
     def play_mp3(self, event):
         """Play an mp3 file."""
         self.stop_mp3   = False
         self.is_playing = True
         self.event      = event
-        fname           = event.GetEventObject().mp3fld.GetValue() if event else data["mp3fname"]
+        fname           = event.GetEventObject().mp3fld.GetValue() if event else data.mp3fname
         thread.start_new_thread(self.Mp3Thread, [fname])
 
 
@@ -367,22 +373,22 @@ class ExTimer(wx.Frame):
 
         dm  = muxer.Demuxer( str.split( str(sName), '.' )[ -1 ].lower() )
         f   = open( sName, 'rb' )
-        s   = f.read( 8192 )
+        s   = f.read(8192)
         fr  = dm.parse(s)
         dec = acodec.Decoder(dm.streams[0])
-        r   = dec.decode( s )
-        snd= sound.Output( r.sample_rate, r.channels, sound.AFMT_S16_LE )
-        while len( s )>0:
+        r   = dec.decode(s)
+        snd= sound.Output(r.sample_rate, r.channels, sound.AFMT_S16_LE)
+        while len(s) > 0:
             if self.stop_mp3:
                 break
-            if r: snd.play( r.data )
-            s= f.read( 512 )
+            if r: snd.play(r.data)
+            s = f.read(512)
             try:
-                r= dec.decode( s )
+                r = dec.decode(s)
             except:
                 break
 
-        while snd.is_playing(): time.sleep( .05 )
+        while snd.is_playing(): time.sleep(.05)
         self.is_playing = False
 
 
@@ -404,7 +410,7 @@ class ExTimer(wx.Frame):
     def on_close(self, event):
         """Close, clean up."""
         self.trayicon.RemoveIcon()
-        closeData()
+        data.close()
         self.Destroy()
         sys.exit()
 
@@ -445,9 +451,9 @@ class ExTimer(wx.Frame):
             mins, txt = line.split(" ", 1)
             mins      = float(mins)*60
             mins      = int(round(mins))
-            timel += mins + data["break_time"]
+            timel += mins + data.break_time
             self.items.append((mins, txt))
-            self.items.append((data["break_time"], "..."))
+            self.items.append((data.break_time, "..."))
 
         timel = timel / 60
         return timel
@@ -503,7 +509,7 @@ class ExTimer(wx.Frame):
         if self.elapsed >= self.length:
             self.countdown.Stop()
             self.do_stop = False
-            if data["sound"] == "mp3":
+            if data.sound == "mp3":
                 if not self.is_playing:
                     self.PlayMp3(None)
             else:
@@ -557,7 +563,7 @@ class ExTimer(wx.Frame):
 
     def alarm(self):
         """Sound the alarm, needs to be in a separate thread to be possible to stop this."""
-        for i in range(data["repeatSound"]):
+        for i in range(data.repeatSound):
             # does not work right now, need to be in a sep. thread
             if self.do_stop:
                 break
@@ -566,10 +572,10 @@ class ExTimer(wx.Frame):
                 break
 
             if is_win:
-                if data["sound"] == "speaker":
-                    winsound.Beep(data["spkr_freq"], 100)
+                if data.sound == "speaker":
+                    winsound.Beep(data.spkr_freq, 100)
                 else:
-                    winsound.PlaySound(data["wavfile"], winsound.SND_ALIAS)
+                    winsound.PlaySound(data.wavfile, winsound.SND_ALIAS)
             if self.do_stop:
                 break
             time.sleep(.2)
@@ -611,32 +617,13 @@ def parse_time_entry(text):
         return m, s * 100 / 60
 
 
-def open_data():
-    """Open shelve data file."""
-    global data
-    data = shelve.open(datafile)
-    if not data.has_key("presets"):
-        print "loading default data..."
-        for k,v in defaults.items():
-            data[k] = v
-    if not data.has_key("repeat"):
-        data["repeat"] = False
-    if not data.has_key("break_time"):
-        data["break_time"] = 20
-    if not data.has_key("repeatSound"):
-        data["repeatSound"] = 5
-
 def intrnd(val):
     return int(round(value))
 
-def close_data():
-    """Close shelve data file."""
-    global data
-    data.close()
-
-
 class Data:
     def __init__(self, shelve_data):
+        if not shelve_data.keys():
+            shelve_data.update(defaults)
         self.shelve_data = shelve_data
         self.__dict__.update(shelve_data)
 
@@ -669,9 +656,9 @@ class Data:
 
 if __name__ == "__main__":
     # load_times()
-    open_data()
-    app = wx.PySimpleApp()
-    icon = wx.Icon("ytimer.ico", wx.BITMAP_TYPE_ICO)
+    data  = Data(shelve.open(datafile))
+    app   = wx.PySimpleApp()
+    icon  = wx.Icon("ytimer.ico", wx.BITMAP_TYPE_ICO)
     frame = ExTimer(icon=icon)
     frame.SetIcon(icon)
     frame.Show()

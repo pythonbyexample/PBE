@@ -24,28 +24,28 @@ board_fn       = "flippyboard.png"
 bg_fn          = "flippybackground.png"
 animationspeed = 25     # integer from 1 to 100, higher is faster animation
 blank          = ' '
+white          = "white"
+black          = "black"
 
 xmargin        = int((width - (dimensions[0] * tilesize)) / 2)
 ymargin        = int((height - (dimensions[1] * tilesize)) / 2)
 
-white          = (255, 255, 255)
-black          = (  0,   0,   0)
-green          = (  0, 155,   0)
-brightblue     = (  0,  50, 255)
-brown          = (174,  94,   0)
+cwhite         = (255, 255, 255)
+cblack         = (  0,   0,   0)
+cgreen         = (  0, 155,   0)
+cbrightblue    = (  0,  50, 255)
+cbrown         = (174,  94,   0)
 
-colours        = Container(bg1=brightblue, bg2=green, grid=black, text=white, hint=brown, white=white, black=black)
 logging.basicConfig(filename="out.log", level=logging.DEBUG, format="%(message)s")
 # }}}
 
-def writeln(*args):
-    debug(', '.join([str(a) for a in args]))
 
 class Container(object):
     def __init__(self, **kwds)  : self.__dict__.update(kwds)
     def __setitem__(self, k, v) : self.__dict__[k] = v
     def __getitem__(self, k)    : return self.__dict__[k]
 
+colours = Container(bg1=cbrightblue, bg2=cgreen, grid=cblack, text=cwhite, hint=cbrown, white=cwhite, black=cblack)
 
 class Item(object):
     def tile_center(self, loc):
@@ -55,25 +55,21 @@ class Item(object):
 class Piece(Item):
     colours  = ["white", "black"]
 
-    def __init__(self, code):
-        self.code   = code
-        self.white  = code==0
-        self.black  = code==1
-        self.colour = self.colours[code]
-        self.rgb    = colours[self.colour]
+    def __init__(self, colour):
+        self.colour = colour
+        self.rgb    = colours[colour]
 
     def __repr__(self):
         return "<%s piece>" % self.colour
 
-    def draw(self, loc, colour=None):
-        pygame.draw.circle(reversi.display, colour or self.rgb, self.tile_center(loc), int(tilesize / 2) - 4)
+    def draw(self, loc, anim_rgb=None):
+        pygame.draw.circle(reversi.display, anim_rgb or self.rgb, self.tile_center(loc), int(tilesize / 2) - 4)
 
     def flip(self):
-        self.code = 1 - self.code
-        self.__init__(self.code)
+        self.__init__(white if self.colour==black else black)
 
-    def opposite(self):
-        return Piece(int(not self.code))
+    def is_opposite_of(self, other):
+        return isinstance(self.__class__, other) and self != other
 
     def __eq__(self, other):
         return bool(self.colour == getattr(other, "colour", -1))
@@ -96,7 +92,6 @@ class Board(object):
         self.maxx, self.maxy = dimensions
         self.hints   = False
         self.display = display
-        self.blank   = [ [blank for _ in range(self.maxx)] for _ in range(self.maxy) ]
         self.reset()
 
     def __getitem__(self, loc):
@@ -116,9 +111,13 @@ class Board(object):
             for x in range(self.maxx):
                 yield Loc(x, y)
 
-    def clear(self, loc=None):
-        if loc: self.board[loc.y][loc.x] = blank
-        else:   self.board = deepcopy(self.blank)
+    def reset(self):
+        self.board       = [ [blank for _ in range(self.maxx)] for _ in range(self.maxy) ]
+        self[ Loc(3,3) ] = Piece(white)
+        self[ Loc(4,4) ] = Piece(white)
+        self[ Loc(3,4) ] = Piece(black)
+        self[ Loc(4,3) ] = Piece(black)
+
 
     def animate_move(self, pieces_to_flip, piece, piece_loc):
         """ Draw the additional tile that was just laid down. (Otherwise we'd
@@ -128,16 +127,15 @@ class Board(object):
         pygame.display.update()
 
         for rgb in range(0, 255, int(animationspeed * 2.55)):
-            if rgb > 255 : rgb = 255
-            elif rgb < 0 : rgb = 0
+            rgb = min(rgb, 255)
 
-            if piece.white:
-                colour = tuple([rgb] * 3)         # rgb goes from 0 to 255
-            elif piece.black:
-                colour = tuple([255 - rgb] * 3)   # rgb goes from 255 to 0
+            if piece.colour == white:
+                rgb = tuple([rgb] * 3)         # rgb goes from 0 to 255
+            else:
+                rgb = tuple([255 - rgb] * 3)   # rgb goes from 255 to 0
 
             for loc in pieces_to_flip:
-                self[loc].draw(loc, colour)
+                self[loc].draw(loc, rgb)
             pygame.display.update()
             reversi.mainclock.tick(FPS)
             reversi.check_for_quit()
@@ -146,19 +144,14 @@ class Board(object):
         self.display.blit(reversi.bgimage, reversi.bgimage.get_rect())
 
         # grid
-        for x in range(self.maxx + 1):
-            startx = (x * tilesize) + xmargin
-            starty = ymargin
-            endx   = (x * tilesize) + xmargin
-            endy   = ymargin + (self.maxy * tilesize)
-            pygame.draw.line(self.display, colours.grid, (startx, starty), (endx, endy))
+        maxx, maxy = self.maxx, self.maxy
+        vertical   = [(x*tilesize + xmargin, ymargin, ymargin + maxy*tilesize) for x in range(maxx+1)]
+        horizontal = [(y*tilesize + ymargin, xmargin, xmargin + maxx*tilesize) for y in range(maxy+1)]
 
-        for y in range(self.maxy + 1):
-            startx = xmargin
-            starty = (y * tilesize) + ymargin
-            endx   = xmargin + (self.maxx * tilesize)
-            endy   = (y * tilesize) + ymargin
-            pygame.draw.line(self.display, colours.grid, (startx, starty), (endx, endy))
+        for x, y1, y2 in vertical:
+            pygame.draw.line(self.display, colours.grid, (x, y1), (x, y2))
+        for y, x1, x2 in horizontal:
+            pygame.draw.line(self.display, colours.grid, (x1, y), (x2, y))
 
         # pieces & hints
         for loc in self:
@@ -167,70 +160,42 @@ class Board(object):
 
     def get_clicked_tile(self, loc):
         """If user clicked a tile, return it."""
-        loc   = copy(loc)
-        loc.x = int(floor( (loc.x-xmargin)/float(tilesize) ))
-        loc.y = int(floor( (loc.y-ymargin)/float(tilesize) ))
-        if loc.valid(): return loc
-
-    def reset(self):
-        self.clear()
-        self[ Loc(3,3) ] = Piece(0)
-        self[ Loc(4,4) ] = Piece(0)
-        self[ Loc(3,4) ] = Piece(1)
-        self[ Loc(4,3) ] = Piece(1)
+        tileloc   = Loc(0,0)
+        tileloc.x = int(floor( (loc.x-xmargin)/float(tilesize) ))
+        tileloc.y = int(floor( (loc.y-ymargin)/float(tilesize) ))
+        if tileloc.valid(): return tileloc
 
     def add_hints(self, piece):
         for loc in self.get_valid_moves(piece):
             self[loc] = Hint()
 
-    def remove_hints(self, piece):
-        for loc in self.get_valid_moves(piece):
+    def remove_hints(self):
+        for loc in self:
             if isinstance(self[loc], Hint):
                 self[loc] = blank
 
     def is_valid_move(self, piece, start_loc, dbg=0):
-        """If it is a valid move, returns a list of spaces of the captured pieces."""
-        loc = copy(start_loc)
-        if not loc.valid() or self[loc] != blank:
-            return False
+        return bool( self.get_captured_pieces(piece, start_loc, dbg) )
 
-        opposite_piece = piece.opposite()
-        ok=dbg
-        # ok = loc.loc==(5,3)
-        # if ok: writeln("opposite_piece", opposite_piece)
+    def get_captured_pieces(self, piece, start_loc, dbg=0):
+        """If it is a valid move, returns a list of spaces of the captured pieces."""
+        if self[start_loc] != blank:
+            return False
         pieces_to_flip = []
 
         # check each of the eight directions:
         for dir in [(0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1)]:
-            ok2 = 0
             fliplst = []
-            # if ok2: writeln("dir", dir)
-            # if ok2 and dir == [-1,0]: writeln("dir", dir)
+            loc     = start_loc.move(dir)
 
-            loc.move(dir)
-            # if 0:
-                # if is_on_board(loc): print "is opp:", self[loc] == opposite_piece
+            while loc.valid() and piece.is_opposite_of( self[loc] ):
+                fliplst.append(loc)
+                loc = loc.moved(dir)
 
-            while loc.valid() and self[loc] == opposite_piece:
-                fliplst.append(copy(loc))
-                ok2 = ok and fliplst
-                loc.move(dir)
-
-            if ok2:
-                # print "self[loc]", self[loc]
-                # print "self[loc]!=piece", self[loc]!=piece
-                # print "self[loc]==piece", self[loc]==piece
-                if fliplst: writeln("fliplst", fliplst)
             if not loc.valid() or self[loc] != piece:
-                if ok2: writeln("Resetting fliplst")
-                fliplst = []
-            if ok2: writeln("\n")
-            if ok2 and fliplst: writeln("fliplst", fliplst)
+                continue
             pieces_to_flip.extend(fliplst)
-            loc = copy(start_loc)
-
-        if ok2 and pieces_to_flip: writeln("pieces_to_flip", pieces_to_flip)
-        return pieces_to_flip or False
+        return pieces_to_flip
 
     def get_valid_moves(self, piece, dbg=0):
         return [loc for loc in self if self.is_valid_move(piece, loc, dbg=dbg)]
@@ -272,8 +237,7 @@ class Reversi(object):
             if not reversi.run_game(): break
 
     def run_game(self):
-        turn = random.choice(["computer", "player"])
-        turn = "player"
+        self.turn = random.choice(["computer", "player"])
         board.draw()
         self.player_piece, self.computer_piece = self.enter_player_piece()
 
@@ -283,54 +247,18 @@ class Reversi(object):
 
         while True:
             if turn == "player":
-                if board.hints:
-                    board.add_hints(self.player_piece)
-                if not board.get_valid_moves(self.player_piece):
-                    break
+                move_to = self.player_turn(newgame, hints)
+                if move_to == -1:   # new game
+                    return True
 
-                move_to = None
-                while not move_to:
-                    self.check_for_quit()
-
-                    for event in pygame.event.get():
-                        if event.type == MOUSEBUTTONUP:
-                            if newgame[1].collidepoint(event.pos):
-                                return True
-                            elif hints[1].collidepoint(event.pos):
-                                board.hints = not board.hints
-
-                            move_to = board.get_clicked_tile(Loc(event.pos))
-                            if move_to and not board.is_valid_move(self.player_piece, move_to):
-                                move_to = None
-
-                    board.draw()
-                    self.draw_info(turn)
-                    reversi.display.blit(*newgame)
-                    reversi.display.blit(*hints)
-                    self.mainclock.tick(FPS)
-                    pygame.display.update()
-
-                self.make_move(self.player_piece, move_to, True)
+                self.make_move(self.player_piece, move_to, real_move=True)
                 if board.get_valid_moves(self.computer_piece):
                     turn = "computer"
-                board.remove_hints(self.player_piece)
+                board.remove_hints()
 
             else:
-                # Computer's turn:
-                if not board.get_valid_moves(self.computer_piece):
-                    break
-
-                board.draw()
-                self.draw_info(turn)
-
-                # Make it look like the computer is thinking by pausing a bit.
-                pause_until = time.time() + random.randint(5, 15) * 0.1
-                while time.time() < pause_until:
-                    pygame.display.update()
-
-                # Make the move and end the turn.
-                loc = self.get_computer_move()
-                self.make_move(self.computer_piece, loc, True)
+                move_to = self.computer_turn()
+                self.make_move(self.computer_piece, move_to, real_move=True)
 
                 if board.get_valid_moves(self.player_piece, dbg=1):
                     turn = "player"
@@ -364,6 +292,33 @@ class Reversi(object):
             pygame.display.update()
             self.mainclock.tick(FPS)
 
+    def player_turn(self, newgame, hints):
+        board.add_hints(self.player_piece)
+        if not board.get_valid_moves(self.player_piece):
+            break
+
+        while True:
+            self.check_for_quit()
+            for event in pygame.event.get():
+                if event.type == MOUSEBUTTONUP:
+                    if newgame[1].collidepoint(event.pos):
+                        return True
+                    elif hints[1].collidepoint(event.pos):
+                        board.hints = not board.hints
+
+                    move_to = board.get_clicked_tile(Loc(event.pos))
+                    if move_to and board.is_valid_move(self.player_piece, move_to):
+                        return move_to
+
+            board.draw()
+            self.draw_info(turn)
+            reversi.display.blit(*newgame)
+            reversi.display.blit(*hints)
+            self.mainclock.tick(FPS)
+            pygame.display.update()
+
+        return move_to
+
     def draw_info(self, turn):
         """Draws scores and whose turn it is at the bottom of the screen."""
         scores = board.get_score(self.player_piece, self.computer_piece)
@@ -389,7 +344,7 @@ class Reversi(object):
             Returns False if this is an invalid move, True if it is valid.
         """
         dbg = piece==white_piece
-        pieces_to_flip = board.is_valid_move(piece, loc, dbg=0)
+        pieces_to_flip = board.get_captured_pieces(piece, loc, dbg=0)
         if pieces_to_flip:
             board[loc] = copy(piece)
             if real_move:
@@ -398,8 +353,19 @@ class Reversi(object):
                 board[loc].flip()
             return True
 
-    def get_computer_move(self):
+    def computer_turn(self):
         """Performace note: adding undo method to board would be faster than deepcopy."""
+        if not board.get_valid_moves(self.computer_piece):
+            break
+
+        board.draw()
+        self.draw_info(turn)
+
+        # Make it look like the computer is thinking by pausing a bit.
+        pause_until = time.time() + random.randint(5, 15) * 0.1
+        while time.time() < pause_until:
+            pygame.display.update()
+
         possible_moves = board.get_valid_moves(self.computer_piece)
         random.shuffle(possible_moves)
 
@@ -450,6 +416,9 @@ def render_text(text, colour, bg=None, topright=None, center=None, bottomleft=No
 
 def key_up(event, key):
     return event.key==key and event.type==KEYUP
+
+def writeln(*args):
+    debug(', '.join([str(a) for a in args]))
 
 
 if __name__ == "__main__":
