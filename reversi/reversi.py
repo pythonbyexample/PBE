@@ -4,6 +4,8 @@
 # Inspired by Flippy game By Al Sweigart http://inventwithpython.com/pygame
 # Released under a "Simplified BSD" license
 
+from __future__ import division
+
 import random, sys, pygame, time
 from copy import copy, deepcopy
 from math import floor
@@ -108,8 +110,7 @@ class Board(object):
 
     def __iter__(self):
         for y in range(self.maxy):
-            for x in range(self.maxx):
-                yield Loc(x, y)
+            for x in range(self.maxx): yield Loc(x, y)
 
     def reset(self):
         self.board       = [ [blank for _ in range(self.maxx)] for _ in range(self.maxy) ]
@@ -119,7 +120,7 @@ class Board(object):
         self[ Loc(4,3) ] = Piece(black)
 
 
-    def animate_move(self, pieces_to_flip, piece, piece_loc):
+    def animate_move(self, captured, piece, piece_loc):
         """ Draw the additional tile that was just laid down. (Otherwise we'd
             have to completely redraw the board & the board info.)
         """
@@ -134,7 +135,7 @@ class Board(object):
             else:
                 rgb = tuple([255 - rgb] * 3)   # rgb goes from 255 to 0
 
-            for loc in pieces_to_flip:
+            for loc in captured:
                 self[loc].draw(loc, rgb)
             pygame.display.update()
             reversi.mainclock.tick(FPS)
@@ -144,14 +145,14 @@ class Board(object):
         self.display.blit(reversi.bgimage, reversi.bgimage.get_rect())
 
         # grid
-        maxx, maxy = self.maxx, self.maxy
-        vertical   = [(x*tilesize + xmargin, ymargin, ymargin + maxy*tilesize) for x in range(maxx+1)]
-        horizontal = [(y*tilesize + ymargin, xmargin, xmargin + maxx*tilesize) for y in range(maxy+1)]
+        mx, my     = self.maxx, self.maxy
+        vertical   = [(x*tilesize + xmargin, ymargin + my*tilesize) for x in range(mx+1)]
+        horizontal = [(y*tilesize + ymargin, xmargin + mx*tilesize) for y in range(my+1)]
 
-        for x, y1, y2 in vertical:
-            pygame.draw.line(self.display, colours.grid, (x, y1), (x, y2))
-        for y, x1, x2 in horizontal:
-            pygame.draw.line(self.display, colours.grid, (x1, y), (x2, y))
+        for x1, y2 in vertical:
+            pygame.draw.line(self.display, colours.grid, (x1, ymargin), (x1, y2))
+        for y1, x2 in horizontal:
+            pygame.draw.line(self.display, colours.grid, (xmargin, y1), (x2, y1))
 
         # pieces & hints
         for loc in self:
@@ -160,9 +161,7 @@ class Board(object):
 
     def get_clicked_tile(self, loc):
         """If user clicked a tile, return it."""
-        tileloc   = Loc(0,0)
-        tileloc.x = int(floor( (loc.x-xmargin)/float(tilesize) ))
-        tileloc.y = int(floor( (loc.y-ymargin)/float(tilesize) ))
+        tileloc = Loc( int(floor( (loc.x-xmargin)/tilesize )), int(floor( (loc.y-ymargin)/tilesize )) )
         if tileloc.valid(): return tileloc
 
     def add_hints(self, piece):
@@ -174,14 +173,14 @@ class Board(object):
             if isinstance(self[loc], Hint):
                 self[loc] = blank
 
-    def is_valid_move(self, piece, start_loc, dbg=0):
-        return bool( self.get_captured_pieces(piece, start_loc, dbg) )
+    def is_valid_move(self, piece, start_loc):
+        return bool( self.get_captured_pieces(piece, start_loc) )
 
-    def get_captured_pieces(self, piece, start_loc, dbg=0):
-        """If it is a valid move, returns a list of spaces of the captured pieces."""
+    def get_captured_pieces(self, piece, start_loc):
+        """If it is a valid move, returns a list of locations of the captured pieces."""
         if self[start_loc] != blank:
             return False
-        pieces_to_flip = []
+        captured = []
 
         # check each of the eight directions:
         for dir in [(0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1)]:
@@ -194,11 +193,11 @@ class Board(object):
 
             if not loc.valid() or self[loc] != piece:
                 continue
-            pieces_to_flip.extend(fliplst)
-        return pieces_to_flip
+            captured.extend(fliplst)
+        return captured
 
-    def get_valid_moves(self, piece, dbg=0):
-        return [loc for loc in self if self.is_valid_move(piece, loc, dbg=dbg)]
+    def get_valid_moves(self, piece):
+        return [loc for loc in self if self.is_valid_move(piece, loc)]
 
     def get_score(self, player_piece, computer_piece):
         """Determine the score by counting the tiles."""
@@ -260,7 +259,7 @@ class Reversi(object):
                 move_to = self.computer_turn()
                 self.make_move(self.computer_piece, move_to, real_move=True)
 
-                if board.get_valid_moves(self.player_piece, dbg=1):
+                if board.get_valid_moves(self.player_piece):
                     turn = "player"
 
         board.draw()
@@ -347,13 +346,12 @@ class Reversi(object):
         """ Place the piece on the board at xstart, ystart, and flip tiles
             Returns False if this is an invalid move, True if it is valid.
         """
-        dbg = piece==white_piece
-        pieces_to_flip = board.get_captured_pieces(piece, loc, dbg=0)
-        if pieces_to_flip:
+        captured = board.get_captured_pieces(piece, loc)
+        if captured:
             board[loc] = copy(piece)
             if real_move:
-                board.animate_move(pieces_to_flip, piece, loc)
-            for loc in pieces_to_flip:
+                board.animate_move(captured, piece, loc)
+            for loc in captured:
                 board[loc].flip()
             return True
 
