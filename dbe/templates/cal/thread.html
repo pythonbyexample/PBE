@@ -1,0 +1,86 @@
+{% extends "fbase.html" %}
+
+{% block sidebar %} <style type="text/css"> </style> {% endblock %}
+
+{% block content %}
+    <style type="text/css">
+        .pagination { margin-top: 20px; margin-left: -20px; }
+        .main { margin-left: 25px; margin-top: 30px; width: 700px; }
+        .title { font-size: 1.4em; margin-top: 10px; padding-left: 0px; }
+        .title a { text-decoration: none; }
+        .button { background: #999; color: white; padding: 6px; text-decoration: none; float: right; }
+        .date { font-size: 0.8em; padding-left: 5px; }
+        .ppic { float: right; }
+        .clear { clear: both; }
+        .last { border: 0px; }
+
+        .post {
+            margin: 8px; padding: 8px; border: 1px solid #ccc; margin-bottom: 14px; background: white;
+            }
+        .ttitle {
+            font-style: bold; font-size: 1.6em; border-bottom: 1px solid #ccc; margin-bottom: 9px;
+            padding-left: 10px; width: 700px;
+        }
+
+        #list { border: 1px solid #a6cccc; width: 700px; background: #f6f6f6; }
+        #back { margin: 5px; }
+    </style>
+
+    <div class="main">
+
+        <div class="ttitle">{{ title }}</div>
+            <div id="back">
+                <a href="{% url forum.views.forum forum_pk %}">&lt;&lt; back to list of topics</a>
+            </div>
+        <div id="list">
+
+            <!-- Posts  -->
+            {% for post in posts.object_list %}
+                <div class="post">
+
+                    <div class="ppic">
+                        {% with post.profile_data as pdata %}
+                            {% if pdata.1 %}
+                                <img src="/media/{{ pdata.1 }}" /> <br />
+                            {% endif %}
+                        {{ post.creator }}<br />
+                        Posts: {{ pdata.0 }}<br />
+                        Joined: {{ post.creator.date_joined|date:"M d Y" }}
+                        {% endwith %}
+                    </div>
+
+                    <span class="title">{{ post.title }}</span><br />
+                    by {{ post.creator }} | <span class="date">{{ post.created }}</span> <br /><br />
+
+                    {{ post.body|linebreaksbr }} <br />
+
+                    <div class="clear"></div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Next/Prev page links  -->
+        {% if threads.object_list and threads.paginator.num_pages > 1 %}
+        <div class="pagination">
+            <span class="step-links">
+                {% if threads.has_previous %}
+                    <a href= "?page={{ threads.previous_page_number }}">previous &lt;&lt; </a>
+                {% endif %}
+
+                <span class="current">
+                    &nbsp;Page {{ threads.number }} of {{ threads.paginator.num_pages }}
+                </span>
+
+                {% if threads.has_next %}
+                    <a href="?page={{ threads.next_page_number }}"> &gt;&gt; next</a>
+                {% endif %}
+            </span>
+        </div>
+        {% endif %}
+
+        <br />
+        <a class="button" href="{% url forum.views.post 'reply' pk %}">Reply</a>
+
+    </div>
+
+{% endblock %}

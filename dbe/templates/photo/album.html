@@ -1,0 +1,84 @@
+{% extends "pbase.html" %}
+
+{% block content %}
+
+    <style type="text/css" media="screen">
+        li { float: left; }
+        ul { margin-left: -30px; }
+    </style>
+
+    <div class="main">
+
+            <div class="title">{{ album.title }}</div>
+                <div class="right">
+                View:
+                <a href="{% url album pk=album.pk show='thumbnails' %}">thumbnails</a>
+                <a href="{% url album pk=album.pk show='thumbnails2' %}">small thumbnails</a>
+                <a href="{% url album pk=album.pk show='full' %}">full</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url album pk=album.pk show='edit' %}">edit</a>
+                {% endif %}
+                </div>
+                <br /> <br />
+                {% include "messages.html" %}
+                <br />
+
+                {% if show == "edit" %}
+                    <form action="" method="POST">{% csrf_token %}
+                    {{ form.management_form }}
+                {% endif %}
+
+                {% for form in formset %}
+                    {{ form.id }}
+                    {% with form.instance as img %}
+
+                    <!-- FULL VIEW  -->
+                    {% if show == "full" %}
+                        <a href="{{ img.get_absolute_url }}">
+                            <img border="0" alt="" src="{{ img.image_url }}"
+                                {% if img.width > 900 %}width="900"{% endif %} />
+                        </a>
+                    {% endif %}
+
+                    <!-- EDIT VIEW  -->
+                    {% if show == "edit" %}
+                        <div class="edit">
+                        <a href="{{ img.get_absolute_url }}" >
+                            <img class="edit-thumb" border="0" alt="" src="{{ img.thumbnail2_url }}" /></a>
+
+                        <table class="edit-table">
+                            {% for fld in form %}
+                                <tr><td>{{ fld.label }}</td>
+                                <td class="field">{{ fld }} {{ fld.errors }}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                        <div class="clear"></div>
+                        </div>
+                    {% endif %}
+
+                    <!-- THUMBNAILS VIEW  -->
+                    {% if show == "thumbnails" or show == "thumbnails2" %}
+
+                    <div class="{% if show == "thumbnails" %}thumbnails{% else %}thumbnails2{% endif %}">
+                        <a href="{{ img.get_absolute_url }}">
+                            <img border="0" alt="" src="{% if show == "thumbnails" %}{{ img.thumbnail1_url }}{% else %}{{ img.thumbnail2_url }}{% endif %}" />
+                        </a>
+                        <br />
+                        <div class="thumbnail">{{ img.title }}&nbsp;[{{ img.rating }}]</div>
+                    </div>
+                    {% endif %}
+
+                    {% endwith %}
+                {% endfor %}
+
+                {% if show == "edit" %}
+                    <div id="update"><input type="submit" value="Update"></form></div>
+                {% endif %}
+            </div>
+
+
+        {% include "paginator.html" %}
+    </div>
+
+{% endblock %}

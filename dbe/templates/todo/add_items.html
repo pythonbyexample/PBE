@@ -1,0 +1,44 @@
+{% extends "tbase.html" %}
+{% load todo %}
+
+{% block extrahead %}
+    <style type="text/css" media="screen">
+        #container { width: 1200px; }
+        #content { width: 1300px; }
+        td.itemrow { border-bottom: 3px solid #ccc; }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="main">
+    <form action="" method="POST">{% csrf_token %}
+        {{ formset.management_form }}
+        <fieldset class="module aligned">
+            <table border="0" cellpadding="2" cellspacing="2">
+                <tr>
+                    {% for fld in formset.0 %}
+                        <th><label class="compact {% if fld.field.required %} required {% endif %}">
+                              {{ fld.label }}</label>
+                        </th>
+                    {% endfor %}
+                </tr>
+                {% for form in formset %}
+                    {{ form.id }}
+                    <tr>
+                        {% for fld in form %}
+                            <td class="itemrow">
+                            {% if fld.name == "tags_" %}
+                                <div class="tags">{{ fld }}</div>
+                            {% else %}
+                                {{ fld }}
+                            {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </table>
+        </fieldset>
+        <div id="submit"><input id="submit-btn" type="submit" value="Save"></div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{# CONSIDER: load satchmo_google #}
+{% load i18n %}
+
+{% block title %}{% trans "Account Creation" %}{% endblock %}
+
+{% block navbar %}
+   <li class="first"><a href="{{ shop_base }}/">{% trans "Home" %}</a></li>
+   <li>{% trans "Account Creation" %}</li>
+{% endblock %}
+
+{% block content %}
+<h3>{% trans "Account Creation" %}</h3>
+<p>{% trans "Thank you for beginning the registration process." %}
+
+{% trans "Please check your email and follow the instructions to complete registration." %}
+
+</p>
+
+{% endblock %}
+
+{# CONSIDER getting from Satchmo: block google-tracker #}

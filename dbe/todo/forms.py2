@@ -1,0 +1,108 @@
+from django import forms as f
+from django.forms import widgets
+from django.forms.widgets import *
+from django.utils.safestring import mark_safe
+
+from dbe.todo.models import *
+
+class SelectAndTextInput(widgets.MultiWidget):
+    """A Widget with select and text input field."""
+    is_required = False
+
+    def __init__(self, attrs=None):
+        super(SelectAndTextInput, self).__init__([Select(attrs=attrs), TextInput(attrs=attrs)], attrs)
+
+    def decompress(self, value):
+        return value or [None, None]
+
+class TagsSelectCreate(widgets.MultiWidget):
+    """Select tags and optionally create new tags."""
+    is_required = False
+
+    def __init__(self, attrs=None):
+        w = [Select(attrs=attrs)] + [TextInput(attrs=attrs) for _ in range(6)]
+        super(SelectAndTextInput, self).__init__(w, attrs)
+
+    def decompress(self, value):
+        return value or [None]*7
+
+class SelectAndTextField(f.MultiValueField):
+    widget = SelectAndTextInput
+
+    def __init__(self, input_num=1, multi=False, *args, **kwargs):
+        """ SelectAndTextField - select from a dropdown or add new using text inputs.
+
+            input_num : number of text input fields
+            multi     : if True, use multi-select dropdown
+        """
+        self.input_num = input_num
+        fields = [f.ChoiceField()] + [f.CharField() for _ in range(input_num)]
+        super(SelectAndTextField, self).__init__(fields, *args, **kwargs )
+        self.widget.input_num = input_num
+        select = widgets.SelectMultiple if multi else widgets.Select
+        attrs = kwargs.pop("attrs", None)
+        self.widget.widgets = [select(attrs=attrs)] + \
+                              [widgets.TextInput(attrs=attrs) for _ in range(input_num)]
+        for n in range(input_num+1):
+            self.fields[n].widget = self.widget.widgets[n]
+        self.required = False
+
+    def to_python(self, value):
+        return value
+
+    def compress(self, lst):
+        return lst[0], [x.strip() for x in lst[1:]]
+
+class ItemForm(f.ModelForm):
+    class Meta:
+        model   = Item
+        exclude = "creator type project".split()
+
+    def __init__(self, *args, **kwargs):
+        user = self.user = kwargs.pop("user", None)
+        super(ItemForm, self).__init__(*args, **kwargs)
+        choices = Type.objects.filter(creator=user).values_list("pk", "type")
+        self.fields["type_"].fields[0].choices = self.fields["type_"].widget.widgets[0].choices = choices
+
+        type = self.instance.type
+        if type: self.initial["type_"] = type.pk
+        project = self.instance.project
+        if project: self.initial["project_"] = project.pk
+        tags = self.instance.tags
+        # if tags: self.initial["tags_"] = project.pk
+        self.initial["tags_"] = self.instance.tags
+
+        choices = Project.objects.filter(creator=user).values_list("pk", "project")
+        self.fields["project_"].fields[0].choices = self.fields["project_"].widget.widgets[0].choices = \
+                choices
+
+        self.fields["tags_"].fields[0].choices = self.fields["project_"].widget.widgets[0].choices = \
+                Tag.objects.filter(creator=user).values_list("pk", "tag")
+
+    def clean(self):
+        data = self.cleaned_data
+
+        type = data["type_"]
+        if type[1]:
+            self.instance.type = Type.objects.get_or_create(creator=self.user, type=type[1])[0]
+        else:
+            self.instance.type = Type.objects.get(pk=type[0])
+
+        proj = data["project_"]
+        if proj[1]:
+            self.instance.project = Project.objects.get_or_create(creator=self.user, project=proj[1])[0]
+        else:
+            self.instance.project = Project.objects.get(pk=proj[0])
+
+        tags = data["tags_"]
+        self.instance.tags = [Tag.objects.get(pk=pk) for pk in tags[0]]
+        for tag in tags[1:]:
+            if tag:
+                self.instance.tags.add(Tag.objects.get_or_create(creator=self.user, tag=tag)[0])
+
+        return data
+
+
+    type_    = SelectAndTextField()
+    project_ = SelectAndTextField()
+    tags_    = SelectAndTextField(input_num=6, multi=True)

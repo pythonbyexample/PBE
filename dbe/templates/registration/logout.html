@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Logout - done" %}{% endblock %}
+
+{% block navbar %}
+   <li class="first"><a href="{{ shop_base }}/">{% trans "Home" %}</a></li>
+{% endblock %}
+
+{% block content %}
+<p>{% trans "You have successfully logged out." %}</p>
+<hr />
+<p><a href="{% url auth_login %}">login</a></p>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "cal/base.html" %}
+
+{% block sidebar %} <style type="text/css"> </style> {% endblock %}
+
+{% block content %}
+    <style type="text/css">
+        .main { margin-left: 25px; margin-top: 30px; width: 700px; }
+        .entry { border: 3px solid #eee; padding: 10px; width: 400px; margin: 9px; }
+        .del { float: right; }
+        #inp1 { text-align: right; width: 250px; }
+        h4 { text-align: left; margin-left: 50px; }
+    </style>
+
+    <div class="main">
+    {% for entry in other_entries %}
+        <div class="entry">
+        {{ entry.creator }} |
+        {{ entry.short|safe }}<br />
+        {{ entry.body }}<br />
+        </div>
+    {% endfor %} <br />
+
+    <h4>My Entries</h4>
+    <form action="{% url cal.views.day year month day %}" method="POST"> {% csrf_token %}
+
+    {{ entries.management_form }}
+
+    {% for entry in entries.forms %}
+        {{ entry.id }}
+        <div class="entry">
+            <div class="del">Delete {{ entry.DELETE }}</div>
+            <div id="inp1">
+                <p>Title: {{ entry.title }}</p>
+                <p>Snippet: {{ entry.snippet }}</p>
+            </div>
+            <p>Remind: {{ entry.remind }}</p>
+            {{ entry.body }}
+        </div>
+    {% endfor %}
+
+    <input type="submit" value="Save" /> </form>
+    </div>
+
+{% endblock %}

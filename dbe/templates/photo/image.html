@@ -1,0 +1,48 @@
+{% extends "pbase.html" %}
+{% load photo %}
+
+{% block content %}
+    <div class="main">
+        {% include "messages.html" %}
+
+        <div id="edit-view">
+            {% if edit %}
+                <a href="?">view</a> | edit
+            {% elif user.is_authenticated %}
+                view | <a href="?edit=1">edit</a>
+            {% endif %}
+        </div>
+
+        <form id="image" action="" method="post" accept-charset="utf-8">{% csrf_token %}
+            <table id="update-form">
+                <tr>
+                {% for field in form %}
+                    <td>{{ field.label }}</td>
+                {% endfor %}
+                </tr>
+
+                <tr>
+                {% for field in form %}
+                    {% if edit %}
+                        <td>{{ field }} {{ field.errors }}</td>
+                    {% else %}
+                        <td>{{ form.instance|getattribute:field.name|list_related }}</td>
+                    {% endif %}
+                {% endfor %}
+                </tr>
+            </table>
+        {% if edit %}
+            <ul><input type="submit" value="Update" /></ul>
+        {% endif %}
+        </form>
+
+        <!-- Image -->
+        {% if image.title %}
+            <div class="title">{{ image.title }}</div>
+        {% endif %}
+
+        <img border="0" alt="" src="{{ image.image_url }}" width="900" />
+
+    </div>
+
+{% endblock %}

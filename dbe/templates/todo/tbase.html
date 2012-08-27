@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <title>{% block title %}TodoApp{% endblock %}</title>
+    <link rel="stylesheet" href="/media/css/todo.css" type="text/css" media="screen" charset="utf-8" />
+    {% block extrahead %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <div id="sidebar"> {% block sidebar %}{% endblock %} </div>
+
+    <div id="container">
+
+        <!-- MENU -->
+
+        <div id="menu">
+            {% block nav-global %}
+                <h3>TodoApp</h3>
+                <a href="{% url admin:todo_item_changelist %}">TodoList</a>
+            {% endblock %}
+        </div>
+
+        <!-- CONTENT -->
+
+        <div id="content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+</body>
+</html>
+

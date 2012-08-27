@@ -1,0 +1,33 @@
+{% extends "fbase.html" %}
+
+{% block sidebar %} <style type="text/css"> </style> {% endblock %}
+
+{% block content %}
+    <style type="text/css">
+        .main { margin-left: 25px; margin-top: 30px; }
+
+        #rtitle {
+            background: #eee; font-size: 1.3em; padding: 3px; margin-top: 40px;
+            padding-left: 20px; margin-bottom: -10px;
+        }
+        #submit { float: right; }
+
+        img { margin-left: 85px; border: 1px solid #ccc; padding: 4px; }
+    </style>
+
+    <div class="main">
+        <div id="rtitle">Edit Profile</div><br />
+
+        <p>
+            <form enctype="multipart/form-data" action="{% url forum.views.save_profile user.pk %}"
+                method="POST"> {% csrf_token %}
+
+                {% if img %} <p><img border="0" alt="Profile Pic" src="{{ img }}" /></p> {% endif %}
+
+                Profile Pic: {{ pf.avatar }}
+                <input type="submit" value="Submit" id="submit" />
+            </form>
+        </p>
+    </div>
+
+{% endblock %}
