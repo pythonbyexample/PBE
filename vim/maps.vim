@@ -200,11 +200,12 @@
 "
 " Available after ,g    - a b g i j t u x z  ABCDEFGHIJKLMNOPQRTUVWXYZ [and some others...]
 
-" Fix camelcase
 nnoremap ,h :set invhlsearch<cr>
 nnoremap [o :mkview<cr>zMgg
 nnoremap [O :loadview<cr>
 nnoremap ]s yiw:%s/<c-r>"/<c-r>"/g<left><left>
+
+" Fix camelcase
 nnoremap _A :%s/\(\l\)\(\u\)/\1\_\l\2/g
 
 nnoremap ]f m':call search('^\s*\(def\\|class\) ' . expand('<cword>'), 'ws')<cr>
@@ -413,8 +414,8 @@ nnoremap <M-v> :e
 nnoremap <M-z> :setlocal foldmethod=expr foldexpr=GetPythonFoldBest(v:lnum) foldtext=PyFoldText()
         \ <CR>:call ToggleFold()<CR>gg
 
-nnoremap <m-b> <c-b>
-nnoremap <m-s> <c-f>
+" nnoremap <m-b> <c-b>
+" nnoremap <m-s> <c-f>
 
 ""
 " nmap <Leader>gl :sp<CR>:sp<CR><c-w>jg3:setlocal winfixheight<CR>5<c-w>_<c-w>j
