@@ -66,7 +66,6 @@ class Item(object):
 class Piece(Item):
     def __init__(self, colour, loc=None):
         self.colour = colour
-        self.rgb    = colours[colour]
         self.loc    = loc
         if loc: board[loc] = self
 
@@ -74,12 +73,11 @@ class Piece(Item):
         return "<%s piece>" % self.colour
 
     def draw(self, anim_rgb=None):
-        # pygame.draw.circle(reversi.display, anim_rgb or self.rgb, self.tile_center(self.loc), int(tilesize / 2) - 4)
+        # pygame.draw.circle(reversi.display, anim_rgb or colours[self.colour], self.tile_center(self.loc), int(tilesize / 2) - 4)
         draw_image(reversi, reversi.piece_img[self.colour], center=self.tile_center(self.loc))
 
     def flip(self):
         self.colour = white if self.colour==black else black
-        self.rgb    = colours[self.colour]
 
     def is_opposite_of(self, other):
         return isinstance(other, self.__class__) and self != other
@@ -94,6 +92,7 @@ class Piece(Item):
 class Hint(Item):
     def __init__(self, loc=None):
         self.loc = loc
+        if loc: board[loc] = self
 
     def __repr__(self):
         return "<hint>"
@@ -139,15 +138,17 @@ class Board(object):
         for _ in range(n):
             for loc in pieces: self[loc].flip()
             for loc in pieces: self[loc].draw()
+            pygame.time.wait(100)
             pygame.display.update()
             reversi.mainclock_tick()
             reversi.check_for_quit()
 
     def animate_move(self, captured, piece, piece_loc):
         """Flip pieces back and forth as a simple capture animation."""
+        pygame.display.update()
+        # return
         piece.draw()
         self.flip_pieces(captured, 10)
-        pygame.display.update()
 
     def animate_move_rgb(self, captured, piece, piece_loc):
         """UNUSED: rgb animation using regular pygame circles instead of images."""
@@ -204,10 +205,10 @@ class Board(object):
             if isinstance(self[loc], Hint):
                 self[loc] = blank
 
-    def toggle_hints(self):
-        if self.hints : self.remove_hints()
-        else          : self.add_hints()
+    def toggle_hints(self, piece):
         self.hints = not self.hints
+        if self.hints : self.add_hints(piece)
+        else          : self.remove_hints()
 
     def is_valid_move(self, piece, start_loc):
         return bool( self.get_captured(piece, start_loc) )
@@ -251,9 +252,7 @@ class PlayerAI(object):
         self.piece = piece
 
     def make_move(self, loc):
-        print "in make_move()"
         captured = board.get_captured(self.piece, loc)
-        print "captured", captured
         piece = Piece(self.piece.colour, loc)
         board.animate_move(captured, piece, loc)
         for loc in captured:
@@ -267,18 +266,16 @@ class Player(PlayerAI):
     newgame = hints = None      # buttons
 
     def turn(self):
-        board.draw()
-        board.add_hints(self.piece)
         reversi.check_for_quit()
 
         # get button click or move click on a tile
         button = reversi.get_button_click(self.newgame, self.hints)
-        if button == self.newgame:
+        if button and button == self.newgame:
             board.reset()
             return newgame_code
 
-        elif button == self.hints:
-            board.toggle_hints()
+        elif button and button == self.hints:
+            board.toggle_hints(self.piece)
 
         elif button:
             move_to = board.get_clicked_tile(Loc(button))
@@ -298,7 +295,6 @@ class Player(PlayerAI):
 
 class Computer(PlayerAI):
     def turn(self):
-        board.draw()
         reversi.draw_info(reversi.turn)
         possible_moves = board.get_valid_moves(self.piece)
 
@@ -317,7 +313,6 @@ class Computer(PlayerAI):
             if len(captured) > score:
                 score = len(captured)
                 best_move = loc
-        print "best_move", best_move
         return best_move
 
 
@@ -356,7 +351,7 @@ class Reversi(object):
         while True:
             board.draw()
             if self.turn == "player":
-                print "player turn"
+                board.add_hints(player.piece)
                 while True:
                     move_to = player.turn()
                     if move_to: break
@@ -370,7 +365,6 @@ class Reversi(object):
                 elif not get_valid_moves(player.piece) : break
 
             elif self.turn == "computer":
-                print "computer turn"
                 computer.make_move( computer.turn() )
 
                 if   get_valid_moves(player.piece)       : self.turn = "player"
