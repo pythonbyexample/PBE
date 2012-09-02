@@ -30,6 +30,7 @@ board_fn       = "flippyboard.png"
 bg_fn          = "flippybackground.png"
 white_fn       = "white.png"
 black_fn       = "black.png"
+tile_fn        = "tile.png"
 
 blank          = ' '
 white          = "white"
@@ -37,8 +38,8 @@ black          = "black"
 animationspeed = 25     # integer from 1 to 100, higher is faster animation
 newgame_code   = 0      # return code to start a new game
 
-xmargin        = int((width - (dimensions[0] * tilesize)) / 2)
-ymargin        = int((height - (dimensions[1] * tilesize)) / 2)
+xmargin        = int( (width - (dimensions[0] * tilesize)) / 2)
+ymargin        = int( (height - (dimensions[1] * tilesize)) / 2)
 
 cwhite         = (255, 255, 255)
 cblue          = (  0,  30,  90)
@@ -74,6 +75,7 @@ class Piece(Item):
 
     def draw(self, anim_rgb=None):
         # pygame.draw.circle(reversi.display, anim_rgb or colours[self.colour], self.tile_center(self.loc), int(tilesize / 2) - 4)
+        draw_image(reversi, reversi.tileimg, center=self.tile_center(self.loc))
         draw_image(reversi, reversi.piece_img[self.colour], center=self.tile_center(self.loc))
 
     def flip(self):
@@ -101,6 +103,14 @@ class Hint(Item):
         x, y = self.tile_center(self.loc)
         pygame.draw.rect(reversi.display, colours.hint, (x-4, y-4, 8, 8))
 
+class Blank(Item):
+    def __init__(self, loc=None):
+        self.loc = loc
+        if loc: board[loc] = self
+
+    def draw(self):
+        draw_image(reversi, reversi.tileimg, center=self.tile_center(self.loc))
+
 
 class Board(object):
     def __init__(self, display):
@@ -127,7 +137,10 @@ class Board(object):
             for x in range(self.maxx): yield Loc(x, y)
 
     def reset(self):
-        self.board = [ [blank for _ in range(self.maxx)] for _ in range(self.maxy) ]
+        self.board = [ [None for _ in range(self.maxx)] for _ in range(self.maxy) ]
+        for loc in self:
+            Blank(loc)
+            self[loc].draw()
         Piece(white, Loc(3,3))
         Piece(white, Loc(4,4))
         Piece(black, Loc(3,4))
@@ -138,7 +151,7 @@ class Board(object):
         for _ in range(n):
             for loc in pieces: self[loc].flip()
             for loc in pieces: self[loc].draw()
-            pygame.time.wait(100)
+            pygame.time.wait(50)
             pygame.display.update()
             reversi.mainclock_tick()
             reversi.check_for_quit()
@@ -146,9 +159,8 @@ class Board(object):
     def animate_move(self, captured, piece, piece_loc):
         """Flip pieces back and forth as a simple capture animation."""
         pygame.display.update()
-        # return
         piece.draw()
-        self.flip_pieces(captured, 10)
+        self.flip_pieces(captured, 4)
 
     def animate_move_rgb(self, captured, piece, piece_loc):
         """UNUSED: rgb animation using regular pygame circles instead of images."""
@@ -182,9 +194,8 @@ class Board(object):
             pygame.draw.line(self.display, colours.grid, (xmargin, y1), (x2, y1))
 
         # pieces & hints
-        for loc in self:
-            if self[loc] != blank:
-                self[loc].draw()
+        for loc in self: self[loc].draw()
+            # if self[loc] != blank:
         pygame.display.update()
 
     def get_clicked_tile(self, loc):
@@ -195,7 +206,9 @@ class Board(object):
     def add_hints(self, piece):
         if self.hints:
             for loc in self.get_valid_moves(piece):
-                Hint(loc)
+                h = Hint(loc)
+                h.draw()
+
 
     def remove_hints(self):
         """ Note: we need to remove hints even when self.hints is True because that setting refers only
@@ -203,12 +216,16 @@ class Board(object):
         """
         for loc in self:
             if isinstance(self[loc], Hint):
-                self[loc] = blank
+                Blank(loc)
+                # self[loc] = blank
 
     def toggle_hints(self, piece):
         self.hints = not self.hints
-        if self.hints : self.add_hints(piece)
-        else          : self.remove_hints()
+        if self.hints:
+            self.add_hints(piece)
+            # self.draw()
+        else:
+            self.remove_hints()
 
     def is_valid_move(self, piece, start_loc):
         return bool( self.get_captured(piece, start_loc) )
@@ -282,7 +299,7 @@ class Player(PlayerAI):
             if move_to and board.is_valid_move(self.piece, move_to):
                 return move_to
 
-        board.draw()
+        # board.draw()
         reversi.draw_info(reversi.turn)
         self.newgame, self.hints = self.buttons()
         reversi.mainclock_tick()
@@ -331,6 +348,7 @@ class Reversi(object):
         self.piece_img = dict(white = load_image(white_fn, scale=(size, size)),
                               black = load_image(black_fn, scale=(size, size)) )
 
+        self.tileimg = load_image(tile_fn, scale=(tilesize, tilesize))
         self.bgimage = pygame.image.load(bg_fn)
         self.bgimage = pygame.transform.smoothscale(self.bgimage, (width, height))
         draw_image(self, board_image, topleft=(xmargin, ymargin))
