@@ -28,7 +28,7 @@ def render_text(text, colour, bg=None, topright=None, center=None, bottomleft=No
     if topright     : rect.topright = topright
     elif center     : rect.center = center
     elif bottomleft : rect.bottomleft = bottomleft
-    add_border(display, rect, border)
+    add_border(rect, border)
 
     reversi.display.blit(surf, rect)
     return surf, rect
@@ -47,7 +47,6 @@ def writeln(*args):
     debug(', '.join([str(a) for a in args]))
 
 
-
 class Item(object):
     def __init__(self, board, loc=None):
         self.loc = loc
@@ -55,7 +54,6 @@ class Item(object):
 
     def tile_center(self, loc):
         return xmargin + loc.x * tilesize + int(tilesize / 2), ymargin + loc.y * tilesize + int(tilesize / 2)
-
 
 class Piece(Item):
     def __init__(self, colour=None, board=None, loc=None):
@@ -82,7 +80,6 @@ class Piece(Item):
     def __ne__(self, other):
         return not self.__eq__(other)
 
-
 class Hint(Item):
     def __repr__(self):
         return "<hint>"
@@ -97,6 +94,27 @@ class Blank(Item):
 
     def draw(self):
         draw_image(reversi.tileimg, center=self.tile_center(self.loc))
+
+class Loc(object):
+    def __init__(self, x, y=None):
+        x, y = unwrap(x, y)
+        self.loc = x, y
+        self.x, self.y = x, y
+
+    def __str__(self):
+        return str(self.loc)
+
+    def __repr__(self):
+        return str(self.loc)
+
+    def __iter__(self):
+        return iter(self.loc)
+
+    def move(self, dir):
+        return self.__class__(self.x + dir[0], self.y + dir[1])
+
+    def valid(self):
+        return bool( 0 <= self.x < dimensions[0] and 0 <= self.y < dimensions[1] )
 
 
 class Board(object):
@@ -142,7 +160,7 @@ class Board(object):
         self.flip_pieces(captured, 4)
 
     def draw(self):
-        reversi.display.blit(reversi.bgimage, bgimage.get_rect())
+        reversi.display.blit(reversi.bgimage, reversi.bgimage.get_rect())
         for loc in self: self[loc].draw()
         pygame.display.update()
 
@@ -209,25 +227,3 @@ class Board(object):
     def is_corner(self, loc):
         """Returns True if the position is in one of the four corners."""
         return loc.x in (0, self.maxx) and loc.y in (0, self.maxy)
-
-
-class Loc(object):
-    def __init__(self, x, y=None):
-        x, y = unwrap(x, y)
-        self.loc = x, y
-        self.x, self.y = x, y
-
-    def __str__(self):
-        return str(self.loc)
-
-    def __repr__(self):
-        return str(self.loc)
-
-    def __iter__(self):
-        return iter(self.loc)
-
-    def move(self, dir):
-        return self.__class__(self.x + dir[0], self.y + dir[1])
-
-    def valid(self):
-        return bool( 0 <= self.x < dimensions[0] and 0 <= self.y < dimensions[1] )

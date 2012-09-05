@@ -99,7 +99,7 @@ class Reversi(object):
         pygame.display.set_caption("Reversi")
 
         # load images
-        board_image    = load_image(board_fn, scale=(dimensions[0] * tilesize, dimensions[1] * tilesize))
+        self.board_image    = load_image(board_fn, scale=(dimensions[0] * tilesize, dimensions[1] * tilesize))
         size           = tilesize - 4
         self.piece_img = dict(white = load_image(white_fn, scale=(size, size)),
                               black = load_image(black_fn, scale=(size, size)) )
@@ -107,9 +107,9 @@ class Reversi(object):
         self.tileimg = load_image(tile_fn, scale=(tilesize, tilesize))
         self.bgimage = pygame.image.load(bg_fn)
         self.bgimage = pygame.transform.smoothscale(self.bgimage, (width, height))
-        draw_image(board_image, topleft=(xmargin, ymargin))
 
     def main(self):
+        draw_image(self.board_image, topleft=(xmargin, ymargin))
         while True:
             if not reversi.run_game(): break
 
