@@ -1,0 +1,3 @@
+board : playing board divided in tiles
+piece : black or white playing piece
+tile  : one of spaces on the board
