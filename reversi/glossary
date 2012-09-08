@@ -1,3 +1,6 @@
-board : playing board divided in tiles
-piece : black or white playing piece
-tile  : one of spaces on the board
+board    : playing board divided into tiles
+piece    : black or white playing piece
+tile     : one of spaces on the board
+hint     : indicates valid move on the board
+location : object with x,y coordinates corresponding to a tile
+flip     : toggle a piece between black and white
