@@ -10,7 +10,7 @@ tilesize     = 50     # width & height of each space on the board, in pixels
 dimensions   = 8, 8
 newgame_code = True     # return code to start a new game
 
-bg_fn        = "flippybackground.png"
+bg_fn        = "bg.png"
 white_fn     = "white.png"
 black_fn     = "black.png"
 tile_fn      = "tile.png"

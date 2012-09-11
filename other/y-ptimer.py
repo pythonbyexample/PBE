@@ -287,7 +287,7 @@ class ExTimer(wx.Frame):
         self.text.SetFont(font)
         xdim += 1285
 
-        self.trayicon = ddTaskBarIcon(icon, "Y-Timer", self)
+        # self.trayicon = ddTaskBarIcon(icon, "Y-Timer", self)
         # Handle the window being `iconized` (err minimized)
         self.Bind(wx.EVT_ICONIZE, self.on_iconify)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
@@ -348,6 +348,7 @@ class ExTimer(wx.Frame):
         wx.Button(panel, 213, label="+3m", pos=(3, ydim), size=(btnsz, 50))
         wx.EVT_BUTTON(self, 213, self.add3min)
 
+        self.etext.SetValue( data.get("last_set", '') )
         self.FocusFrame()
 
 
@@ -409,7 +410,8 @@ class ExTimer(wx.Frame):
 
     def on_close(self, event):
         """Close, clean up."""
-        self.trayicon.RemoveIcon()
+        # self.trayicon.RemoveIcon()
+        data["last_set"] = self.etext.GetValue()
         data.close()
         self.Destroy()
         sys.exit()
@@ -658,8 +660,8 @@ if __name__ == "__main__":
     # load_times()
     data  = Data(shelve.open(datafile))
     app   = wx.PySimpleApp()
-    icon  = wx.Icon("ytimer.ico", wx.BITMAP_TYPE_ICO)
-    frame = ExTimer(icon=icon)
-    frame.SetIcon(icon)
+    # icon  = wx.Icon("ytimer.ico", wx.BITMAP_TYPE_ICO)
+    frame = ExTimer()
+    # frame.SetIcon(icon)
     frame.Show()
     app.MainLoop()
