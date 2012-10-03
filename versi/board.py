@@ -114,6 +114,8 @@ class Blank(Item):
 
 class Loc(object):
     """Tile location on the grid with x, y coordinates."""
+    __slots__ = ['x', 'y', 'loc']
+
     def __init__(self, x, y=None):
         x, y = unwrap(x, y)
         self.loc = x, y

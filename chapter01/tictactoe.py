@@ -6,15 +6,19 @@ import sys
 from random import choice
 from itertools import cycle
 
-dimensions = 3, 3
-blank      = '.'
-players    = "xo"
+size    = 3
+blank   = '.'
+players = "xo"
 
+def toggle(player):
+    return players[0] if player==players[1] else players[1]
 
 class Board(object):
-    def __init__(self):
-        self.maxx, self.maxy = dimensions
-        self.board = [ [blank]*self.maxx for _ in range(self.maxy) ]
+    """TicTacToe playing board."""
+
+    def __init__(self, size):
+        self.size = size
+        self.board = [ [blank]*size for _ in range(size) ]
 
     def __getitem__(self, loc):
         return self.board[loc.y][loc.x]
@@ -23,25 +27,29 @@ class Board(object):
         self.board[loc.y][loc.x] = item
 
     def __iter__(self):
-        """Iterate over board tiles."""
-        return ( Loc(x,y) for x in range(self.maxx) for y in range(self.maxy) )
+        """Iterate over board tile locations."""
+        return ( Loc(x,y) for x in range(self.size) for y in range(self.size) )
 
     def draw(self):
         for row in self.board:
             print( ''.join(row) )
         print()
 
-    def get_valid_moves(self, piece):
-        return [ loc for loc in self if self.is_valid_move(piece, loc) ]
-
-    def filled(self):
-        return not any( self[loc]==blank for loc in self )
+    def blanks(self):
+        return [loc for loc in self if self[loc]==blank]
 
     def random_blank(self):
-        return choice( [loc for loc in self if self[loc]==blank] )
+        return choice(self.blanks())
 
-    def completed(self, line, item):
-        return all( self[loc]==item for loc in line )
+    def left_to_completion(self, line, player):
+        """Return list of locations left to complete the `line` for player `item`."""
+        if any( self[loc]==toggle(player) for loc in line ):
+            return []   # empty lists will be ignored
+        return [loc for loc in line if self[loc] == blank]
+
+    def completed(self, line, player):
+        """Return True if all of locations in `line` list contain `item`."""
+        return all( self[loc]==player for loc in line )
 
 
 class Loc(object):
@@ -59,17 +67,21 @@ class Loc(object):
         return iter(self.loc)
 
 
-class Tictactoe(object):
+class TicTacToe(object):
+
+    def __init__(self, size):
+        self.size = size
+
     def make_win_lines(self):
-        lines, diag1, diag2 = [], [], []
+        size  = self.size
+        lines = list()
 
-        for n in range(3):
-            lines.append( [Loc(m, n) for m in range(3)] )
-            lines.append( [Loc(n, m) for m in range(3)] )
-            diag1.append(Loc(n, n))
-            diag2.append(Loc(2-n, n))
+        for n in range(size):
+            lines.append( [Loc(m, n) for m in range(size)] )
+            lines.append( [Loc(n, m) for m in range(size)] )
 
-        lines.extend((diag1, diag2))
+        lines.append( [Loc(n, n) for n in range(size)] )
+        lines.append( [Loc(size-n-1, n) for n in range(size)] )
         self.win_lines = lines
 
     def winner(self, player):
@@ -83,18 +95,24 @@ class Tictactoe(object):
                 if board.completed(line, player):
                     self.winner(player)
 
+    def best_move(self, player):
+        """Return best move for `player`."""
+        good = [ board.left_to_completion(line, player) for line in self.win_lines ]
+        good = sorted( [left for left in good if left], key=len )
+        return good[0][0] if good else None
+
     def run(self):
         self.make_win_lines()
-        turns = cycle(players)
+        turn = cycle(players)
 
         while 1:
-            loc = board.random_blank()
-            board[loc] = turns.next()
+            loc = self.best_move(turn)
+            board[loc] = turn.next()
             board.draw()
             self.check_winner()
-            if board.filled(): self.winner(None)
+            if not board.blanks(): self.winner(None)
 
 
 if __name__ == "__main__":
-    board = Board()
-    Tictactoe().run()
+    board = Board(size)
+    TicTacToe(size).run()
