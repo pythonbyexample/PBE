@@ -7,6 +7,8 @@ class Branch(object):
     """Conversation branch."""
     auto_ids = 2, 3     # automatic events, see below
     options  = None
+    npc      = False
+    player   = False
 
     def __init__(self, text, *args):
         self.text = text
@@ -25,8 +27,8 @@ class Branch(object):
     def __getitem__(self, n):
         return self.options[n]
 
-class Nbranch(Branch): pass     # NPC
-class Pbranch(Branch): pass     # Player
+class Nbranch(Branch): npc = True
+class Pbranch(Branch): player = True
 
 
 class JacobConversation(object):
@@ -104,28 +106,36 @@ class Conversation(object):
     def process_option(self, option, stage):
         """If there is a handler method for the option, run it; otherwise return True."""
         name = self.conversation.handlers.get(option.id, '')
-        # print "name", name
         handler = getattr(self.conversation, name + '_' + stage, None)
         return handler(self) if handler else True
 
+    def init_option(self, option): return self.process_option(option, "init")
+    def filter_option(self, option): return self.process_option(option, "filter")
+    def after_option(self, option): return self.process_option(option, "after")
+
     def get_branch(self):
-        branch    = self.branch or self.conversation.tree
-        # print "branch", branch
-        text      = [branch.text or self.process_option(branch, "init")]
-        self.opts = [o for o in branch.options if self.process_option(o, "filter")]
+        branch      = self.branch or self.conversation.tree
+        text        = [branch.text or self.init_option(branch)]
+        self.opts   = [o for o in branch.options if self.filter_option(o)]
+        self.branch = branch
 
         for n, b in enumerate(self.opts):
             text.append( "%d) %s" % (n+1, b.text) )
         return '\n'.join(text)
 
-    def answer(self, n):
-        """Process Player branch and set `self.branch` to next NPC branch; return branch's `end` flag."""
-        self.branch = self.opts[n-1]
-        self.process_option(self.branch, "after")
-        if self.done: return
+    def next(self, n=0):
+        """Descend to `n` branch in current branch's `options`."""
+        self.branch = self.branch[n]
+        return self.branch
 
-        self.branch = self.branch.options[0]
-        return self.branch.text
+    def answer(self, n):
+        """Process selected answer branch and descend to the next NPC branch."""
+        self.after_option(self.next(n-1))
+        if self.done:
+            return None
+        if self.branch.player:
+            self.next()
+        return True
 
 def test():
     player = Player()
@@ -133,10 +143,10 @@ def test():
     conv   = Conversation(player, jacob)
 
     while 1:
-        print conv.get_branch()
+        print(conv.get_branch())
         n = int(raw_input('> '))
-        # print "---\n", conv.answer(n)
-        if not conv.answer(n): break
+        if not conv.answer(n):
+            break
 
 
 if __name__ == "__main__":
