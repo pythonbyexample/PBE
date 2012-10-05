@@ -7,7 +7,6 @@ class Branch(object):
     """Conversation branch."""
     auto_ids = 2, 3     # automatic events, see below
     options  = None
-    npc      = False
     player   = False
 
     def __init__(self, text, *args):
@@ -19,7 +18,8 @@ class Branch(object):
         if args:
             self.options = args
         elif self.id not in self.auto_ids:
-            self.options = (Branch("I want to ask about something else..", 2), Branch("<Done>", 3))
+            self.options = (Branch("I want to ask about something else..", 2),
+                            Branch("<Done>", 3))
 
     def __str__(self):
         return str(self.text) if self.text else "<id=%s>" % self.id
@@ -27,7 +27,7 @@ class Branch(object):
     def __getitem__(self, n):
         return self.options[n]
 
-class Nbranch(Branch): npc = True
+class Nbranch(Branch): pass
 class Pbranch(Branch): player = True
 
 
@@ -44,7 +44,7 @@ class JacobConversation(object):
     }
 
     greetings = ("Howdy, Stranger", "Have you gotten around to doing this small favor for me yet?",
-                 "Thanks fella!", "Howdy!")
+                 "Thanks, fella!", "Howdy!")
 
     tree = Nbranch(None, 1,
                Pbranch("Have you heard any news lately?",
@@ -65,14 +65,26 @@ class JacobConversation(object):
 
     def greet_init(self, conv):
         """Initial greeting."""
-        if not conv.npc.met_player  : return self.greetings[0]
-        elif not quests.chest.done  : return self.greetings[1]
-        elif quests.chest.just_done : return self.greetings[2]
-        else                        : return self.greetings[3]
+        greet = self.greetings
+
+        if not conv.npc.met_player:
+            conv.npc.met_player = True
+            return greet[0]
+
+        elif not quests.chest.done:
+            pinv, ninv = conv.player.inventory, conv.npc.inventory
+            if chest in pinv:
+                pinv.remove(chest)
+                ninv.append(chest)
+                return greet[2]
+            return greet[1]
+
+        else:
+            return greet[3]
 
     def chest_filter(self, conv):
         """Check if player qualifies for chest quest."""
-        return bool(conv.player.strength >= 5 and conv.player.charisma >= 5)
+        return bool(conv.player.strength >= 5 and conv.player.charisma >= 5 and not quests.chest.done)
 
     def back_after(self, conv):
         conv.branch = self.tree
@@ -85,13 +97,34 @@ class JacobConversation(object):
         rooms[1].unlock()
 
 
-class Jacob(object):
+class Character(object):
+    gold = 0
+
+    def __init__(self):
+        self.inventory = []
+
+class Player(Character):
+    strength = 5
+    charisma = 5
+
+class Jacob(Character):
     met_player   = False
     conversation = JacobConversation()
 
-class Player(object):
-    strength = 4
-    charisma = 4
+class Room(object):
+    locked = False
+
+    def __init__(self, *items):
+        self.contents = items
+
+    def lock(self):
+        self.locked = True
+
+    def unlock(self):
+        self.locked = False
+
+class Chest(object):
+    pass
 
 
 class Conversation(object):
@@ -115,13 +148,13 @@ class Conversation(object):
 
     def get_branch(self):
         branch      = self.branch or self.conversation.tree
-        text        = [branch.text or self.init_option(branch)]
+        text        = [branch.text or self.init_option(branch), '']
         self.opts   = [o for o in branch.options if self.filter_option(o)]
         self.branch = branch
 
         for n, b in enumerate(self.opts):
             text.append( "%d) %s" % (n+1, b.text) )
-        return '\n'.join(text)
+        return '\n'.join(text) + '\n'
 
     def next(self, n=0):
         """Descend to `n` branch in current branch's `options`."""
@@ -141,6 +174,8 @@ def test():
     player = Player()
     jacob  = Jacob()
     conv   = Conversation(player, jacob)
+    chest  = Chest()
+    rooms  = Room(), Room(chest)
 
     while 1:
         print(conv.get_branch())
