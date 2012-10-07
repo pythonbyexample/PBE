@@ -76,6 +76,8 @@ class JacobConversation(object):
             if chest in pinv:
                 pinv.remove(chest)
                 ninv.append(chest)
+                conv.npc.gold -= 10
+                conv.player.gold += 10
                 return greet[2]
             return greet[1]
 
@@ -99,15 +101,25 @@ class JacobConversation(object):
 
 class Character(object):
     gold = 0
+    room = 0
 
     def __init__(self):
         self.inventory = []
+
+    def goto_room(self, n):
+        if not rooms[n].locked:
+            rooms[self.room].remove(self)
+            rooms[n].append(self)
+            self.room = n
+            return True
+
 
 class Player(Character):
     strength = 5
     charisma = 5
 
 class Jacob(Character):
+    gold         = 20
     met_player   = False
     conversation = JacobConversation()
 
@@ -117,14 +129,25 @@ class Room(object):
     def __init__(self, *items):
         self.contents = items
 
+    def remove(self, item):
+        self.contents.remove(item)
+
+    def append(self, item):
+        self.contents.append(item)
+
     def lock(self):
         self.locked = True
 
     def unlock(self):
         self.locked = False
 
-class Chest(object):
-    pass
+class Chest(object): pass
+
+class Quest(object):
+    done = False
+
+class Quests(object):
+    chest = Quest()
 
 
 class Conversation(object):
@@ -154,7 +177,7 @@ class Conversation(object):
 
         for n, b in enumerate(self.opts):
             text.append( "%d) %s" % (n+1, b.text) )
-        return '\n'.join(text) + '\n'
+        return '\n'.join(text) + '\n', len(self.opts)
 
     def next(self, n=0):
         """Descend to `n` branch in current branch's `options`."""
@@ -170,20 +193,52 @@ class Conversation(object):
             self.next()
         return True
 
-def test():
+def get_choice(nchoices):
+    valid = ''.join(str(x+1) for x in range(nchoices))
+    while 1:
+        n = raw_input('> ')
+        if len(n)==1 and n in valid:
+            return int(n)
+        print("Invalid input")
+
+
+def test(n):
+    quests = Quests()
     player = Player()
     jacob  = Jacob()
     conv   = Conversation(player, jacob)
     chest  = Chest()
-    rooms  = Room(), Room(chest)
+    rooms  = Room(player, jacob), Room(chest)
 
-    while 1:
-        print(conv.get_branch())
-        n = int(raw_input('> '))
-        if not conv.answer(n):
-            break
+    if n == 1:
+        while 1:
+            text, nchoices = conv.get_branch()
+            print(text)
+            n = get_choice(nchoices)
+            if not conv.answer(n):
+                break
 
+    if n == 2:
+        ok = player.goto_room(1)
+        if not ok:
+            print("Could not enter room 1")
+
+        # choices: 'work', 'bring chest?', 'yes', '<done>'
+        for n in (2,2,1,2):
+            conv.get_branch()
+            conv.answer(n)
+
+        player.goto_room(1)
+        rooms[1].remove(chest)
+        player.inventory.append(chest)
+        print("player.inventory", player.inventory)
+        player.goto_room(0)
+        conv = Conversation(player, jacob)
+        conv.get_branch()
+        conv.answer(2)      # <done>
 
 if __name__ == "__main__":
-    try: test()
-    except KeyboardInterrupt: sys.exit()
+    try:
+        test(1)
+    except KeyboardInterrupt:
+        sys.exit()
