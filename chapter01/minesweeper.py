@@ -3,20 +3,20 @@
 from __future__ import print_function, unicode_literals, division
 
 import sys
-from random import choice
+from random import choice, randint
 from time import time, sleep
 
-from utils import Loc
+from utils import Loc, joins
 
 size       = 8
-num_mines  = 6
+num_mines  = randint(4, 8)
+ai_run     = 1
+
 space      = ' '
 blank      = ' '
 hiddenchar = '.'
 minechar   = '*'
 divider    = '-' * (size * 3 + 5)
-autorun    = True
-autorun    = False
 
 
 class Tile(object):
@@ -31,6 +31,11 @@ class Tile(object):
         elif self.mine   : s = minechar
         else             : s = str(self.number or blank)
         return "%2s" % s
+
+    def toggle_mark(self):
+        """Toggle 'mine' mark on/off."""
+        self.marked = not self.marked
+        self.hidden = not self.hidden
 
 
 class Board(object):
@@ -51,28 +56,6 @@ class Board(object):
         """Iterate over board tile locations."""
         return ( Loc(x,y) for x in range(self.size) for y in range(self.size) )
 
-    def draw(self):
-        print(space*4, "  ".join( [str(n+1) for n in range(self.size)] ))
-        print()
-
-        for n, row in enumerate(self.board):
-            print( n+1, space, space.join([str(tile) for tile in row]) )
-            print()
-        print(divider)
-
-    def toggle(self, loc):
-        """Toggle 'mine' mark on/off."""
-        tile = self[loc].marked
-        tile.marked = not tile.marked
-        tile.hidden = not tile.hidden
-
-    def reveal(self, loc):
-        tile = self[loc]
-        if not tile.number:
-            self.reveal_adjacent_empty(loc)
-        tile.hidden = False
-        return tile.mine
-
     def hidden_or_falsely_marked(self, tile):
         return bool(tile.hidden or tile.marked and not tile.mine)
 
@@ -92,6 +75,28 @@ class Board(object):
     def random_empty(self):
         return choice(self.all_empty())
 
+
+    def draw(self):
+        sp2 = space*2
+        print(space*4, sp2.join( [str(n+1) for n in range(self.size)] ))
+        print('\n')
+
+        for n, row in enumerate(self.board):
+            print(n+1, space, joins(row, space))
+            print()
+        print(divider)
+
+    def toggle_mark(self, loc):
+        """Toggle 'mine' mark on/off."""
+        self[loc].toggle_mark()
+
+    def reveal(self, loc):
+        tile = self[loc]
+        if not tile.number:
+            self.reveal_adjacent_empty(loc)
+        tile.hidden = False
+        return tile
+
     def reveal_adjacent_empty(self, loc):
         """ Reveal all empty (number=0) tiles adjacent to starting tile `loc` and subsequent unhidden tiles.
             Uses floodfill algorithm.
@@ -109,18 +114,8 @@ class Board(object):
     def neighbours(self, loc):
         """Return the list of neighbours of `loc`."""
         x, y = loc
-        lst = [
-               # clockwise from upper left
-               (x-1 , y-1),
-               (x   , y-1),
-               (x+1 , y-1),
-               (x+1 , y),
-               (x+1 , y+1),
-               (x   , y+1),
-               (x-1 , y+1),
-               (x-1 , y),
-               ]
-        return [Loc(*tup) for tup in lst if self.valid(*tup)]
+        locs = set((x+n, y+m) for n in (-1,0,1) for m in (-1,0,1)) - set( [(x,y)] )
+        return [Loc(*tup) for tup in locs if self.valid(*tup)]
 
     def valid(self, x, y):
         return bool( x+1 <= self.size and y+1 <= self.size and x >= 0 and y >= 0 )
@@ -129,35 +124,9 @@ class Board(object):
 class Minesweeper(object):
     start = time()
 
-    def run(self):
-        while True:
-            board.draw()
-            self.ai_move() if autorun else self.manual_move()
-
-    def ai_move(self):
-        loc = board.random_hidden()
-
-        while loc.x:
-            self.check_end(board.reveal(loc))
-            loc = Loc(loc.x-1, loc.y)   # move location to the left
-            board.draw()
-            sleep(0.4)
-
-    def manual_move(self):
-        inp  = raw_input("> ")
-        if inp == 'q': sys.exit()
-
-        mark = inp.startswith('m')
-        x, y = inp[-2], inp[-1]
-        loc  = Loc( int(x)-1, int(y)-1 )
-
-        if mark:
-            board.toggle(loc)
-        else:
-            self.check_end(board.reveal(loc))
-
-    def check_end(self, exploded):
-        if exploded:
+    def check_end(self, tile=None):
+        """Check if game is lost (stepped on a mine), or won (all mines found)."""
+        if tile and tile.mine:
             self.game_lost()
         elif board.cleared():
             self.game_won()
@@ -175,6 +144,46 @@ class Minesweeper(object):
         sys.exit()
 
 
+class Test(object):
+    def test(self):
+        while True:
+            board.draw()
+
+            if ai_run:
+                self.ai_move()
+            else:
+                try:
+                    self.manual_move()
+                except IndexError, ValueError:
+                    pass
+
+    def manual_move(self):
+        inp = raw_input("> ")
+        if inp == 'q': sys.exit()
+
+        mark = inp.startswith('m')
+        x, y = inp[-2], inp[-1]
+        loc  = Loc( int(x)-1, int(y)-1 )
+
+        if mark:
+            board.toggle_mark(loc)
+            msweep.check_end()
+        else:
+            msweep.check_end(board.reveal(loc))
+
+    def ai_move(self):
+        """Very primitive `AI', does not mark mines & does not try to avoid them."""
+        loc = board.random_hidden()
+
+        while loc.x:
+            print("\n loc", loc.x+1, loc.y+1); print()
+            msweep.check_end(board.reveal(loc))
+            loc = Loc(loc.x-1, loc.y)   # move location to the left
+            board.draw()
+            sleep(0.4)
+
+
 if __name__ == "__main__":
     board = Board(size)
-    Minesweeper().run()
+    msweep = Minesweeper()
+    Test().test()
