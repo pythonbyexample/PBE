@@ -10,7 +10,8 @@ from utils import Loc, joins
 
 size       = 8
 num_mines  = randint(4, 8)
-ai_run     = 1
+num_mines = 2
+ai_run     = 0
 
 space      = ' '
 blank      = ' '
@@ -24,6 +25,9 @@ class Tile(object):
     mine   = False
     marked = False
     number = 0
+
+    def __init__(self, x, y):
+        self.loc = Loc(x,y)
 
     def __repr__(self):
         if self.marked   : s = minechar
@@ -42,35 +46,35 @@ class Board(object):
     """Minesweeper playing board."""
     def __init__(self, size):
         self.size = size
-        self.board = [ [Tile() for _ in range(size)] for _ in range(size) ]
+        self.board = [ [Tile(x,y) for x in range(size)] for y in range(size) ]
         for _ in range(num_mines):
-            self[self.random_empty()].mine = True
+            self.random_empty().mine = True
 
-        for loc in self:
-            self[loc].number = sum( self[nloc].mine for nloc in self.neighbours(loc) )
+        for tile in self:
+            tile.number = sum( ntile.mine for ntile in self.neighbours(tile) )
 
     def __getitem__(self, loc):
         return self.board[loc.y][loc.x]
 
     def __iter__(self):
         """Iterate over board tile locations."""
-        return ( Loc(x,y) for x in range(self.size) for y in range(self.size) )
+        return ( self[Loc(x,y)] for x in range(self.size) for y in range(self.size) )
 
-    def hidden_or_falsely_marked(self, tile):
-        return bool(tile.hidden or tile.marked and not tile.mine)
+    def marked_or_revealed(self, tile):
+        return bool(not tile.hidden or tile.mine and tile.marked)
 
     def cleared(self):
         """All mines defused?"""
-        return not any( self.hidden_or_falsely_marked(self[loc]) for loc in self )
+        return all( self.marked_or_revealed(tile) for tile in self )
 
     def all_hidden(self):
-        return [loc for loc in self if self[loc].hidden]
+        return [tile for tile in self if tile.hidden]
 
     def random_hidden(self):
         return choice(self.all_hidden())
 
     def all_empty(self):
-        return [loc for loc in self if not self[loc].mine]
+        return [tile for tile in self if not tile.mine]
 
     def random_empty(self):
         return choice(self.all_empty())
@@ -86,65 +90,64 @@ class Board(object):
             print()
         print(divider)
 
-    def toggle_mark(self, loc):
-        """Toggle 'mine' mark on/off."""
-        self[loc].toggle_mark()
-
-    def reveal(self, loc):
-        tile = self[loc]
+    def reveal(self, tile):
         if not tile.number:
-            self.reveal_adjacent_empty(loc)
+            self.reveal_empty_neighbours(tile)
         tile.hidden = False
         return tile
 
-    def reveal_adjacent_empty(self, loc):
+    def reveal_empty_neighbours(self, tile):
         """ Reveal all empty (number=0) tiles adjacent to starting tile `loc` and subsequent unhidden tiles.
             Uses floodfill algorithm.
         """
-        tile = self[loc]
         if tile.number != 0:
             tile.hidden = False
         if not tile.hidden:
             return
 
         tile.hidden = False
-        for location in self.neighbours(loc):
-            self.reveal_adjacent_empty(location)
+        for ntile in self.neighbours(tile):
+            self.reveal_empty_neighbours(ntile)
 
-    def neighbours(self, loc):
+    def neighbours(self, tile):
         """Return the list of neighbours of `loc`."""
-        x, y = loc
-        locs = set((x+n, y+m) for n in (-1,0,1) for m in (-1,0,1)) - set( [(x,y)] )
-        return [Loc(*tup) for tup in locs if self.valid(*tup)]
+        x, y = tile.loc
+        coords = (-1,0,1)
+        locs = set((x+n, y+m) for n in coords for m in coords) - set( [(x,y)] )
+        return [ self[ Loc(*tup) ] for tup in locs if self.valid(*tup) ]
 
     def valid(self, x, y):
         return bool( x+1 <= self.size and y+1 <= self.size and x >= 0 and y >= 0 )
 
 
 class Minesweeper(object):
-    start = time()
+    start    = time()
+    win_msg  = "All mines cleared (%d:%d)!"
+    lose_msg = "KABOOM. END."
 
-    def check_end(self, tile=None):
+    def check_end(self, tile):
         """Check if game is lost (stepped on a mine), or won (all mines found)."""
-        if tile and tile.mine:
+        if tile.mine and not tile.marked:
             self.game_lost()
         elif board.cleared():
             self.game_won()
 
     def game_lost(self):
-        for loc in board.all_hidden():
-            board.reveal(loc)
+        for tile in board.all_hidden():
+            board.reveal(tile)
         board.draw()
-        print("KABOOM. END.")
+        print(self.lose_msg)
         sys.exit()
 
     def game_won(self):
         elapsed = time() - self.start
-        print("All mines cleared (%d:%d)!" % (elapsed/60, elapsed%60))
+        print(self.win_msg % (elapsed/60, elapsed%60))
         sys.exit()
 
 
 class Test(object):
+    prompt = "> "
+
     def test(self):
         while True:
             board.draw()
@@ -158,27 +161,26 @@ class Test(object):
                     pass
 
     def manual_move(self):
-        inp = raw_input("> ")
+        """Mark mine if """
+        inp = raw_input(self.prompt)
         if inp == 'q': sys.exit()
 
         mark = inp.startswith('m')
         x, y = inp[-2], inp[-1]
         loc  = Loc( int(x)-1, int(y)-1 )
+        tile = board[loc]
 
-        if mark:
-            board.toggle_mark(loc)
-            msweep.check_end()
-        else:
-            msweep.check_end(board.reveal(loc))
+        tile.toggle_mark() if mark else board.reveal(tile)
+        msweep.check_end(tile)
 
     def ai_move(self):
         """Very primitive `AI', does not mark mines & does not try to avoid them."""
-        loc = board.random_hidden()
+        loc = board.random_hidden().loc
 
         while loc.x:
             print("\n loc", loc.x+1, loc.y+1); print()
-            msweep.check_end(board.reveal(loc))
-            loc = Loc(loc.x-1, loc.y)   # move location to the left
+            msweep.check_end( board.reveal(board[loc]) )
+            loc = Loc(loc.x-1, loc.y)       # move location to the left
             board.draw()
             sleep(0.4)
 

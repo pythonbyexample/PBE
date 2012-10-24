@@ -12,6 +12,11 @@ class Loc(object):
     def __iter__(self):
         return iter(self.loc)
 
+    def move(self, x, y):
+        self.x += x
+        self.y += y
+        self.loc = self.x, self.y
+
 
 def joins(iterable, sep=' '):
     return sep.join( [unicode(x) for x in iterable] )
