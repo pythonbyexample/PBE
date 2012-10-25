@@ -11,7 +11,7 @@ from minesweeper_lib import Board, Minesweeper
 
 size      = 8
 num_mines = randint(4, 8)
-ai_run    = 0
+ai_run    = 1
 
 
 class Test(object):
@@ -49,7 +49,7 @@ class Test(object):
         while loc.x:
             print("\n loc", loc.x+1, loc.y+1); print()
             msweep.check_end( board.reveal(board[loc]) )
-            loc = Loc(loc.x-1, loc.y)       # move location to the left
+            loc = loc.moved(-1, 0)      # move location to the left
             board.draw()
             sleep(0.4)
 
