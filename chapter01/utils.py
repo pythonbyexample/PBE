@@ -1,4 +1,5 @@
 from copy import copy
+from random import randint
 
 
 class Loc(object):

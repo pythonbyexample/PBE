@@ -13,8 +13,8 @@ size   = 20
 cwhite = "white"
 cblack = "black"
 blank  = '.'
+nl     = '\n'
 ai_run = 1
-track  = [blank]*size
 
 
 class Tile(object):
@@ -26,7 +26,7 @@ class Blank(Tile):
     char   = blank
 
 class Piece(Tile):
-    loc    = None
+    loc    = -1
     done   = False
     colour = None
     black  = white = False
@@ -37,43 +37,61 @@ class Piece(Tile):
         self.char   = colour[0]
 
     def move(self, loc):
+        """Move to location `loc`, if moved past the end, set `done` property."""
         track[self.loc] = Blank()
         if loc > len(track) - 1:
             self.done = True
         else:
+            if track[loc].colour:
+                track[loc].loc = -1     # bump enemy piece back to start
             track[loc] = self
+            self.loc = loc
 
 
 class SimpleRace(object):
-    prompt = "> "
     winmsg = "%s won the race!"
 
+    def __init__(self):
+        white      = Piece(cwhite), Piece(cwhite)
+        black      = Piece(cblack), Piece(cblack)
+        self.turns = cycle( rndchoice( [(white, black), (black, white)] ) )
+        self.dice  = Dice(num=1)
+
     def draw(self):
-        print(joins(track))
+        print(joins(track), nl*5)
 
-    def run(self):
-        white = Piece(cwhite), Piece(cwhite)
-        black = Piece(cblack), Piece(cblack)
-        turns = cycle( rndchoice((white, black), (black, white)) )
-        dice  = Dice(num=1)
+    def valid(self, piece, loc):
+        """Valid move: any move that does not land on your other piece (beyond track is ok)."""
+        return bool(loc > len(track) - 1 or track[loc] != piece.colour)
 
-        while True:
-            player  = turns.next()
-            move    = dice.rollsum()
-            newlocs = [(piece, piece.loc + move) for piece in player]
-            valid   = [(p, loc) for p, loc in newlocs if track[loc].colour != p.colour]
-            if valid:
-                piece, loc = rndchoice(valid)
-                piece.move(loc)
+    def valid_moves(self, player, movedist):
+        newlocs = [(piece, piece.loc + movedist) for piece in player if not piece.done]
+        return [(p, loc) for p, loc in newlocs if self.valid(p, loc)]
 
     def check_end(self, player):
         if all(p.done for p in player):
             self.game_won(player)
 
     def game_won(self, player):
-        print(self.winmsg % player)
+        print(self.winmsg % player[0].colour)
+        sys.exit()
 
 
+class Test(object):
+    prompt = "> "
+
+    def run(self):
+        while True:
+            race.draw()
+            player      = race.turns.next()
+            movedist    = race.dice.rollsum()
+            valid_moves = race.valid_moves(player, movedist)
+
+            if valid:
+                piece, loc = rndchoice(valid_moves)
+                piece.move(loc)
+                race.check_end(player)
+            sleep(0.6)
 
     def manual_move(self):
         """Get user command and mark mine or reveal a location; check if game is won/lost."""
@@ -101,4 +119,6 @@ class SimpleRace(object):
 
 
 if __name__ == "__main__":
-    SimpleRace().run()
+    track = [Blank() for _ in range(size)]
+    race  = SimpleRace()
+    Test().run()
