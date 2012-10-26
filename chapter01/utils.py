@@ -44,5 +44,18 @@ class Loop(object):
         self.index = self.index-1 if self.index > 0 else self.lastind
         self.update_attr()
 
+
+class Dice(object):
+    def __init__(self, num=2, sides=6):
+        self.num   = num
+        self.sides = sides
+
+    def roll(self):
+        return [randint(1, self.sides) for _ in range(self.num)]
+
+    def rollsum(self):
+        return sum(self.roll())
+
+
 def joins(iterable, sep=' '):
     return sep.join( [unicode(x) for x in iterable] )

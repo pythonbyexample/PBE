@@ -2,6 +2,7 @@
 
 from __future__ import print_function, unicode_literals, division
 from random import random, randint
+from utils import Dice
 
 blank   = '.'
 char    = '@'
@@ -42,19 +43,6 @@ def envelope(loc):
     elif loc > lastind : return lastind
     return loc
 
-
-class Dice(object):
-    def __init__(self, num=2, sides=6):
-        self.num   = num
-        self.sides = sides
-
-    def roll(self):
-        return [randint(1, self.sides) for _ in range(self.num)]
-
-    def rollsum(self):
-        return sum(self.roll())
-
-
 def main():
     display()
     track[loc] = char
@@ -80,6 +68,5 @@ def main():
     print("x", x)
     move2(1, x)
     display2()
-
 
 main()
