@@ -9,30 +9,30 @@ from itertools import cycle
 
 from utils import Dice, joins
 
-size   = 20
-cwhite = "white"
-cblack = "black"
-blank  = '.'
-nl     = '\n'
-ai_run = 1
+size          = 20
+cwhite        = "white"
+cblack        = "black"
+blank         = '.'
+space         = ' '
+nl            = '\n'
+manual_player = 0
+pause_time    = 1       # in seconds
 
 
 class Tile(object):
+    colour = None
+
     def __repr__(self):
         return self.char
 
 class Blank(Tile):
-    colour = None
-    char   = blank
+    char = blank
 
 class Piece(Tile):
-    loc    = -1
-    done   = False
-    colour = None
-    black  = white = False
+    loc  = -1
+    done = False
 
     def __init__(self, colour):
-        setattr(self, colour, True)
         self.colour = colour
         self.char   = colour[0]
 
@@ -49,27 +49,29 @@ class Piece(Tile):
 
 
 class SimpleRace(object):
-    winmsg = "%s won the race!"
+    winmsg = "%s wins the race!"
 
     def __init__(self):
-        white      = Piece(cwhite), Piece(cwhite)
-        black      = Piece(cblack), Piece(cblack)
-        self.turns = cycle( rndchoice( [(white, black), (black, white)] ) )
-        self.dice  = Dice(num=1)
+        white        = Piece(cwhite), Piece(cwhite)
+        black        = Piece(cblack), Piece(cblack)
+        self.players = rndchoice( [(white, black), (black, white)] )
+        self.dice    = Dice(num=1)
 
     def draw(self):
-        print(joins(track), nl*5)
+        print( ''.join( "%3s" % (n+1) for n in range(len(track)) ) )
+        print(space, joins(track, space*2), nl*5)
 
     def valid(self, piece, loc):
         """Valid move: any move that does not land on your other piece (beyond track is ok)."""
-        return bool(loc > len(track) - 1 or track[loc] != piece.colour)
+        return bool(loc > len(track)-1 or track[loc] != piece.colour)
 
-    def valid_moves(self, player, movedist):
-        newlocs = [(piece, piece.loc + movedist) for piece in player if not piece.done]
-        return [(p, loc) for p, loc in newlocs if self.valid(p, loc)]
+    def valid_moves(self, player, move):
+        """Valid moves for `player`: return tuples (piece, newloc) for each piece belonging to `player`."""
+        moves = [(p, p.loc+move) for p in player if not p.done and self.valid(p, p.loc+move)]
 
     def check_end(self, player):
-        if all(p.done for p in player):
+        """Check if `player` has won the game."""
+        if all(piece.done for piece in player):
             self.game_won(player)
 
     def game_won(self, player):
@@ -82,40 +84,32 @@ class Test(object):
 
     def run(self):
         while True:
-            race.draw()
-            player      = race.turns.next()
-            movedist    = race.dice.rollsum()
-            valid_moves = race.valid_moves(player, movedist)
+            for n, player in enumerate(race.players):
+                race.draw()
+                movedist    = race.dice.rollsum()
+                valid_moves = race.valid_moves(player, movedist)
 
-            if valid:
-                piece, loc = rndchoice(valid_moves)
-                piece.move(loc)
-                race.check_end(player)
-            sleep(0.6)
+                if valid_moves:
+                    if n == manual_player and len(valid_moves) > 1:
+                        piece, loc = self.manual_move(valid_moves)
+                    else:
+                        piece, loc = rndchoice(valid_moves)
 
-    def manual_move(self):
-        """Get user command and mark mine or reveal a location; check if game is won/lost."""
-        inp = raw_input(self.prompt)
-        if inp == 'q': sys.exit()
+                    piece.move(loc)
+                    race.check_end(player)
+                sleep(pause_time)
 
-        mark = inp.startswith('m')
-        x, y = inp[-2], inp[-1]
-        loc  = Loc( int(x)-1, int(y)-1 )
-        tile = board[loc]
+    def manual_move(self, valid_moves):
+        """Get player's choice of move options."""
+        moves = ["%d) loc %d to %d" % (n+1, p.loc, move) for n, (p, move) in enumerate(valid_moves)]
+        prompt = nl.join(moves + [self.prompt])
 
-        tile.toggle_mark() if mark else board.reveal(tile)
-        msweep.check_end(tile)
-
-    def ai_move(self):
-        """Very primitive `AI', does not mark mines & does not try to avoid them."""
-        loc = board.random_hidden().loc
-
-        while loc.x:
-            print("\n loc", loc.x+1, loc.y+1); print()
-            msweep.check_end( board.reveal(board[loc]) )
-            loc = loc.moved(-1, 0)      # move location to the left
-            board.draw()
-            sleep(0.4)
+        while True:
+            try:
+                inp = int(raw_input(prompt)) - 1
+                return valid_moves[inp]
+            except IndexError, ValueError:
+                pass
 
 
 if __name__ == "__main__":
