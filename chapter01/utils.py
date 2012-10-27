@@ -60,3 +60,8 @@ class Dice(object):
 
 def joins(iterable, sep=' '):
     return sep.join( [unicode(x) for x in iterable] )
+
+def itersplit(it, check):
+    """Split iterator `it` in two lists: first that passes `check` and second that does not."""
+    return [x for x in it if check(x)], \
+           [x for x in it if not check(x)]

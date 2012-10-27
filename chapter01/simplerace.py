@@ -7,7 +7,7 @@ from random import choice as rndchoice
 from time import sleep
 from itertools import cycle
 
-from utils import Dice, joins
+from utils import Dice, joins, itersplit
 
 size          = 20
 cwhite        = "white"
@@ -58,8 +58,8 @@ class SimpleRace(object):
         self.dice    = Dice(num=1)
 
     def draw(self):
-        print( ''.join( "%3s" % (n+1) for n in range(len(track)) ) )
-        print(space, joins(track, space*2), nl*5)
+        print(nl*5, ''.join( "%3s" % (n+1) for n in range(len(track)) ) )
+        print(space*2, joins(track, space*2))
 
     def valid(self, piece, loc):
         """Valid move: any move that does not land on your other piece (beyond track is ok)."""
@@ -67,14 +67,12 @@ class SimpleRace(object):
 
     def valid_moves(self, player, move):
         """Valid moves for `player`: return tuples (piece, newloc) for each piece belonging to `player`."""
-        valid_moves = []
-        for piece in player:
-            if piece.loc == -1 and any(p.loc == -1 for p, move in valid_moves):
-                continue
-            if not piece.done and self.valid(piece, piece.loc + move):
-                valid_moves.append((piece, piece.loc + move))
-        return valid_moves
-        # moves = [(p, p.loc+move) for p in player if not p.done and self.valid(p, p.loc+move)]
+        def at_start(p_loc):
+            return bool(p_loc[0].loc == -1)
+
+        moves = [(p, p.loc+move) for p in player if not p.done and self.valid(p, p.loc+move)]
+        start, other = itersplit(moves, at_start)
+        return other + start[:1]
 
     def check_end(self, player):
         """Check if `player` has won the game."""
@@ -90,6 +88,8 @@ class Test(object):
     prompt = "> "
 
     def run(self):
+        if manual_player is not None:
+            print("You are playing:", race.players[manual_player][0].colour)
         while True:
             for n, player in enumerate(race.players):
                 race.draw()
@@ -108,18 +108,24 @@ class Test(object):
 
     def manual_move(self, valid_moves):
         """Get player's choice of move options."""
-        moves = ["%d) loc %d to %d" % (n+1, p.loc+1, move+1) for n, (p, move) in enumerate(valid_moves)]
-        prompt = nl.join(moves + [self.prompt])
+        # moves = ["%d) loc %d to %d" % (n+1, p.loc+1, move+1) for n, (p, move) in enumerate(valid_moves)]
+        moves = [' '] * 26
+        for n, (p, move) in enumerate(valid_moves):
+            moves[move] = str(n+1)
+        print(space*3 + "  ".join(moves))
+
+        # prompt = nl.join(moves + [self.prompt])
 
         while True:
             try:
-                inp = int(raw_input(prompt)) - 1
+                inp = int(raw_input(self.prompt)) - 1
                 return valid_moves[inp]
-            except IndexError, ValueError:
+            except (IndexError, ValueError):
                 pass
 
 
 if __name__ == "__main__":
     track = [Blank() for _ in range(size)]
     race  = SimpleRace()
-    Test().run()
+    try: Test().run()
+    except KeyboardInterrupt: pass
