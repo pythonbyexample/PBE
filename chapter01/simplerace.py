@@ -67,7 +67,14 @@ class SimpleRace(object):
 
     def valid_moves(self, player, move):
         """Valid moves for `player`: return tuples (piece, newloc) for each piece belonging to `player`."""
-        moves = [(p, p.loc+move) for p in player if not p.done and self.valid(p, p.loc+move)]
+        valid_moves = []
+        for piece in player:
+            if piece.loc == -1 and any(p.loc == -1 for p, move in valid_moves):
+                continue
+            if not piece.done and self.valid(piece, piece.loc + move):
+                valid_moves.append((piece, piece.loc + move))
+        return valid_moves
+        # moves = [(p, p.loc+move) for p in player if not p.done and self.valid(p, p.loc+move)]
 
     def check_end(self, player):
         """Check if `player` has won the game."""
@@ -101,7 +108,7 @@ class Test(object):
 
     def manual_move(self, valid_moves):
         """Get player's choice of move options."""
-        moves = ["%d) loc %d to %d" % (n+1, p.loc, move) for n, (p, move) in enumerate(valid_moves)]
+        moves = ["%d) loc %d to %d" % (n+1, p.loc+1, move+1) for n, (p, move) in enumerate(valid_moves)]
         prompt = nl.join(moves + [self.prompt])
 
         while True:
