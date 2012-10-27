@@ -6,6 +6,7 @@ import sys
 from random import choice as rndchoice
 from time import sleep
 from itertools import cycle
+from operator import itemgetter
 
 from utils import Dice, joins, itersplit
 
@@ -72,7 +73,7 @@ class SimpleRace(object):
 
         moves = [(p, p.loc+move) for p in player if not p.done and self.valid(p, p.loc+move)]
         start, other = itersplit(moves, at_start)
-        return other + start[:1]
+        return sorted(other + start[:1], key=itemgetter(1))
 
     def check_end(self, player):
         """Check if `player` has won the game."""
@@ -108,13 +109,11 @@ class Test(object):
 
     def manual_move(self, valid_moves):
         """Get player's choice of move options."""
-        # moves = ["%d) loc %d to %d" % (n+1, p.loc+1, move+1) for n, (p, move) in enumerate(valid_moves)]
         moves = [' '] * 26
         for n, (p, move) in enumerate(valid_moves):
             moves[move] = str(n+1)
-        print(space*3 + "  ".join(moves))
-
-        # prompt = nl.join(moves + [self.prompt])
+        # print(valid_moves)
+        print("  ".join(moves))
 
         while True:
             try:
