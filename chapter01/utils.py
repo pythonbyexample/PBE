@@ -65,3 +65,7 @@ def itersplit(it, check):
     """Split iterator `it` in two lists: first that passes `check` and second that does not."""
     return [x for x in it if check(x)], \
            [x for x in it if not check(x)]
+
+def enumerate1(it):
+    """Enumerate iterator `it` using 1-based indexing."""
+    return ((n+1, x) for n, x in enumerate(it))

@@ -8,15 +8,17 @@ from time import sleep
 from itertools import cycle
 from operator import itemgetter
 
-from utils import Dice, joins, itersplit
+from utils import Dice, joins, itersplit, enumerate1
 
 size          = 20
-cwhite        = "white"
-cblack        = "black"
+cgreen        = "green"
+cblue         = "blue"
+manual_player = cgreen
+manual_player = 0
 blank         = '.'
 space         = ' '
 nl            = '\n'
-manual_player = 0
+tiletpl       = "%3s"
 pause_time    = 1       # in seconds
 
 
@@ -50,30 +52,35 @@ class Piece(Tile):
 
 
 class SimpleRace(object):
-    winmsg = "%s wins the race!"
+    winmsg = "%s wins the race!\n"
 
     def __init__(self):
-        white        = Piece(cwhite), Piece(cwhite)
-        black        = Piece(cblack), Piece(cblack)
-        self.players = rndchoice( [(white, black), (black, white)] )
+        green        = Piece(cgreen), Piece(cgreen)
+        blue         = Piece(cblue), Piece(cblue)
+        self.players = rndchoice( [(green, blue), (blue, green)] )
         self.dice    = Dice(num=1)
 
     def draw(self):
-        print(nl*5, ''.join( "%3s" % (n+1) for n in range(len(track)) ) )
-        print(space*2, joins(track, space*2))
+        print(nl*5)
+        print(''.join( tiletpl % (n+1) for n in range(len(track)) ))
+        print(''.join( tiletpl % t for t in track ))
 
     def valid(self, piece, loc):
         """Valid move: any move that does not land on your other piece (beyond track is ok)."""
-        return bool(loc > len(track)-1 or track[loc] != piece.colour)
+        return bool(loc > len(track)-1 or track[loc].colour != piece.colour)
 
     def valid_moves(self, player, move):
         """Valid moves for `player`: return tuples (piece, newloc) for each piece belonging to `player`."""
-        def at_start(p_loc):
-            return bool(p_loc[0].loc == -1)
+        def at_start(piece_newloc):
+            return bool(piece_newloc[0].loc == -1)
 
         moves = [(p, p.loc+move) for p in player if not p.done and self.valid(p, p.loc+move)]
         start, other = itersplit(moves, at_start)
-        return sorted(other + start[:1], key=itemgetter(1))
+        moves = start[:1] + other
+        return sorted(moves, key=itemgetter(1))
+
+    def is_manual(self, player):
+        return bool(player[0].colour == manual_player)
 
     def check_end(self, player):
         """Check if `player` has won the game."""
@@ -89,16 +96,17 @@ class Test(object):
     prompt = "> "
 
     def run(self):
-        if manual_player is not None:
-            print("You are playing:", race.players[manual_player][0].colour)
+        if manual_player:
+            print("You are playing:", manual_player)
+
         while True:
-            for n, player in enumerate(race.players):
+            for player in race.players:
                 race.draw()
                 movedist    = race.dice.rollsum()
                 valid_moves = race.valid_moves(player, movedist)
 
                 if valid_moves:
-                    if n == manual_player and len(valid_moves) > 1:
+                    if race.is_manual(player) and len(valid_moves) > 1:
                         piece, loc = self.manual_move(valid_moves)
                     else:
                         piece, loc = rndchoice(valid_moves)
@@ -109,11 +117,10 @@ class Test(object):
 
     def manual_move(self, valid_moves):
         """Get player's choice of move options."""
-        moves = [' '] * 26
-        for n, (p, move) in enumerate(valid_moves):
-            moves[move] = str(n+1)
-        # print(valid_moves)
-        print("  ".join(moves))
+        moves = [space*3] * 26
+        for n, (_, loc) in enumerate1(valid_moves):
+            moves[loc] = tiletpl % n
+        print(''.join(moves))
 
         while True:
             try:
