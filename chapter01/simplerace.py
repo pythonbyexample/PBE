@@ -46,7 +46,7 @@ class Piece(Tile):
             if track[loc].colour:
                 track[loc].loc = -1     # bump enemy piece back to start
             track[loc] = self
-            self.loc = loc
+        self.loc = loc
 
 
 class SimpleRace(object):

@@ -1,0 +1,58 @@
+Racing track will need to have two types of objects: a blank tile and a playing piece. Both will
+be represented by a single character - a dot for blanks, and athe first character of colour for
+the pieces.
+
+I want to represent both by the character in the same way, so I'll inherit both from Tile class
+with repr method, which is used automatically when an object is printed.
+Piece objects will have a location attribute, colour and 'done' attributes which means the piece
+completed the race.
+
+When a piece makes a move, the logic is as follows: set current location to blank; if moving past
+the end of track, set 'done' attribute; if it lands on the opposing piece, bump it off board;
+insert itself at the new location, and finally set self.loc attribute.
+Note that the last track index is length - 1 because list indexes in python start at 0; if needed,
+to make things a bit clearer and to avoid the dreaded off-by-one errors, you can also define
+`track_lastind = len(track - 1)` and use it for these checks.
+
+I don't need to do anything fancy with players so each of them will simply be a list of its
+pieces; then I need to make a random choice of who will be making the first move -- the simplest
+way to do that, I think, is to simply run rndchoice() on the list of two possible orderings.
+
+In draw() method, I'll print five newlines to make the last track display stand out more; then
+I'll join together all tiles using my function `ujoin()` from utils module which simply converts
+all items to unicode strings before joining.
+
+valid() checks if the move is valid; the only possible invalid move is when a piece lands on the
+same-coloured piece while it's still on the track -- it's ok to do that once a piece moved past
+the track, so we first check for that and then for whether it lands on the same kind of Piece.
+
+I usually wrap this type of check in a bool() call to make it clear that I'm using the boolean
+status of the operation (i.e. if it's true or false), even though the call is not required.
+
+Note that I need to do the "finished track" check first because trying to get the Piece from
+out-of-track location would cause an error.
+
+valid_moves() - The docstring explains what happens here pretty well; the trick with the
+dictionary is useful to remember for cases when you need to keep one duplicate out of many.
+
+is_manual() checks the first piece's colour -- any piece would do but we're guaranteed to have the
+first piece.
+
+check_end -- all() is a very useful function that checks if all items in a sequence evaluate to
+True; there is also a similar function 'any()', which checks that at least one item does.
+
+run() will do the main game loop, with both AI players or one manual, according to 'manual_player'
+setting on top.
+
+The loop logic is: 1. for each player, draw the race track, roll the dice, get valid moves list.
+2) If more than one move is vailable and current player is manual, let him pick the move,
+otherwise pick a random one. 3) make the move and check if game is finished.
+
+manual_move(): here we need to print out the move indicators, where '1' will be shown under the
+location of the first move, '2' under the second, and so on. The simplest way to do this is to
+make a list of blank spaces with the same length as the track and then to iterate o over the list
+of moves, inserting the number of the move at each location.
+
+An alternative way would be to iterate over the list of moves and print out the number of spaces
+offset from the last printed move, but that would be messier and more complicated because I'd need
+to use offsets instead of exact locations.
