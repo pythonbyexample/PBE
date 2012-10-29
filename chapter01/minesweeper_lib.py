@@ -7,12 +7,13 @@ from random import choice as rndchoice
 from random import randint
 from time import time
 
-from utils import Loc, joins
+from utils import Loc, ujoin
 
 space      = ' '
 blank      = ' '
 hiddenchar = '.'
 minechar   = '*'
+nl         = '\n'
 
 
 class Tile(object):
@@ -78,13 +79,10 @@ class Board(object):
 
 
     def draw(self):
-        sp2 = space*2
-        print(space*4, sp2.join( [str(n+1) for n in range(self.size)] ))
-        print('\n')
+        print(space*4, ujoin( [n+1 for n in range(self.size)], space*2 ), nl)
 
         for n, row in enumerate(self.board):
-            print(n+1, space, joins(row, space))
-            print()
+            print(n+1, space, ujoin(row, space), nl)
         print(self.divider)
 
     def reveal(self, tile):
@@ -114,7 +112,7 @@ class Board(object):
         return [ self[ Loc(*tup) ] for tup in locs if self.valid(*tup) ]
 
     def valid(self, x, y):
-        return bool( x+1 <= self.size and y+1 <= self.size and x >= 0 and y >= 0 )
+        return bool( x <= self.size-1 and y <= self.size-1 and x >= 0 and y >= 0 )
 
 
 class Minesweeper(object):

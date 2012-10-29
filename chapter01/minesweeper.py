@@ -9,13 +9,15 @@ from time import sleep
 from utils import Loc
 from minesweeper_lib import Board, Minesweeper
 
-size      = 8
-num_mines = randint(4, 8)
-ai_run    = 1
+size       = 8
+num_mines  = randint(4, 8)
+ai_run     = 1
+nl         = '\n'
+prompt     = "> "
+sleep_time = 0.4
 
 
 class Test(object):
-    prompt = "> "
 
     def test(self):
         while True:
@@ -31,7 +33,7 @@ class Test(object):
 
     def manual_move(self):
         """Get user command and mark mine or reveal a location; check if game is won/lost."""
-        inp = raw_input(self.prompt)
+        inp = raw_input(prompt)
         if inp == 'q': sys.exit()
 
         mark = inp.startswith('m')
@@ -47,11 +49,11 @@ class Test(object):
         loc = board.random_hidden().loc
 
         while loc.x:
-            print("\n loc", loc.x+1, loc.y+1); print()
+            print(nl, "loc", loc.x+1, loc.y+1, nl)
             msweep.check_end( board.reveal(board[loc]) )
             loc = loc.moved(-1, 0)      # move location to the left
             board.draw()
-            sleep(0.4)
+            sleep(sleep_time)
 
 
 if __name__ == "__main__":

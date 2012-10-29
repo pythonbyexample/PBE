@@ -2,10 +2,11 @@
 
 from __future__ import print_function, unicode_literals, division
 from random import random, randint
-from utils import Dice
+from utils import Dice, envelope
 
 blank   = '.'
 char    = '@'
+nl      = '\n'
 loc     = 0
 loc2    = 0
 
@@ -20,28 +21,21 @@ def move(dir, n):
     """Move `n` times in `dir` direction."""
     global loc
     track[loc] = blank
-    loc = envelope(loc + dir*n)
+    loc = envelope(loc + dir*n, lastind)
     track[loc] = char
 
 def move2(dir, n):
     """Move `n` times in `dir` direction."""
     global loc2
     track2[loc2].remove(char)
-    loc2 = envelope(loc2 + dir*n)
+    loc2 = envelope(loc2 + dir*n, lastind)
     track2[loc2].append(char)
 
 def display():
-    print(''.join(track)); print()
+    print(''.join(track), nl)
 
 def display2():
-    print(''.join( [x[-1] for x in track2] ))
-    print()
-
-def envelope(loc):
-    """Return `loc`, fixing out of bounds values if needed."""
-    if loc < 0         : return 0
-    elif loc > lastind : return lastind
-    return loc
+    print(''.join(x[-1] for x in track2), nl)
 
 def main():
     display()
@@ -60,9 +54,7 @@ def main():
     display2()
 
     dice = Dice()
-    print(dice.roll())
-    print(dice.rollsum())
-    print()
+    print(dice.roll(), dice.rollsum(), nl)
 
     x = dice.rollsum()
     print("x", x)

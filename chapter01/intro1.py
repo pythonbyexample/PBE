@@ -3,6 +3,9 @@
 from __future__ import print_function, unicode_literals, division
 from random import random
 
+nl = '\n'
+
+
 class Tree(object):
     height = 0
 
@@ -21,14 +24,14 @@ class Birch(Tree):
 
 def main():
     trees = Bamboo(), Bamboo(), Birch(), Birch()
-    print(trees, '\n')
+    print(trees, nl)
 
     for tree in trees: tree.grow()
-    print(trees, '\n')
+    print(trees, nl)
 
     for _ in range(5):
         for tree in trees: tree.grow()
-    print(trees, '\n')
+    print(trees, nl)
 
 
 main()

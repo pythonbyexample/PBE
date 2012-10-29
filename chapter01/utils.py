@@ -58,7 +58,7 @@ class Dice(object):
         return sum(self.roll())
 
 
-def joins(iterable, sep=' '):
+def ujoin(iterable, sep=' '):
     return sep.join( [unicode(x) for x in iterable] )
 
 def itersplit(it, check):
@@ -69,3 +69,7 @@ def itersplit(it, check):
 def enumerate1(it):
     """Enumerate iterator `it` using 1-based indexing."""
     return ((n+1, x) for n, x in enumerate(it))
+
+def envelope(value, minval, maxval):
+    """Adjust `value` to be within min/max bounds."""
+    return min(max(val, minval), maxval)

@@ -4,14 +4,19 @@
 from __future__ import print_function, unicode_literals, division
 
 import os
-from random import choice
+from random import choice as rndchoice
 from string import letters
+
+from utils import ujoin
 
 num_words    = 6
 initial_hide = 0.7
 start_points = 30
 hiddenltr    = '_'
+nl           = '\n'
+space        = ' '
 wordsfn      = "words"
+testwords    = "sunny clouds snowflake".split()
 # }}}
 
 
@@ -30,7 +35,7 @@ class Word(object):
             self.reveal(letter)
             lst = [w for w in words if len(w.hidden)>1 and w != self]
             if lst:
-                choice(lst).revealrnd()
+                rndchoice(lst).revealrnd()
             return True
 
     def reveal(self, letter):
@@ -41,7 +46,7 @@ class Word(object):
 
     def revealrnd(self):
         """Reveal a random letter."""
-        self.reveal( self.word[choice(self.hidden)] )
+        self.reveal( self.word[rndchoice(self.hidden)] )
 
     def hide(self, num):
         """Hide all letters matching letter at index `n`."""
@@ -55,15 +60,15 @@ class Word(object):
         length      = len(self)
         num_to_hide = round(length * hidden)
         while len(self.hidden) < num_to_hide:
-            self.hide( choice(range(length)) )
+            self.hide( rndchoice(range(length)) )
 
     def __str__(self):
         word = ((hiddenltr if n in self.hidden else l) for n, l in enumerate(self.word))
-        return ' '.join(word)
+        return space.join(word)
 
 
 def display():
-    print( '\n'.join(str(word) for word in words) ); print()
+    print(ujoin(words, nl), nl)
 
 def main():
     display()
@@ -79,5 +84,5 @@ def main():
 
 if __name__ == "__main__":
     wordlist = open(wordsfn).readlines()
-    words    = [ Word(word) for word in "sunny clouds snowflake".split()]
+    words    = [Word(word) for word in testwords]
     main()
