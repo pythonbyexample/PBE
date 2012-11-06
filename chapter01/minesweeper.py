@@ -7,14 +7,14 @@ from random import randint
 from time import sleep
 
 from utils import Loc
-from minesweeper_lib import Board, Minesweeper
+from minesweeper_lib import nl, MinesweeperBoard, Minesweeper
 
-size       = 8
+size       = 12, 6
 num_mines  = randint(4, 8)
-ai_run     = 1
-nl         = '\n'
 prompt     = "> "
-sleep_time = 0.4
+pause_time = 0.7
+
+ai_run     = 1
 
 
 class Test(object):
@@ -26,6 +26,7 @@ class Test(object):
             if ai_run:
                 self.ai_move()
             else:
+
                 try:
                     self.manual_move()
                 except IndexError, ValueError:
@@ -53,10 +54,11 @@ class Test(object):
             msweep.check_end( board.reveal(board[loc]) )
             loc = loc.moved(-1, 0)      # move location to the left
             board.draw()
-            sleep(sleep_time)
+            sleep(pause_time)
 
 
 if __name__ == "__main__":
-    board = Board(size, num_mines)
+    board = MinesweeperBoard(size, num_mines)
     msweep = Minesweeper(board)
-    Test().test()
+    try: Test().test()
+    except KeyboardInterrupt: pass

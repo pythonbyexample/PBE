@@ -4,16 +4,17 @@ from __future__ import print_function, unicode_literals, division
 
 import sys
 from random import choice as rndchoice
-from random import randint
 from time import time
 
-from utils import Loc, ujoin
+from utils import ujoin
+from board import Loc, Board
 
 space      = ' '
 blank      = ' '
 hiddenchar = '.'
 minechar   = '*'
 nl         = '\n'
+tiletpl    = '%3s'
 
 
 class Tile(object):
@@ -26,11 +27,10 @@ class Tile(object):
         self.loc = Loc(x,y)
 
     def __repr__(self):
-        if self.marked   : s = minechar
-        elif self.hidden : s = hiddenchar
-        elif self.mine   : s = minechar
-        else             : s = str(self.number or blank)
-        return "%2s" % s
+        if self.marked   : return minechar
+        elif self.hidden : return hiddenchar
+        elif self.mine   : return minechar
+        else             : return str(self.number or blank)
 
     def toggle_mark(self):
         """Toggle 'mine' mark on/off."""
@@ -38,25 +38,19 @@ class Tile(object):
         self.hidden = not self.hidden
 
 
-class Board(object):
+class MinesweeperBoard(Board):
     """Minesweeper playing board."""
+
     def __init__(self, size, num_mines):
-        self.size    = size
-        self.divider = '-' * (size * 3 + 5)
-        self.board   = [ [Tile(x,y) for x in range(size)] for y in range(size) ]
+        super(MinesweeperBoard, self).__init__(size, Tile)
+
+        self.divider = '-' * (self.width * 4 + 4)
 
         for _ in range(num_mines):
             self.random_empty().mine = True
 
         for tile in self:
             tile.number = sum( ntile.mine for ntile in self.neighbours(tile) )
-
-    def __getitem__(self, loc):
-        return self.board[loc.y][loc.x]
-
-    def __iter__(self):
-        """Iterate over board tile locations."""
-        return ( self[Loc(x,y)] for x in range(self.size) for y in range(self.size) )
 
     def marked_or_revealed(self, tile):
         return bool(not tile.hidden or tile.mine and tile.marked)
@@ -77,12 +71,13 @@ class Board(object):
     def random_empty(self):
         return rndchoice(self.all_empty())
 
-
     def draw(self):
-        print(space*4, ujoin( [n+1 for n in range(self.size)], space*2 ), nl)
+        columns = [n+1 for n in range(self.width)]
+        print(space*3, ujoin(columns, space, tiletpl), nl)
 
         for n, row in enumerate(self.board):
-            print(n+1, space, ujoin(row, space), nl)
+            print(tiletpl % (n+1), ujoin(row, space, tiletpl), nl)
+
         print(self.divider)
 
     def reveal(self, tile):
@@ -104,20 +99,10 @@ class Board(object):
         for ntile in self.neighbours(tile):
             self.reveal_empty_neighbours(ntile)
 
-    def neighbours(self, tile):
-        """Return the list of neighbours of `loc`."""
-        x, y = tile.loc
-        coords = (-1,0,1)
-        locs = set((x+n, y+m) for n in coords for m in coords) - set( [(x,y)] )
-        return [ self[ Loc(*tup) ] for tup in locs if self.valid(*tup) ]
-
-    def valid(self, x, y):
-        return bool( x <= self.size-1 and y <= self.size-1 and x >= 0 and y >= 0 )
-
 
 class Minesweeper(object):
     start    = time()
-    win_msg  = "All mines cleared (%d:%d)!"
+    win_msg  = "All mines cleared (%d:%02d)!"
     lose_msg = "KABOOM. END."
 
     def __init__(self, board):

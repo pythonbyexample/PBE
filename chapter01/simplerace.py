@@ -17,8 +17,8 @@ space         = ' '
 nl            = '\n'
 pause_time    = 0.5     # in seconds
 
-manual_player = None
-# manual_player = cgreen
+manual_players = []
+# manual_players = [cgreen]
 
 
 class Tile(object):
@@ -83,7 +83,7 @@ class SimpleRace(object):
         return sorted( dict(moves).items() )
 
     def is_manual(self, player):
-        return bool(player[0].colour == manual_player)
+        return bool(player[0].colour in manual_players)
 
     def check_end(self, player):
         """Check if `player` has won the game."""
@@ -104,8 +104,8 @@ class Test(object):
             If more than one valid move is available to the manual player, let him make the choice
             with `manual_move()`.
         """
-        if manual_player:
-            print("You are playing:", manual_player)
+        if manual_players:
+            print("You are playing:", ujoin(manual_players))
 
         while True:
             for player in race.players:
