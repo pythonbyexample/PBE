@@ -3,63 +3,31 @@
 from __future__ import print_function, unicode_literals, division
 
 import sys
-from random import choice
-from itertools import cycle
+from random import choice as rndchoice
 
-dimensions = 3, 3
-blank      = '.'
-players    = "xo"
+from board import Loc, Board
+
+size    = 5, 3
+blank   = '.'
+players = 'xo'
+nl = '\n'
 
 
-class Board(object):
-    def __init__(self):
-        self.maxx, self.maxy = dimensions
-        self.board = [ [blank]*self.maxx for _ in range(self.maxy) ]
-
-    def __getitem__(self, loc):
-        return self.board[loc.y][loc.x]
-
-    def __setitem__(self, loc, item):
-        self.board[loc.y][loc.x] = item
-
-    def __iter__(self):
-        """Iterate over board tiles."""
-        return ( Loc(x,y) for x in range(self.maxx) for y in range(self.maxy) )
-
-    def draw(self):
-        for row in self.board:
-            print( ''.join(row) )
-        print()
-
-    def get_valid_moves(self, piece):
-        return [ loc for loc in self if self.is_valid_move(piece, loc) ]
-
+class TictactoeBoard(Board):
     def filled(self):
         return not any( self[loc]==blank for loc in self )
 
     def random_blank(self):
-        return choice( [loc for loc in self if self[loc]==blank] )
+        return rndchoice( [loc for loc in self if self[loc]==blank] )
 
     def completed(self, line, item):
-        return all( self[loc]==item for loc in line )
-
-
-class Loc(object):
-    """Tile location on the grid with x, y coordinates."""
-    __slots__ = ['x', 'y', 'loc']
-
-    def __init__(self, x, y):
-        self.loc = x, y
-        self.x, self.y = x, y
-
-    def __str__(self):
-        return str(self.loc)
-
-    def __iter__(self):
-        return iter(self.loc)
+        return all(self[loc]==item for loc in line)
 
 
 class Tictactoe(object):
+    winmsg  = "%s is the winner!"
+    drawmsg = "It's a draw!"
+
     def make_win_lines(self):
         lines, diag1, diag2 = [], [], []
 
@@ -72,29 +40,29 @@ class Tictactoe(object):
         lines.extend((diag1, diag2))
         self.win_lines = lines
 
-    def winner(self, player):
-        if player : print("%s is the winner!" % player)
-        else      : print("It's a draw!")
+    def game_won(self, player):
+        print(self.winmsg % player if player else self.drawmsg)
         sys.exit()
 
     def check_winner(self):
         for player in players:
             for line in self.win_lines:
                 if board.completed(line, player):
-                    self.winner(player)
+                    self.game_won(player)
 
     def run(self):
         self.make_win_lines()
-        turns = cycle(players)
 
         while 1:
-            loc = board.random_blank()
-            board[loc] = turns.next()
-            board.draw()
-            self.check_winner()
-            if board.filled(): self.winner(None)
+            for player in players:
+                board[ board.random_blank() ] = player
+                board.draw()
+                print(nl)
+
+                self.check_winner()
+                if board.filled(): self.game_won(None)
 
 
 if __name__ == "__main__":
-    board = Board()
+    board = TictactoeBoard(size, blank)
     Tictactoe().run()

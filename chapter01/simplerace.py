@@ -8,14 +8,15 @@ from time import sleep
 
 from utils import Dice, ujoin
 
-size          = 20
-num_pieces    = 3
-cgreen        = "green"
-cblue         = "blue"
-blank         = '.'
-space         = ' '
-nl            = '\n'
-pause_time    = 0.5     # in seconds
+size           = 20
+num_pieces     = 3
+cgreen         = "green"
+cblue          = "blue"
+blank          = '.'
+space          = ' '
+nl             = '\n'
+pause_time     = 0.5     # in seconds
+prompt         = "> "
 
 manual_players = []
 # manual_players = [cgreen]
@@ -96,10 +97,8 @@ class SimpleRace(object):
 
 
 class Test(object):
-    prompt = "> "
-
     def run(self):
-        """ Run main game loop.
+        """ Run the main game loop.
 
             If more than one valid move is available to the manual player, let him make the choice
             with `manual_move()`.
@@ -132,7 +131,7 @@ class Test(object):
 
         while True:
             try:
-                inp = int(raw_input(self.prompt)) - 1
+                inp = int(raw_input(prompt)) - 1
                 return valid_moves[inp]
             except (IndexError, ValueError):
                 pass

@@ -6,7 +6,7 @@ import sys
 from random import choice as rndchoice
 from time import time
 
-from utils import ujoin
+from utils import ujoin, range1, enumerate1
 from board import Loc, Board
 
 space      = ' '
@@ -72,11 +72,11 @@ class MinesweeperBoard(Board):
         return rndchoice(self.all_empty())
 
     def draw(self):
-        columns = [n+1 for n in range(self.width)]
+        columns = [n for n in range1(self.width)]
         print(space*3, ujoin(columns, space, tiletpl), nl)
 
-        for n, row in enumerate(self.board):
-            print(tiletpl % (n+1), ujoin(row, space, tiletpl), nl)
+        for n, row in enumerate1(self.board):
+            print(tiletpl % n, ujoin(row, space, tiletpl), nl)
 
         print(self.divider)
 

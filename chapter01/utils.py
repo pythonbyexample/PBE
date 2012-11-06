@@ -70,9 +70,18 @@ def enumerate1(it):
     """Enumerate iterator `it` using 1-based indexing."""
     return ((n+1, x) for n, x in enumerate(it))
 
+def range1(x):
+    return range(1, x+1)
+
 def envelope(value, minval, maxval):
     """Adjust `value` to be within min/max bounds."""
     return min(max(val, minval), maxval)
 
 def flatten(iterable):
     return map(sum, iterable)
+
+def human_readable(val):
+    return val + 1
+
+def py_readable(val):
+    return val - 1

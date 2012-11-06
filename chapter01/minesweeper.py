@@ -6,7 +6,7 @@ import sys
 from random import randint
 from time import sleep
 
-from utils import Loc
+from utils import Loc, py_readable
 from minesweeper_lib import nl, MinesweeperBoard, Minesweeper
 
 size       = 12, 6
@@ -14,7 +14,7 @@ num_mines  = randint(4, 8)
 prompt     = "> "
 pause_time = 0.7
 
-ai_run     = 1
+ai_run     = 0
 
 
 class Test(object):
@@ -38,9 +38,8 @@ class Test(object):
         if inp == 'q': sys.exit()
 
         mark = inp.startswith('m')
-        x, y = inp[-2], inp[-1]
-        loc  = Loc( int(x)-1, int(y)-1 )
-        tile = board[loc]
+        x, y = (int(val)-1 for val in inp[-2:])
+        tile = board[ Loc(x, y) ]
 
         tile.toggle_mark() if mark else board.reveal(tile)
         msweep.check_end(tile)
