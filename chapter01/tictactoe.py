@@ -9,9 +9,9 @@ from time import sleep
 from board import Loc, Board
 
 size       = 3
+pause_time = 0.3
 blank      = '.'
 players    = 'xo'
-pause_time = 0.3
 
 
 class TictactoeBoard(Board):
@@ -22,7 +22,7 @@ class TictactoeBoard(Board):
         return rndchoice( [loc for loc in self.locations() if self[loc]==blank] )
 
     def completed(self, line, item):
-        return all(self[loc]==item for loc in line)
+        return all( self[loc]==item for loc in line )
 
 
 class Tictactoe(object):
@@ -30,11 +30,15 @@ class Tictactoe(object):
     drawmsg = "It's a draw!"
 
     def make_win_lines(self):
+        """ Create a list of winning lines -- when a player fills any one of them, he wins.
+            Each line is a list of locations.
+        """
         lines, diag1, diag2 = [], [], []
 
         for n in range(3):
             lines.append( [Loc(m, n) for m in range(3)] )
             lines.append( [Loc(n, m) for m in range(3)] )
+
             diag1.append(Loc(n, n))
             diag2.append(Loc(2-n, n))
 
@@ -54,7 +58,7 @@ class Tictactoe(object):
     def run(self):
         self.make_win_lines()
 
-        while 1:
+        while True:
             for player in players:
                 board[ board.random_blank() ] = player
                 board.draw()

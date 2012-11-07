@@ -6,7 +6,7 @@ import sys
 from random import choice as rndchoice
 from time import time
 
-from utils import ujoin, range1, enumerate1
+from utils import ujoin, range1, enumerate1, timefmt
 from board import Loc, Board
 
 space      = ' '
@@ -18,10 +18,11 @@ tiletpl    = '%3s'
 
 
 class Tile(object):
-    hidden = True
-    mine   = False
-    marked = False
-    number = 0
+    hidden   = True
+    revealed = False
+    mine     = False
+    marked   = False
+    number   = 0
 
     def __init__(self, x, y):
         self.loc = Loc(x,y)
@@ -59,28 +60,21 @@ class MinesweeperBoard(Board):
         """All mines defused?"""
         return all( self.marked_or_revealed(tile) for tile in self )
 
-    def all_hidden(self):
-        return [tile for tile in self if tile.hidden]
-
     def random_hidden(self):
-        return rndchoice(self.all_hidden())
-
-    def all_empty(self):
-        return [tile for tile in self if not tile.mine]
+        return rndchoice( [tile for tile in self if tile.hidden] )
 
     def random_empty(self):
-        return rndchoice(self.all_empty())
+        return rndchoice( [tile for tile in self if not tile.mine] )
 
     def draw(self):
-        columns = [n for n in range1(self.width)]
-        print(space*3, ujoin(columns, space, tiletpl), nl)
+        print(space*3, ujoin( range1(self.width), space, tiletpl ), nl)
 
         for n, row in enumerate1(self.board):
             print(tiletpl % n, ujoin(row, space, tiletpl), nl)
-
         print(self.divider)
 
     def reveal(self, tile):
+        """Unhide `tile`."""
         if not tile.number:
             self.reveal_empty_neighbours(tile)
         tile.hidden = False
@@ -90,7 +84,7 @@ class MinesweeperBoard(Board):
         """ Reveal all empty (number=0) tiles adjacent to starting tile `loc` and subsequent unhidden tiles.
             Uses floodfill algorithm.
         """
-        if tile.number != 0:
+        if tile.number:
             tile.hidden = False
         if not tile.hidden:
             return
@@ -117,14 +111,12 @@ class Minesweeper(object):
 
     def game_lost(self):
         board = self.board
-        for tile in board.all_hidden():
-            board.reveal(tile)
+        for tile in board: board.reveal(tile)
 
         board.draw()
         print(self.lose_msg)
         sys.exit()
 
     def game_won(self):
-        elapsed = time() - self.start
-        print(self.win_msg % (elapsed/60, elapsed%60))
+        print( self.win_msg % timefmt(time() - self.start) )
         sys.exit()

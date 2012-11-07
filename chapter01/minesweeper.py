@@ -11,14 +11,15 @@ from minesweeper_lib import nl, MinesweeperBoard, Minesweeper
 
 size       = 12, 6
 num_mines  = randint(4, 8)
-prompt     = "> "
 pause_time = 0.7
+prompt     = '> '
+quit_key   = 'q'
+mark_key   = 'm'
 
-ai_run     = 0
+ai_run     = 1
 
 
 class Test(object):
-
     def test(self):
         while True:
             board.draw()
@@ -35,9 +36,9 @@ class Test(object):
     def manual_move(self):
         """Get user command and mark mine or reveal a location; check if game is won/lost."""
         inp = raw_input(prompt)
-        if inp == 'q': sys.exit()
+        if inp == quit_key: sys.exit()
 
-        mark = inp.startswith('m')
+        mark = inp.startswith(mark_key)
         x, y = (int(val)-1 for val in inp[-2:])
         tile = board[ Loc(x, y) ]
 
@@ -50,7 +51,7 @@ class Test(object):
 
         while loc.x:
             print(nl, "loc", loc.x+1, loc.y+1, nl)
-            msweep.check_end( board.reveal(board[loc]) )
+            msweep.check_end(board.reveal( board[loc] ))
             loc = loc.moved(-1, 0)      # move location to the left
             board.draw()
             sleep(pause_time)

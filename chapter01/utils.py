@@ -85,3 +85,6 @@ def human_readable(val):
 
 def py_readable(val):
     return val - 1
+
+def timefmt(sec):
+    return "%d:%02d" % (sec/60, sec%60)
