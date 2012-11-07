@@ -1,1 +1,4 @@
-cp ~/.vim/maps.vim .
+cp \
+~/.vim/maps.vim \
+~/.vim/functions.vim \
+.
