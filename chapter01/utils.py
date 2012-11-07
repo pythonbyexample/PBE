@@ -88,3 +88,7 @@ def py_readable(val):
 
 def timefmt(sec):
     return "%d:%02d" % (sec/60, sec%60)
+
+def to_pyreadable(iterable):
+    """Convert a list of 1-indexed string values to 0-indexed python integers."""
+    return (int(val)-1 for val in iterable)
