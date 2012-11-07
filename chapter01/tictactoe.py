@@ -4,21 +4,22 @@ from __future__ import print_function, unicode_literals, division
 
 import sys
 from random import choice as rndchoice
+from time import sleep
 
 from board import Loc, Board
 
-size    = 5, 3
-blank   = '.'
-players = 'xo'
-nl = '\n'
+size       = 3
+blank      = '.'
+players    = 'xo'
+pause_time = 0.3
 
 
 class TictactoeBoard(Board):
     def filled(self):
-        return not any( self[loc]==blank for loc in self )
+        return not any( self[loc]==blank for loc in self.locations() )
 
     def random_blank(self):
-        return rndchoice( [loc for loc in self if self[loc]==blank] )
+        return rndchoice( [loc for loc in self.locations() if self[loc]==blank] )
 
     def completed(self, line, item):
         return all(self[loc]==item for loc in line)
@@ -57,7 +58,8 @@ class Tictactoe(object):
             for player in players:
                 board[ board.random_blank() ] = player
                 board.draw()
-                print(nl)
+                print()
+                sleep(pause_time)
 
                 self.check_winner()
                 if board.filled(): self.game_won(None)
