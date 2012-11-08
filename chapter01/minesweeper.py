@@ -6,8 +6,8 @@ import sys
 from random import randint
 from time import sleep
 
-from utils import Loc, py_readable
-from minesweeper_lib import nl, MinesweeperBoard, Minesweeper
+from utils import py_readable
+from minesweeper_lib import nl, MinesweeperBoard, Minesweeper, Loc
 
 size       = 12, 6
 num_mines  = randint(4, 8)
@@ -53,6 +53,8 @@ class Test(object):
             print(nl, "loc", loc.x+1, loc.y+1, nl)
             msweep.check_end(board.reveal( board[loc] ))
             loc = loc.moved(-1, 0)      # move location to the left
+            if board[loc].revealed:
+                continue
             board.draw()
             sleep(pause_time)
 
