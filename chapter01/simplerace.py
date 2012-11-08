@@ -4,22 +4,22 @@ from __future__ import print_function, unicode_literals, division
 
 import sys
 from random import choice as rndchoice
+from random import shuffle
 from time import sleep
 
 from utils import Dice, ujoin
 
-size           = 20
-num_pieces     = 3
-cgreen         = "green"
-cblue          = "blue"
-blank          = '.'
-space          = ' '
-nl             = '\n'
-pause_time     = 0.5     # in seconds
-prompt         = "> "
+size          = 20
+num_pieces    = 3
+cgreen        = "green"
+cblue         = "blue"
+blank         = '.'
+space         = ' '
+nl            = '\n'
+pause_time    = 0.5     # in seconds
 
-manual_players = []
-# manual_players = [cgreen]
+manual_player = None
+# manual_player = cgreen
 
 
 class Tile(object):
@@ -59,8 +59,9 @@ class SimpleRace(object):
         """
         green        = [Piece(cgreen) for _ in range(num_pieces)]
         blue         = [Piece(cblue) for _ in range(num_pieces)]
-        self.players = rndchoice( [(green, blue), (blue, green)] )
+        self.players = [green, blue]
         self.dice    = Dice(num=1)      # one 6-sided dice
+        shuffle(self.players)
 
     def draw(self):
         """Display the racing track."""
@@ -84,7 +85,7 @@ class SimpleRace(object):
         return sorted( dict(moves).items() )
 
     def is_manual(self, player):
-        return bool(player[0].colour in manual_players)
+        return bool(player[0].colour == manual_player)
 
     def check_end(self, player):
         """Check if `player` has won the game."""
@@ -97,14 +98,16 @@ class SimpleRace(object):
 
 
 class Test(object):
+    prompt = "> "
+
     def run(self):
-        """ Run the main game loop.
+        """ Run main game loop.
 
             If more than one valid move is available to the manual player, let him make the choice
             with `manual_move()`.
         """
-        if manual_players:
-            print("You are playing:", ujoin(manual_players))
+        if manual_player:
+            print("You are playing:", manual_player)
 
         while True:
             for player in race.players:
@@ -131,7 +134,7 @@ class Test(object):
 
         while True:
             try:
-                inp = int(raw_input(prompt)) - 1
+                inp = int(raw_input(self.prompt)) - 1
                 return valid_moves[inp]
             except (IndexError, ValueError):
                 pass

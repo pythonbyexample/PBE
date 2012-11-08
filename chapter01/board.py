@@ -48,10 +48,10 @@ class CommonBoard(object):
         return (self[loc] for loc in self.neighbour_locs(tile))
 
     def neighbour_cross_locs(self, tile):
-        """Return the generator of neighbour 'cross' (i.e. no diagonal) locations of `tile`."""
+        """Return a generator of neighbour 'cross' (i.e. no diagonal) locations of `tile`."""
         x, y = tile.loc
         locs = ((x-1, y), (x+1, y), (x, y-1), (x, y+1))
-        return ( Loc(*tpl) for tpl in locs if self.valid(Loc(*tpl)) )
+        return [ Loc(*tpl) for tpl in locs if self.valid(Loc(*tpl)) ]
 
     def cross_neighbours(self, tile):
         """Return the generator of 'cross' (i.e. no diagonal) neighbours of `tile`."""
