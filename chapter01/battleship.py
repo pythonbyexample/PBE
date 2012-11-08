@@ -5,7 +5,7 @@ import sys
 from random import choice as rndchoice
 from time import sleep
 
-from utils import enumerate1, range1, to_pyreadable, ujoin
+from utils import enumerate1, range1, to_pyreadable, ujoin, flatten
 from board import Board, Loc
 
 size          = 15, 8
@@ -85,26 +85,25 @@ class BattleshipBoard(Board):
     def random_blank(self):
         return rndchoice( [tile for tile in self if not tile.ship] )
 
-    def valid_blank(self, loc):
-        return bool( self.valid(loc) and not self[loc].ship )
+    def allow_placement(self, locs):
+        """Check that `locs` are valid and have no neighbouring ships."""
+        if not all(self.valid(loc) for loc in locs):
+            return False
+        ncl = self.neighbour_cross_locs
+        print([list(ncl(self[loc])) for loc in locs])
+        neighbours = set(flatten( [ncl(self[loc]) for loc in locs] ))
+        return not any( self[loc].ship for loc in neighbours )
 
     def random_placement(self, ship):
         """Return list of random locations for `ship` length."""
         dirs  = [Loc(*d) for d in ((1,0), (0,1), (-1,0), (0,-1))]
-        print("ship", ship)
 
         while True:
             start = self.random_blank().loc
             dir   = rndchoice(dirs)
-            print ("start", start)
-            print ("dir", dir)
-            print ( self.getloc(start, dir, 1) )
             locs  = [ self.getloc(start, dir, n) for n in range(ship) ]
-
-            print ("locs", locs)
-            if all(self.valid_blank(loc) for loc in locs):
+            if self.allow_placement(locs):
                 break
-        print ("locs", locs)
         return locs
 
 
