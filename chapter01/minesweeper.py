@@ -6,8 +6,8 @@ import sys
 from random import randint
 from time import sleep
 
-from utils import Loc, py_readable
-from minesweeper_lib import nl, MinesweeperBoard, Minesweeper
+from utils import parse_hnuminput
+from minesweeper_lib import nl, space, MinesweeperBoard, Minesweeper, Loc
 
 size       = 12, 6
 num_mines  = randint(4, 8)
@@ -16,7 +16,7 @@ prompt     = '> '
 quit_key   = 'q'
 mark_key   = 'm'
 
-ai_run     = 1
+ai_run     = 0
 
 
 class Test(object):
@@ -39,7 +39,10 @@ class Test(object):
         if inp == quit_key: sys.exit()
 
         mark = inp.startswith(mark_key)
-        x, y = (int(val)-1 for val in inp[-2:])
+        inp = inp.lstrip(mark_key + space)
+
+        if space in inp: inp = inp.split()
+        x, y = parse_hnuminput(inp)
         tile = board[ Loc(x, y) ]
 
         tile.toggle_mark() if mark else board.reveal(tile)
@@ -53,6 +56,8 @@ class Test(object):
             print(nl, "loc", loc.x+1, loc.y+1, nl)
             msweep.check_end(board.reveal( board[loc] ))
             loc = loc.moved(-1, 0)      # move location to the left
+            if board[loc].revealed:
+                continue
             board.draw()
             sleep(pause_time)
 

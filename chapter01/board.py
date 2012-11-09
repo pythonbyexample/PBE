@@ -36,6 +36,12 @@ class CommonBoard(object):
     def valid(self, loc):
         return bool( loc.x >= 0 and loc.y >= 0 and loc.x <= self.width-1 and loc.y <= self.height-1 )
 
+    def directions(self):
+        """Return the generator of 8 coordinate directions."""
+        coords = (-1,0,1)
+        dirs = set((n, m) for n in coords for m in coords) - set( [(0,0)] )
+        return list(dirs)
+
     def neighbour_locs(self, tile):
         """Return the generator of neighbour locations of `tile`."""
         x, y = tile.loc
@@ -60,6 +66,17 @@ class CommonBoard(object):
     def make_tile(self, x, y):
         """Make a tile using `self.def_tile`. If def_tile is simply a string, return it, otherwise instantiate with x, y as arguments."""
         return self.def_tile if isinstance(self.def_tile, basestring) else self.def_tile(x, y)
+
+    def move(self, item_or_loc, newloc):
+        if isinstance(item_or_loc, Loc):
+            loc  = item_or_loc
+            item = self[loc]
+        else:
+            item = item_or_loc
+            loc  = item_or_loc.loc
+
+        self[newloc] = item
+        self[loc]    = self.make_tile(loc.x, loc.y)
 
 
 class Board(CommonBoard):
@@ -92,6 +109,9 @@ class StackableBoard(CommonBoard):
 
     def __getitem__(self, loc):
         return self.board[loc.y][loc.x][-1]
+
+    def items(self, loc):
+        return self.board[loc.y][loc.x]
 
     def __setitem__(self, loc, item):
         self.board[loc.y][loc.x].append(item)

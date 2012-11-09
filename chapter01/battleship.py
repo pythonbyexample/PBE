@@ -5,12 +5,12 @@ import sys
 from random import choice as rndchoice
 from time import sleep
 
-from utils import enumerate1, range1, to_pyreadable, ujoin, flatten
+from utils import enumerate1, range1, parse_hnuminput, ujoin, flatten, AttrToggles
 from board import Board, Loc
 
-size          = 15, 8
-num_ships     = 5
-pause_time    = 0.3
+size          = 5, 5
+num_ships     = 3
+pause_time    = 0.1
 
 nl            = '\n'
 prompt        = '> '
@@ -22,16 +22,19 @@ blank         = '.'
 hitchar       = '*'
 quit_key      = 'q'
 
-players       = '1', '2'
-manual_player = '2'
-divider       = '-' * (size[1]*4 + 20)
+players       = 1, 2
+manual_player = None
+manual_player = 2
+divider       = '-' * (size[0]*4 + 6)
 
 
-class Tile(object):
+class Tile(AttrToggles):
     """Tile that may be a ship or blank space (water)."""
-    ship   = False
-    is_hit = False
-    hidden = True
+    ship              = False
+    is_hit            = False
+    hidden            = True
+    revealed          = False
+    attribute_toggles = [("hidden", "revealed")]
 
     def __init__(self, x, y):
         self.loc = Loc(x, y)
@@ -43,16 +46,18 @@ class Blank(Tile):
     char = blank
 
     def hit(self):
-        self.is_hit = True
-        self.char   = hitchar
+        self.is_hit   = True
+        self.revealed = True
+        self.char     = hitchar
 
 class Ship(Tile):
     char = shipchar
     ship = True
 
     def hit(self):
-        self.is_hit = True
-        self.char   = sunkship
+        self.is_hit   = True
+        self.revealed = True
+        self.char     = sunkship
 
 
 class BattleshipBoard(Board):
@@ -67,13 +72,11 @@ class BattleshipBoard(Board):
     def all_unhit(self):
         return [tile for tile in self if not tile.is_hit]
 
-    def random_unhit(self):
-        return rndchoice(self.all_unhit()).loc
+    def ships(self):
+        return [tile for tile in self if tile.ship]
 
-    def reveal(self, loc):
-        """UNUSED"""
-        self[loc].hidden = False
-        return self[loc]
+    def random_unhit(self):
+        return rndchoice(self.all_unhit())
 
     def valid_hidden(self, loc):
         return bool(self.valid(loc) and self[loc].hidden)
@@ -90,7 +93,6 @@ class BattleshipBoard(Board):
         if not all(self.valid(loc) for loc in locs):
             return False
         ncl = self.neighbour_cross_locs
-        print([list(ncl(self[loc])) for loc in locs])
         neighbours = set(flatten( [ncl(self[loc]) for loc in locs] ))
         return not any( self[loc].ship for loc in neighbours )
 
@@ -120,9 +122,8 @@ class Player(object):
         self.is_manual = bool(self.num == manual_player)
 
         if self.is_manual:
-            print("is_manual, revealing all my tiles")
             for tile in B:
-                tile.hidden = False
+                tile.revealed = True
 
     def enemy(self):
         return players[0] if players[1] is self else players[1]
@@ -140,11 +141,11 @@ class Battleship(object):
         p2.board.draw()
 
     def check_end(self, player):
-        if not any( tile.ship and tile.hidden for tile in player.board ):
+        if all(ship.is_hit for ship in player.board.ships()):
             self.game_lost(player)
 
     def game_lost(self, player):
-        print(losemsg % player.num)
+        print(self.losemsg % player.num)
         sys.exit()
 
 
@@ -165,19 +166,24 @@ class Test(object):
                 continue
 
     def _manual_move(self, player):
-        """Get user command and reveal the tile; check if game is won/lost."""
+        """ Get user command and reveal the tile; check if game is won/lost.
+            User input can be with a space e.g. 10 5 or without a space when possible e.g. 35.
+        """
         inp = raw_input(prompt)
         if inp == quit_key: sys.exit()
 
-        x, y = to_pyreadable(inp.split())
-        tile = board[ Loc(x, y) ]
-        tile.hidden = False
-        bship.check_end(player.enemy())
+        inp   = inp.split() if space in inp else inp
+        x, y  = parse_hnuminput(inp)
+        enemy = player.enemy()
+
+        enemy.board[ Loc(x, y) ].hit()
+        bship.check_end(enemy)
 
     def ai_move(self, player):
         """Very primitive `AI', always hits a random location."""
-        B = player.enemy().board
-        B[ B.random_unhit() ].hidden = False
+        enemy = player.enemy()
+        enemy.board.random_unhit().hit()
+        bship.check_end(enemy)
         sleep(pause_time)
 
 

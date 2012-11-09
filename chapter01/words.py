@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-# Imports {{{
 from __future__ import print_function, unicode_literals, division
 
 import os
@@ -15,9 +14,9 @@ start_points = 30
 hiddenltr    = '_'
 nl           = '\n'
 space        = ' '
+
 wordsfn      = "words"
 testwords    = "sunny clouds snowflake".split()
-# }}}
 
 
 class Word(object):
@@ -33,7 +32,7 @@ class Word(object):
         """Reveal all instances of `l` if word[i] == `l` & reveal random letter in one other word."""
         if i in self.hidden and self.word[i] == letter:
             self.reveal(letter)
-            lst = [w for w in words if len(w.hidden)>1 and w != self]
+            lst = [w for w in words if len(w.hidden) > 1 and w != self]
             if lst:
                 rndchoice(lst).revealrnd()
             return True
@@ -46,7 +45,7 @@ class Word(object):
 
     def revealrnd(self):
         """Reveal a random letter."""
-        self.reveal( self.word[rndchoice(self.hidden)] )
+        self.reveal(self.word[ rndchoice(self.hidden) ])
 
     def hide(self, num):
         """Hide all letters matching letter at index `n`."""
@@ -60,10 +59,10 @@ class Word(object):
         length      = len(self)
         num_to_hide = round(length * hidden)
         while len(self.hidden) < num_to_hide:
-            self.hide( rndchoice(range(length)) )
+            self.hide(rndchoice( range(length) ))
 
     def __str__(self):
-        word = ((hiddenltr if n in self.hidden else l) for n, l in enumerate(self.word))
+        word = ( (hiddenltr if n in self.hidden else l) for n, l in enumerate(self.word) )
         return space.join(word)
 
 

@@ -6,7 +6,7 @@ import sys
 from random import choice as rndchoice
 from time import time
 
-from utils import ujoin, range1, enumerate1, timefmt
+from utils import ujoin, range1, enumerate1, timefmt, AttrToggles
 from board import Loc, Board
 
 space      = ' '
@@ -17,12 +17,13 @@ nl         = '\n'
 tiletpl    = '%3s'
 
 
-class Tile(object):
-    hidden   = True
-    revealed = False
-    mine     = False
-    marked   = False
-    number   = 0
+class Tile(AttrToggles):
+    hidden            = True
+    revealed          = False
+    mine              = False
+    marked            = False
+    number            = 0
+    attribute_toggles = [("hidden", "revealed")]
 
     def __init__(self, x, y):
         self.loc = Loc(x,y)
@@ -34,7 +35,7 @@ class Tile(object):
         else             : return str(self.number or blank)
 
     def toggle_mark(self):
-        """Toggle 'mine' mark on/off."""
+        """UNUSED Toggle 'mine' mark on/off."""
         self.marked = not self.marked
         self.hidden = not self.hidden
 
@@ -54,7 +55,7 @@ class MinesweeperBoard(Board):
             tile.number = sum( ntile.mine for ntile in self.neighbours(tile) )
 
     def marked_or_revealed(self, tile):
-        return bool(not tile.hidden or tile.mine and tile.marked)
+        return bool(tile.revealed or tile.mine and tile.marked)
 
     def cleared(self):
         """All mines defused?"""
@@ -77,19 +78,17 @@ class MinesweeperBoard(Board):
         """Unhide `tile`."""
         if not tile.number:
             self.reveal_empty_neighbours(tile)
-        tile.hidden = False
+        tile.revealed = True
         return tile
 
     def reveal_empty_neighbours(self, tile):
         """ Reveal all empty (number=0) tiles adjacent to starting tile `loc` and subsequent unhidden tiles.
             Uses floodfill algorithm.
         """
-        if tile.number:
-            tile.hidden = False
-        if not tile.hidden:
-            return
+        if tile.number   : tile.revealed = True
+        if tile.revealed : return
 
-        tile.hidden = False
+        tile.revealed = True
         for ntile in self.neighbours(tile):
             self.reveal_empty_neighbours(ntile)
 
