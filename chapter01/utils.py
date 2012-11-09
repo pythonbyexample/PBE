@@ -71,10 +71,8 @@ def py_readable(val):
 def timefmt(sec):
     return "%d:%02d" % (sec/60, sec%60)
 
-def to_pyreadable(iterable):
-
-    """Convert a list of 1-indexed string values to 0-indexed python integers."""
-
+def parse_hnuminput(iterable):
+    """Convert a list of 'human input' 1-indexed string values to 0-indexed integers."""
     return (int(val)-1 for val in iterable)
 
 
@@ -92,23 +90,3 @@ class AttrToggles(object):
                     attrs = set(attrs) - set([attr])
                     for attr in attrs:
                         object.__setattr__(self, attr, not val)
-
-class X(AttrToggles):
-    hidden = True
-    revealed = False
-    attribute_toggles = [("hidden", "revealed")]
-
-if __name__ == "__main__":
-    x=X()
-    print("x.hidden", x.hidden)
-    print("x.revealed", x.revealed)
-
-    x.hidden=False
-    print
-    print("x.hidden", x.hidden)
-    print("x.revealed", x.revealed)
-
-    x.hidden=True
-    print
-    print("x.hidden", x.hidden)
-    print("x.revealed", x.revealed)
