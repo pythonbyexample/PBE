@@ -3,6 +3,7 @@
 from __future__ import print_function, unicode_literals, division
 import sys
 from random import choice as rndchoice
+from random import randint
 from time import sleep
 
 from utils import enumerate1, range1, parse_hnuminput, ujoin, flatten, AttrToggles, Loop
@@ -39,6 +40,7 @@ class Blank(Tile):
     char  = blank
     blank = True
 
+
 class Robot(Tile):
     char       = 'r'
     robot      = True
@@ -52,12 +54,8 @@ class Robot(Tile):
     def go(self):
         if not self.program:
             self.create_program()
-        cmd, length = self.program.pop(0)
-
-        for _ in range(length):
-            getattr(self, commands[cmd])()
-            if not self.program:
-                break
+        cmd = getattr(self, commands[ self.program.pop(0) ])
+        cmd()
 
     def turn_cw(self):
         self.direction.next()
@@ -69,22 +67,26 @@ class Robot(Tile):
         pass
 
     def random(self):
-        getattr(self, commands[ rndchoice(commands) ])()
+        getattr(self, rndchoice(commands.values()) )()
+
+    def fire(self):
+        pass
 
     def move(self):
-        to = board.getloc(self.loc, self.direction.dir)
+        to = board.getloc(self.loc, Loc(*self.direction.dir))
         if board.valid(to):
             board.move(self, to)
         else:
             self.program = []
 
     def create_program(self):
-        self.program = [ (rndchoice(commands), randint(1, 6)) ]
+        self.program = [ rndchoice(commands.keys()) ] * randint(1, 6)
 
 
 class Player(Robot):
     char = '@'
     player = True
+
 
 class Bullet(Tile):
     char = '*'
@@ -130,6 +132,7 @@ class Test(object):
                 if inp == quit_key:
                     sys.exit()
 
+                print("rgame.program_expand(inp)", rgame.program_expand(inp))
                 player.program = rgame.program_expand(inp)
                 return
             except (IndexError, ValueError, TypeError):
