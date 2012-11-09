@@ -39,7 +39,7 @@ class CommonBoard(object):
     def directions(self):
         """Return the generator of 8 coordinate directions."""
         coords = (-1,0,1)
-        dirs = set((n, m) for n in coords for m in coords) - set( [(0,0)] )
+        dirs   = set((n, m) for n in coords for m in coords) - set( [(0,0)] )
         return list(dirs)
 
     def neighbour_locs(self, tile):
@@ -63,9 +63,9 @@ class CommonBoard(object):
         """Return the generator of 'cross' (i.e. no diagonal) neighbours of `tile`."""
         return (self[loc] for loc in self.neighbour_cross_locs(tile))
 
-    def make_tile(self, x, y):
+    def make_tile(self, loc):
         """Make a tile using `self.def_tile`. If def_tile is simply a string, return it, otherwise instantiate with x, y as arguments."""
-        return self.def_tile if isinstance(self.def_tile, basestring) else self.def_tile(x, y)
+        return self.def_tile if isinstance(self.def_tile, basestring) else self.def_tile(loc)
 
     def move(self, item_or_loc, newloc):
         if isinstance(item_or_loc, Loc):
@@ -76,7 +76,8 @@ class CommonBoard(object):
             loc  = item_or_loc.loc
 
         self[newloc] = item
-        self[loc]    = self.make_tile(loc.x, loc.y)
+        self[loc]    = self.make_tile(loc)
+        item.loc     = newloc
 
 
 class Board(CommonBoard):
@@ -84,7 +85,8 @@ class Board(CommonBoard):
         super(Board, self).__init__(size, **kwargs)
 
         self.def_tile = def_tile
-        self.board = [ [self.make_tile(x, y) for x in range(self.width)] for y in range(self.height) ]
+        xrng, yrng    = range(self.width), range(self.height)
+        self.board    = [ [self.make_tile(Loc(x, y)) for x in xrng] for y in yrng ]
 
     def __getitem__(self, loc):
         return self.board[loc.y][loc.x]
@@ -93,7 +95,7 @@ class Board(CommonBoard):
         self.board[loc.y][loc.x] = item
 
     def __delitem__(self, loc):
-        self.board[loc.y][loc.x] = self.make_tile(loc.x, loc.y)
+        self.board[loc.y][loc.x] = self.make_tile(loc)
 
     def draw(self):
         for row in self.board:
@@ -105,7 +107,8 @@ class StackableBoard(CommonBoard):
         super(StackableBoard, self).__init__(size, **kwargs)
 
         self.def_tile = def_tile
-        self.board = [ [[self.make_tile(x, y)] for x in range(self.width)] for y in range(self.height) ]
+        xrng, yrng    = range(self.width), range(self.height)
+        self.board    = [ [[self.make_tile(Loc(x, y))] for x in xrng] for y in yrng ]
 
     def __getitem__(self, loc):
         return self.board[loc.y][loc.x][-1]

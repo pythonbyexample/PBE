@@ -117,7 +117,7 @@ class Player(object):
 
         for ship in range1(num_ships):
             for loc in B.random_placement(ship):
-                B[loc] = Ship(*loc)
+                B[loc] = Ship(loc)
 
         self.is_manual = bool(self.num == manual_player)
 

@@ -40,8 +40,8 @@ class Dice(object):
         return sum(self.roll())
 
 
-def ujoin(iterable, sep=' ', tpl=u"%s"):
-    return sep.join( [tpl % x for x in iterable] )
+def ujoin(iterable, sep=' ', tpl='%s'):
+    return sep.join( [tpl % unicode(x) for x in iterable] )
 
 def itersplit(it, check):
     """Split iterator `it` in two lists: first that passes `check` and second that does not."""
