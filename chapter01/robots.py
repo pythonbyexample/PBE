@@ -21,16 +21,14 @@ quit_key   = 'q'
 commands   = dict(m="move", t="turn_cw", T="turn_ccw", f="fire", w="wait", r="random")
 
 
-
 class Tile(AttrToggles):
-    """Tile that may be a ship or blank space (water)."""
     robot             = False
     bullet            = False
     blank             = False
     attribute_toggles = [("hidden", "revealed")]
 
-    def __init__(self, x, y):
-        self.loc = Loc(x, y)
+    def __init__(self, loc):
+        self.loc = loc
 
     def __repr__(self):
         return self.char
@@ -45,16 +43,16 @@ class Robot(Tile):
     char       = 'r'
     robot      = True
 
-    def __init__(self, *args):
-        super(Robot, self).__init__(*args)
+    def __init__(self, loc):
+        self.loc       = loc
+        board[loc]     = self
         directions     = board.directions()
         self.direction = Loop(directions, name="dir")
         self.program   = []
 
     def go(self):
-        if not self.program:
-            self.create_program()
-        cmd = getattr(self, commands[ self.program.pop(0) ])
+        self.program = self.program or self.create_program()
+        cmd = getattr(self, self.program.pop(0))
         cmd()
 
     def turn_cw(self):
@@ -74,13 +72,13 @@ class Robot(Tile):
 
     def move(self):
         to = board.getloc(self.loc, Loc(*self.direction.dir))
-        if board.valid(to):
+        if board.valid(to) and board[to].blank:
             board.move(self, to)
         else:
             self.program = []
 
     def create_program(self):
-        self.program = [ rndchoice(commands.keys()) ] * randint(1, 6)
+        return [ rndchoice(commands.values()) ] * randint(1, 6)
 
 
 class Player(Robot):
@@ -88,9 +86,9 @@ class Player(Robot):
     player = True
 
 
-class Bullet(Tile):
+class Missile(Tile):
     char = '*'
-    bullet = True
+    missile = True
 
 
 class RBoard(Board):
@@ -102,7 +100,7 @@ class RBoard(Board):
         return rndchoice( [t.loc for t in self if t.blank] )
 
 
-class Robots(object):
+class RobotsGame(object):
     def program_expand(self, inp):
         program = []
 
@@ -111,7 +109,7 @@ class Robots(object):
             if len(cmd) == 2:
                 count = int(cmd[0])
                 cmd = cmd[-1]
-            program.extend(cmd for _ in range(count))
+            program.extend( [commands[cmd]] * count )
         return program
 
 
@@ -120,10 +118,8 @@ class Test(object):
         while True:
             print(nl*5)
             board.draw()
-            if not player.program: self.create_program()
-            player.go()
-            for robot in robots:
-                robot.go()
+            player.program = player.program or self.create_program()
+            for r in [player] + robots: r.go()
 
     def create_program(self):
         while 1:
@@ -133,20 +129,16 @@ class Test(object):
                     sys.exit()
 
                 print("rgame.program_expand(inp)", rgame.program_expand(inp))
-                player.program = rgame.program_expand(inp)
-                return
+                return rgame.program_expand(inp)
             except (IndexError, ValueError, TypeError):
                 continue
 
 
 if __name__ == "__main__":
     board  = RBoard(size, Blank)
-    robots = [Robot(*board.random_blank()) for _ in range(num_robots)]
-    for r in robots:
-        board[r.loc] = r
-    player = Player(*board.random_blank())
-    board[player.loc] = player
-    rgame  = Robots()
+    rgame  = RobotsGame()
+    player = Player(board.random_blank())
+    robots = [ Robot(board.random_blank()) for _ in range(num_robots) ]
 
     try: Test().run()
     except KeyboardInterrupt: sys.exit()
