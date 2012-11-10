@@ -21,11 +21,13 @@ class Loc(object):
 
 
 class CommonBoard(object):
+
     def __init__(self, size, tiletpl="%s"):
         if isinstance(size, int):
-            size = size, size   # square board
+            size = size, size   # handle square board
         self.width, self.height = size
         self.tiletpl = tiletpl
+        self.directions()
 
     def __iter__(self):
         return ( self[Loc(x, y)] for x in range(self.width) for y in range(self.height) )
@@ -37,10 +39,10 @@ class CommonBoard(object):
         return bool( loc.x >= 0 and loc.y >= 0 and loc.x <= self.width-1 and loc.y <= self.height-1 )
 
     def directions(self):
-        """Return the generator of 8 coordinate directions."""
-        coords = (-1,0,1)
-        dirs   = set((n, m) for n in coords for m in coords) - set( [(0,0)] )
-        return list(dirs)
+        """Create list and dict of eight directions, going from up clockwise."""
+        dirs            = [(0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)]
+        self.dir8_list  = [Loc(*d) for d in dirs]
+        self.dir8_names = dict(zip(self.dir8_list, "up ru right rd down ld left lu".split()))
 
     def neighbour_locs(self, tile):
         """Return the generator of neighbour locations of `tile`."""
