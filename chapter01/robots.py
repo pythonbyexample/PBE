@@ -7,7 +7,7 @@ from random import randint
 from time import sleep
 
 from utils import enumerate1, range1, parse_hnuminput, ujoin, flatten, AttrToggles, Loop
-from board import Board, Loc
+from board import Board, Loc, Dir
 
 size          = 10, 10
 num_robots    = 3
@@ -19,16 +19,20 @@ nl            = '\n'
 space         = ' '
 prompt        = '> '
 blank         = '.'
+robot_char    = 'r'
+player_char   = '@'
+missile_char  = '*'
 quit_key      = 'q'
+stat_sep      = " | "
 # commands      = dict(m="move", t="turn_cw", T="turn_ccw", f="fire", w="wait", r="random")
 commands      = dict(m="move", t="turn_cw", T="turn_ccw", f="fire", r="random")
 
 
 class Tile(AttrToggles):
-    robot             = False
-    blank             = False
-    missile           = False
-    health            = None
+    robot   = False
+    blank   = False
+    missile = False
+    health  = None
 
     def __init__(self, loc):
         self.loc = loc
@@ -45,7 +49,7 @@ class Blank(Tile):
 class Mobile(Tile):
     def __init__(self, loc=None, direction=None):
         self.loc       = loc
-        self.direction = direction or Loop(board.dir8_list, name="dir")
+        self.direction = direction or Loop(board.dirlist2, name="dir")
         self.program   = []
 
         if loc: board[loc] = self
@@ -70,17 +74,16 @@ class Mobile(Tile):
 
     def fire(self):
         start = board.getloc(self.loc, self.direction.dir)
+        if not start: return
 
-        if not board.valid(start):
-            return
         if board[start].blank:
-            Missile(start, self.direction).move()
+            Missile(start, self.direction).go()
         else:
             Missile().hit(board[start])
 
     def move(self):
         loc = board.getloc(self.loc, self.direction.dir)
-        if board.valid(loc) and board[loc].blank:
+        if loc and board[loc].blank:
             board.move(self, loc)
         else:
             self.program = []
@@ -88,22 +91,22 @@ class Mobile(Tile):
     def create_program(self):
         return [ rndchoice(commands.values()) ] * randint(1, 6)
 
+class Robot(Mobile):
+    char   = robot_char
+    robot  = True
+    health = 5
+
     def die(self):
         del board[self.loc]
-        (robots if self.robot else players).remove(self)
-
-
-class Robot(Mobile):
-    char = 'r'
-    robot = True
-    health = 5
+        robots.remove(self)
 
 
 class Player(Mobile):
-    char      = '@'
-    player    = True
-    health    = 5
-    statusmsg = "%s [%s]"
+    char        = player_char
+    player      = True
+    health      = 5
+    status_msg  = "%s [%s]"
+    invalid_msg = "Invalid input"
 
     def create_program(self):
         while 1:
@@ -113,38 +116,42 @@ class Player(Mobile):
 
                 return rgame.expand_program(inp)
             except (IndexError, ValueError, TypeError, KeyError):
-                print("Invalid input")
+                print(self.invalid_msg)
                 continue
 
     def status(self):
-        return self.statusmsg % (self.health, board.dir8_names[self.direction.dir])
+        # print("board.dirnames", repr(board.dirnames))
+        return self.status_msg % (self.health, board.dirnames[self.direction.dir])
+
+    def die(self):
+        del board[self.loc]
+        players.remove(self)
 
 
 class Missile(Mobile):
-    char    = '*'
+    char    = missile_char
     missile = True
     health  = 1
 
-    def move(self):
+    def go(self):
         while True:
             loc = board.getloc(self.loc, self.direction.dir)
-
-            if board.valid(loc):
-                if not board[loc].blank:
-                    self.hit(board[loc])
-                    break
-                else:
-                    board.move(self, loc)
-                    board.draw(missile_pause)
-            else:
+            if not loc:
                 self.die()
                 break
 
+            if board[loc].blank:
+                board.move(self, loc)
+                board.draw(missile_pause)
+            else:
+                self.hit(board[loc])
+                break
+
     def hit(self, target):
-        self.die()
         target.health -= 1
         if not target.health:
             target.die()
+        self.die()
 
     def die(self):
         """Note: we need to check for `loc` for a special case of a missile with loc=None."""
@@ -152,11 +159,10 @@ class Missile(Mobile):
 
 
 class RBoard(Board):
-    stat_sep = " | "
-
     def getloc(self, start, dir):
         """Return location next to `start` point in direction `dir`."""
-        return Loc(start.x + dir.x, start.y + dir.y)
+        loc = Loc(start.x + dir.x, start.y + dir.y)
+        return loc if self.valid(loc) else None
 
     def random_blank(self):
         return rndchoice( [t.loc for t in self if t.blank] )
@@ -164,7 +170,7 @@ class RBoard(Board):
     def draw(self, pause):
         print(nl*5)
         super(RBoard, self).draw()
-        print(nl, self.stat_sep.join(p.status() for p in players) )
+        print(nl, stat_sep.join(p.status() for p in players) )
         sleep(pause)
 
 
@@ -184,7 +190,7 @@ class Test(object):
     def run(self):
         while True:
             board.draw(pause_time)
-            for r in players + robots: r.go()
+            for mobile in players + robots: mobile.go()
 
 
 if __name__ == "__main__":

@@ -19,6 +19,8 @@ class Loc(object):
         """
         return Loc(self.x + x, self.y + y)
 
+# Direction (e.g. 0,1=right) works the same way but should have a different name for clarity
+Dir = Loc
 
 class CommonBoard(object):
 
@@ -40,9 +42,10 @@ class CommonBoard(object):
 
     def directions(self):
         """Create list and dict of eight directions, going from up clockwise."""
-        dirs            = [(0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)]
-        self.dir8_list  = [Loc(*d) for d in dirs]
-        self.dir8_names = dict(zip(self.dir8_list, "up ru right rd down ld left lu".split()))
+        dirs          = [(0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)]
+        self.dirlist  = [Dir(*d) for d in (dirs[0], dirs[2], dirs[4], dirs[6])]
+        self.dirlist2 = [Dir(*d) for d in dirs]
+        self.dirnames = dict(zip(self.dirlist2, "up ru right rd down ld left lu".split()))
 
     def neighbour_locs(self, tile):
         """Return the generator of neighbour locations of `tile`."""
