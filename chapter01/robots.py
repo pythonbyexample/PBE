@@ -21,21 +21,20 @@ nl            = '\n'
 space         = ' '
 prompt        = '> '
 quit_key      = 'q'
+
 chars         = dict(Player='@', Missile='*', Rock='#', Goal='!', Blank='.')
+health_dict   = dict(Player=5, Robot=5, Missile=1, Rock=10, Goal=99)
 commands      = dict(m="move", t="turn_cw", T="turn_ccw", f="fire", w="wait", r="random")
 
 
 class Tile(AttrToggles):
-    robot   = False
-    blank   = False
-    missile = False
-    rock    = False
-    goal    = False
-    health  = None
+    robot  = blank = missile = rock = goal = False
+    health = None
 
     def __init__(self, loc):
-        self.loc = loc
-        self.char = chars.get(self.__class__.__name__)
+        self.loc    = loc
+        self.char   = chars.get(self.__class__.__name__)
+        self.health = health_dict.get(self.__class__.__name__)
 
     def __repr__(self):
         return self.char
@@ -49,13 +48,14 @@ class PlacedTile(Tile):
         super(PlacedTile, self).__init__(loc)
         if loc: board[loc] = self
 
+    def die(self):
+        del board[self.loc]
+
 class Rock(PlacedTile):
-    rock   = True
-    health = 30
+    rock = True
 
 class Goal(PlacedTile):
-    goal   = True
-    health = 99
+    goal = True
 
 
 class Mobile(PlacedTile):
@@ -107,7 +107,6 @@ class Mobile(PlacedTile):
 
 class Robot(Mobile):
     robot  = True
-    health = 5
 
     def __repr__(self):
         return str(self.health)
@@ -119,7 +118,6 @@ class Robot(Mobile):
 
 class Player(Mobile):
     player      = True
-    health      = 5
     status_msg  = "%s [%s]"
     invalid_msg = "Invalid input"
 
@@ -152,7 +150,6 @@ class Player(Mobile):
 
 class Missile(Mobile):
     missile = True
-    health  = 1
 
     def go(self):
         while True:
