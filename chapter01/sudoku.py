@@ -17,7 +17,7 @@ space      = ' '
 prompt     = '> '
 quit_key   = 'q'
 tiletpl    = "%2s"
-divider    = '-' * (27 + 6)
+divider    = '-' * (27 + 9)
 blank      = '.'
 
 # using format produced by QQwing program; sample puzzle split into rows for checking
@@ -31,26 +31,21 @@ class SudokuBoard(Board):
         for loc, val in zip(self.locations(), puzzle):
             self[loc] = val if val==blank else int(val)
 
-        self.regions, self.lines = [], []
+        self.lines   = []
+        offsets      = (0, 3, 6)
+        self.regions = [self.make_region(xo, yo) for xo in offsets for yo in offsets]
 
-        for xo in range(3):
-            for yo in range(3):
-                self.regions.append(self.make_region(xo, yo))
-
-        def add(L): return [(l.x+1, l.y+1) for l in L]
-        for r in self.regions: print(add(r[:3]), space, add(r[3:6]), space, add(r[6:9]), nl*2)
+        # def add(L): return [(l.x+1, l.y+1) for l in L]
+        # for r in self.regions: print(add(r[:3]), space, add(r[3:6]), space, add(r[6:9]), nl*2)
 
         for n in range(9):
             self.lines.append( [Loc(x, n) for x in range(9)] )
             self.lines.append( [Loc(n, y) for y in range(9)] )
 
-    def make_regline(self, x, yo):
-        """Make one region line at y offset `yo`."""
-        return [ Loc(x, y) for y in range(3*yo, 3*yo + 3) ]
-
     def make_region(self, xo, yo):
         """Make one region at x offset `xo` and y offset `yo`."""
-        return [ self.make_regline(x, yo) for x in range(3*xo, 3*xo + 3) ]
+        L = (0, 1, 2)
+        return [ Loc(xo + x, yo + y) for x in L for y in L ]
 
     def draw(self):
         print(nl*5)
