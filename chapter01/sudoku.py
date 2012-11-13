@@ -5,9 +5,8 @@ import sys
 from random import choice as rndchoice
 from random import randint
 from time import sleep
-from string import digits
 
-from utils import enumerate1, range1, ujoin
+from utils import enumerate1, range1, ujoin, parse_hnuminput
 from board import Board, Loc
 
 size       = 9
@@ -18,7 +17,7 @@ space      = ' '
 prompt     = '> '
 quit_key   = 'q'
 tiletpl    = "%2s"
-divider    = '-' * (27 + 3)
+divider    = '-' * (27 + 6)
 blank      = '.'
 
 # using format produced by QQwing program; sample puzzle split into rows for checking
@@ -30,29 +29,40 @@ class SudokuBoard(Board):
     def __init__(self, size, def_tile, puzzle):
         super(SudokuBoard, self).__init__(size, def_tile)
         for loc, val in zip(self.locations(), puzzle):
-            self[loc] = val
+            self[loc] = val if val==blank else int(val)
 
-        self.regions = []
+        self.regions, self.lines = [], []
 
-        for n in range(3):
-            for m in range(3):
-                region = []
-                for x in range(3 + 3*n):
-                    region.extend( [Loc(x, y) for y in range(3 + 3*m)] )
-                self.regions.append(region)
+        for xo in range(3):
+            for yo in range(3):
+                self.regions.append(self.make_region(xo, yo))
 
-        self.lines = []
+        def add(L): return [(l.x+1, l.y+1) for l in L]
+        for r in self.regions: print(add(r[:3]), space, add(r[3:6]), space, add(r[6:9]), nl*2)
 
         for n in range(9):
             self.lines.append( [Loc(x, n) for x in range(9)] )
             self.lines.append( [Loc(n, y) for y in range(9)] )
 
+    def make_regline(self, x, yo):
+        """Make one region line at y offset `yo`."""
+        return [ Loc(x, y) for y in range(3*yo, 3*yo + 3) ]
+
+    def make_region(self, xo, yo):
+        """Make one region at x offset `xo` and y offset `yo`."""
+        return [ self.make_regline(x, yo) for x in range(3*xo, 3*xo + 3) ]
+
     def draw(self):
         print(nl*5)
-        print(space*2, ujoin( range1(self.width), space, tiletpl ), nl)
+        def ljoin(L): return ujoin(L, space, tiletpl)
+
+        print( space*4, ljoin((1,2,3)), space, ljoin((4,5,6)), space, ljoin((7,8,9)), nl )
 
         for n, row in enumerate1(self.board):
-            print(tiletpl % n, ujoin(row, space, tiletpl), nl)
+            print(tiletpl % n, space,
+                  ljoin(row[:3]), space, ljoin(row[3:6]), space, ljoin(row[6:9]),
+                  nl)
+            if n in (3,6): print()
         print(divider)
 
 
@@ -61,7 +71,7 @@ class SudokuGame(object):
 
     def check(self, loc, val):
         for reg_line in board.lines + board.regions:
-            if val in (board[loc] for loc in reg_line):
+            if loc in reg_line and val in (board[loc] for loc in reg_line):
                 return False
         return True
 
@@ -84,7 +94,8 @@ class Test(object):
             board.draw()
             x, y, val = self.get_move()
             loc = Loc(x, y)
-            if board.valid(loc) and board[loc]==blank:
+
+            if board.valid(loc) and board[loc] == blank:
                 if sudoku.check(loc, val):
                     board[loc] = val
                     sudoku.check_end()
@@ -96,16 +107,16 @@ class Test(object):
             try:
                 inp = raw_input(prompt).strip()
                 if inp == quit_key: sys.exit()
-                # use hnuminput
-                return int(inp[0]), int(inp[1]), inp[2]
+                return parse_hnuminput(inp[:2]) + [int(inp[2])]
+
             except (IndexError, ValueError, TypeError, KeyError):
                 print(self.invalid_inp)
                 continue
 
 
 if __name__ == "__main__":
-    board   = SudokuBoard( size, blank, rndchoice(puzzles) )
-    sudoku  = SudokuGame()
+    board  = SudokuBoard(size, blank, rndchoice(puzzles))
+    sudoku = SudokuGame()
 
     try: Test().run()
     except KeyboardInterrupt: sys.exit()
