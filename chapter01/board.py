@@ -32,10 +32,10 @@ class CommonBoard(object):
         self.directions()
 
     def __iter__(self):
-        return ( self[Loc(x, y)] for x in range(self.width) for y in range(self.height) )
+        return ( self[Loc(x, y)] for y in range(self.height) for x in range(self.width) )
 
     def locations(self):
-        return (Loc(x, y) for x in range(self.width) for y in range(self.height))
+        return (Loc(x, y) for y in range(self.height) for x in range(self.width))
 
     def valid(self, loc):
         return bool( loc.x >= 0 and loc.y >= 0 and loc.x <= self.width-1 and loc.y <= self.height-1 )
