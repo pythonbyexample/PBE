@@ -12,52 +12,65 @@ from board import Board, Loc, Dir
 size          = 10, 10
 num_robots    = 3
 num_players   = 1
+num_rocks     = 5
 pause_time    = 0.2
 missile_pause = 0.05
+max_turns     = 20
 
 nl            = '\n'
 space         = ' '
 prompt        = '> '
-blank         = '.'
-robot_char    = 'r'
-player_char   = '@'
-missile_char  = '*'
 quit_key      = 'q'
-stat_sep      = " | "
-# commands      = dict(m="move", t="turn_cw", T="turn_ccw", f="fire", w="wait", r="random")
-commands      = dict(m="move", t="turn_cw", T="turn_ccw", f="fire", r="random")
+chars         = dict(Player='@', Missile='*', Rock='#', Goal='!', Blank='.')
+commands      = dict(m="move", t="turn_cw", T="turn_ccw", f="fire", w="wait", r="random")
 
 
 class Tile(AttrToggles):
     robot   = False
     blank   = False
     missile = False
+    rock    = False
+    goal    = False
     health  = None
 
     def __init__(self, loc):
         self.loc = loc
+        self.char = chars.get(self.__class__.__name__)
 
     def __repr__(self):
-        return str(self.health) if self.robot else self.char
+        return self.char
 
 
 class Blank(Tile):
-    char  = blank
     blank = True
 
+class PlacedTile(Tile):
+    def __init__(self, loc):
+        super(PlacedTile, self).__init__(loc)
+        if loc: board[loc] = self
 
-class Mobile(Tile):
+class Rock(PlacedTile):
+    rock   = True
+    health = 30
+
+class Goal(PlacedTile):
+    goal   = True
+    health = 99
+
+
+class Mobile(PlacedTile):
+    turn = 1
+
     def __init__(self, loc=None, direction=None):
-        self.loc       = loc
+        super(Mobile, self).__init__(loc)
         self.direction = direction or Loop(board.dirlist2, name="dir")
         self.program   = []
-
-        if loc: board[loc] = self
 
     def go(self):
         self.program = self.program or self.create_program()
         cmd = getattr(self, self.program.pop(0))
         cmd()
+        self.turn += 1
 
     def turn_cw(self):
         self.direction.next()
@@ -91,10 +104,13 @@ class Mobile(Tile):
     def create_program(self):
         return [ rndchoice(commands.values()) ] * randint(1, 6)
 
+
 class Robot(Mobile):
-    char   = robot_char
     robot  = True
     health = 5
+
+    def __repr__(self):
+        return str(self.health)
 
     def die(self):
         del board[self.loc]
@@ -102,11 +118,18 @@ class Robot(Mobile):
 
 
 class Player(Mobile):
-    char        = player_char
     player      = True
     health      = 5
     status_msg  = "%s [%s]"
     invalid_msg = "Invalid input"
+
+    def move(self):
+        loc = board.getloc(self.loc, self.direction.dir)
+        if loc and board[loc].goal:
+            rgame.game_won()
+        super(Player, self).move()
+        if self.turn >= max_turns:
+            rgame.game_lost()
 
     def create_program(self):
         while 1:
@@ -120,7 +143,6 @@ class Player(Mobile):
                 continue
 
     def status(self):
-        # print("board.dirnames", repr(board.dirnames))
         return self.status_msg % (self.health, board.dirnames[self.direction.dir])
 
     def die(self):
@@ -129,7 +151,6 @@ class Player(Mobile):
 
 
 class Missile(Mobile):
-    char    = missile_char
     missile = True
     health  = 1
 
@@ -159,6 +180,8 @@ class Missile(Mobile):
 
 
 class RBoard(Board):
+    stat_sep = " | "
+
     def getloc(self, start, dir):
         """Return location next to `start` point in direction `dir`."""
         loc = Loc(start.x + dir.x, start.y + dir.y)
@@ -170,11 +193,14 @@ class RBoard(Board):
     def draw(self, pause):
         print(nl*5)
         super(RBoard, self).draw()
-        print(nl, stat_sep.join(p.status() for p in players) )
+        print(nl, self.stat_sep.join(p.status() for p in players) )
         sleep(pause)
 
 
 class RobotsGame(object):
+    winmsg  = "Victory! You've reached the goal!"
+    losemsg = "You failed to reach the goal in %d turns.."
+
     def expand_cmd(self, cmd):
         count = 1
         if len(cmd) == 2:
@@ -184,6 +210,14 @@ class RobotsGame(object):
 
     def expand_program(self, inp):
         return flatten( self.expand_cmd(cmd) for cmd in inp.split() ) if inp else ["random"]
+
+    def game_won(self):
+        print(nl, self.winmsg)
+        sys.exit()
+
+    def game_lost(self):
+        print(nl, self.losemsg % max_turns)
+        sys.exit()
 
 
 class Test(object):
@@ -196,8 +230,12 @@ class Test(object):
 if __name__ == "__main__":
     board   = RBoard(size, Blank)
     rgame   = RobotsGame()
-    players = [ Player(board.random_blank()) for _ in range(num_players) ]
-    robots  = [ Robot(board.random_blank()) for _ in range(num_robots) ]
+
+    randloc = board.random_blank
+    players = [ Player(randloc()) for _ in range(num_players) ]
+    robots  = [ Robot(randloc()) for _ in range(num_robots) ]
+    rocks   = [ Rock(randloc()) for _ in range(num_rocks) ]
+    Goal(randloc())
 
     try: Test().run()
     except KeyboardInterrupt: sys.exit()
