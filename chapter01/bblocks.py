@@ -6,12 +6,13 @@ from random import choice as rndchoice
 from random import randint
 from time import sleep
 
-from utils import enumerate1, range1, parse_hnuminput, ujoin, flatten, AttrToggles, Loop
+from utils import enumerate1, range1, parse_hnuminput, ujoin, Loop
 from board import Board, Loc, Dir
 
-size           = 9
-players        = ['g', 'b']
-manual_players = ['g']
+size           = 4
+players        = ['O', 'X']
+manual_players = ['O']
+manual_players = []
 
 pause_time     = 0.2
 nl             = '\n'
@@ -19,19 +20,19 @@ space          = ' '
 prompt         = '> '
 quit_key       = 'q'
 divchar        = '-'
-tiletpl        = "%3s"
+tiletpl        = "%5s"
 
 
-class Tile(AttrToggles):
+class Tile(object):
     num    = 1
     maxnum = 1
-    colour = None
+    player = None
 
     def __init__(self, loc):
         self.loc = loc
 
     def __repr__(self):
-        return "%s%s" % (self.colour or space, self.num)
+        return "%s %s" % (self.player or space, self.num)
 
     def add(self, player):
         if self._add(player):
@@ -39,8 +40,8 @@ class Tile(AttrToggles):
                 tile.add(player)
             board.draw(pause_time)
 
-    def _add(self, colour):
-        self.colour = colour
+    def _add(self, player):
+        self.player = player
         self.num.next()
         return bool(self.num == 1)
 
@@ -50,38 +51,34 @@ class BlocksBoard(Board):
         super(BlocksBoard, self).__init__(size, def_tile)
         for tile in self:
             tile.maxnum = len( [self.valid(n) == True for n in self.neighbour_cross_locs(tile.loc)] )
-            tile.num    = Loop(range1(tile.maxnum))
+            tile.num    = Loop(range1(tile.maxnum), name='n')
 
-    def random_tile(self, colour):
-        return rndchoice( [t for t in self if self.valid_move(colour, t.loc)] )
+    def random_tile(self, player):
+        tiles = [t for t in self if self.valid_move(player, t.loc)]
+        tiles = sorted([(t.maxnum - t.num.n, t) for t in tiles])
+        if randint(0,1): return tiles[0][1]
+        else: return rndchoice(tiles)[1]
 
     def valid_move(self, player, loc):
-        return bool( self.valid(loc) and self[loc].colour in (None, player) )
+        return bool( self.valid(loc) and self[loc].player in (None, player) )
 
     def draw(self, pause):
-        print(space*3, ujoin( range1(self.width), space, tiletpl ), nl)
+        print(nl*5)
+        print(space*5, ujoin( range1(self.width), space, tiletpl ), nl)
 
         for n, row in enumerate1(self.board):
-            print(tiletpl % n, ujoin(row, space, tiletpl), nl)
-        print(divchar * (self.width*4 + 5))
+            print(tiletpl % n, ujoin(row, space, tiletpl), nl*2)
+        print(divchar * (self.width*6 + 5))
         sleep(pause)
 
 
 class BlockyBlocks(object):
     winmsg  = "%s has won!"
 
-    def expand_cmd(self, cmd):
-        count = 1
-        if len(cmd) == 2:
-            count = int(cmd[0])
-            cmd = cmd[-1]
-        return [commands[cmd]] * count
-
-    def expand_program(self, inp):
-        return flatten( self.expand_cmd(cmd) for cmd in inp.split() ) if inp else ["random"]
-
     def check_end(self, player):
-        if all(t.colour==player for t in self):
+        print([t.player==player for t in board])
+
+        if all(t.player==player for t in board):
             self.game_won(player)
 
     def game_won(self, player):
@@ -99,6 +96,7 @@ class Test(object):
                 board.draw(pause_time)
                 tile = self.get_move(p) if p in manual_players else board.random_tile(p)
                 tile.add(p)
+                bblocks.check_end(p)
 
     def get_move(self, player):
         while 1:
