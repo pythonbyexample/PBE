@@ -6,7 +6,7 @@ from random import choice as rndchoice
 from random import randint
 from time import sleep
 
-from utils import enumerate1, range1, parse_hnuminput, ujoin, flatten, AttrToggles, Loop
+from utils import enumerate1, range1, parse_hnuminput, ujoin, flatten, Loop
 from board import Board, Loc, Dir
 
 size          = 10, 10
@@ -27,7 +27,7 @@ health_dict   = dict(Player=5, Robot=5, Missile=1, Rock=10, Goal=99)
 commands      = dict(m="move", t="turn_cw", T="turn_ccw", f="fire", w="wait", r="random")
 
 
-class Tile(AttrToggles):
+class Tile(object):
     robot  = blank = missile = rock = goal = False
     health = None
 

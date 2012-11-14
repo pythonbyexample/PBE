@@ -3,6 +3,7 @@
 from copy import copy
 from random import randint
 
+sentinel = object()
 
 class Loop(object):
     """ Loop over a list of items in forward / backward direction, keeping track of current item,
@@ -19,12 +20,21 @@ class Loop(object):
         self.index = self.index+1 if self.index < self.lastind else 0
         self.update_attr()
 
-    def update_attr(self):
-        setattr(self, self.name, self.items[self.index])
-
     def prev(self):
         self.index = self.index-1 if self.index > 0 else self.lastind
         self.update_attr()
+
+    def update_attr(self):
+        setattr(self, self.name, self.items[self.index])
+
+    def __eq__(self, value):
+        return bool(self.items[self.index] == value)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __repr__(self):
+        return repr(self.items[self.index])
 
 
 class Dice(object):
