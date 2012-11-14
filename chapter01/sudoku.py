@@ -20,8 +20,11 @@ tiletpl    = "%2s"
 divider    = '-' * (27 + 9)
 blank      = '.'
 
-# using format produced by QQwing program; sample puzzle split into rows for checking
-# ".13.....2 2.....48. ...7...19 ...9..8.. 7......2. ...3..... ..263.9.. 4.9.7.6.. ..149...8"
+rng3       = range(3)
+rng9       = range(9)
+offsets    = (0, 3, 6)
+
+# in format produced by QQwing program
 puzzles    = [".13.....22.....48....7...19...9..8..7......2....3.......263.9..4.9.7.6....149...8"]
 
 
@@ -31,21 +34,16 @@ class SudokuBoard(Board):
         for loc, val in zip(self.locations(), puzzle):
             self[loc] = val if val==blank else int(val)
 
-        self.lines   = []
-        offsets      = (0, 3, 6)
         self.regions = [self.make_region(xo, yo) for xo in offsets for yo in offsets]
 
-        # def add(L): return [(l.x+1, l.y+1) for l in L]
-        # for r in self.regions: print(add(r[:3]), space, add(r[3:6]), space, add(r[6:9]), nl*2)
-
-        for n in range(9):
-            self.lines.append( [Loc(x, n) for x in range(9)] )
-            self.lines.append( [Loc(n, y) for y in range(9)] )
+        lines = []
+        for n in rng9:
+            lines.extend(( [Loc(x, n) for x in rng9], [Loc(n, y) for y in rng9] ))
+        self.lines = lines
 
     def make_region(self, xo, yo):
         """Make one region at x offset `xo` and y offset `yo`."""
-        L = (0, 1, 2)
-        return [ Loc(xo + x, yo + y) for x in L for y in L ]
+        return [ Loc(xo + x, yo + y) for x in rng3 for y in rng3 ]
 
     def draw(self):
         print(nl*5)
@@ -61,7 +59,7 @@ class SudokuBoard(Board):
         print(divider)
 
 
-class SudokuGame(object):
+class Sudoku(object):
     winmsg  = "Solved!"
 
     def check(self, loc, val):
@@ -87,31 +85,32 @@ class Test(object):
     def run(self):
         while True:
             board.draw()
-            x, y, val = self.get_move()
-            loc = Loc(x, y)
-
-            if board.valid(loc) and board[loc] == blank:
-                if sudoku.check(loc, val):
-                    board[loc] = val
-                    sudoku.check_end()
-                else:
-                    print(self.invalid_move)
+            loc, val   = self.get_move()
+            board[loc] = val
+            sudoku.check_end()
 
     def get_move(self):
         while 1:
             try:
                 inp = raw_input(prompt).strip()
                 if inp == quit_key: sys.exit()
-                return parse_hnuminput(inp[:2]) + [int(inp[2])]
 
-            except (IndexError, ValueError, TypeError, KeyError):
+                loc = Loc( *parse_hnuminput(inp[:2]) )
+                val = int(inp[2])
+
+                if board.valid(loc) and board[loc] == blank:
+                    if sudoku.check(loc, val):
+                        board[loc] = val
+                        return loc, val
+                print(self.invalid_move)
+            except (IndexError, ValueError, TypeError, KeyError), e:
                 print(self.invalid_inp)
                 continue
 
 
 if __name__ == "__main__":
     board  = SudokuBoard(size, blank, rndchoice(puzzles))
-    sudoku = SudokuGame()
+    sudoku = Sudoku()
 
     try: Test().run()
     except KeyboardInterrupt: sys.exit()

@@ -15,6 +15,8 @@ manual_players = ['O']
 manual_players = []
 
 pause_time     = 0.2
+check_moves    = 15
+
 nl             = '\n'
 space          = ' '
 prompt         = '> '
@@ -35,10 +37,16 @@ class Tile(object):
         return "%s %s" % (self.player or space, self.num)
 
     def add(self, player):
+        """ Increment tile number; if number wraps, increment neighbour tiles.
+            `bblocks.counter` is used to avoid infinite recursion loops.
+        """
+        bblocks.counter.next()
+        if bblocks.counter == check_moves: bblocks.check_end(player)
+
         if self._add(player):
             for tile in board.cross_neighbours(self):
                 tile.add(player)
-            board.draw(pause_time)
+            board.draw()
 
     def _add(self, player):
         self.player = player
@@ -53,31 +61,34 @@ class BlocksBoard(Board):
             tile.maxnum = len( [self.valid(n) == True for n in self.neighbour_cross_locs(tile.loc)] )
             tile.num    = Loop(range1(tile.maxnum), name='n')
 
-    def random_tile(self, player):
+    def random_move(self, player):
+        """If a 50% roll is made, return the move closest to completing a tile; otherwise a random move."""
         tiles = [t for t in self if self.valid_move(player, t.loc)]
-        tiles = sorted([(t.maxnum - t.num.n, t) for t in tiles])
-        if randint(0,1): return tiles[0][1]
-        else: return rndchoice(tiles)[1]
+
+        def to_max(t): return t.maxnum - t.num
+        tiles.sort(key=to_max)
+
+        if randint(0,1) : return tiles[0]
+        else            : return rndchoice(tiles)
 
     def valid_move(self, player, loc):
         return bool( self.valid(loc) and self[loc].player in (None, player) )
 
-    def draw(self, pause):
+    def draw(self):
         print(nl*5)
         print(space*5, ujoin( range1(self.width), space, tiletpl ), nl)
 
         for n, row in enumerate1(self.board):
             print(tiletpl % n, ujoin(row, space, tiletpl), nl*2)
         print(divchar * (self.width*6 + 5))
-        sleep(pause)
+        sleep(pause_time)
 
 
 class BlockyBlocks(object):
     winmsg  = "%s has won!"
+    counter = Loop(range1(check_moves))
 
     def check_end(self, player):
-        print([t.player==player for t in board])
-
         if all(t.player==player for t in board):
             self.game_won(player)
 
@@ -93,8 +104,8 @@ class Test(object):
     def run(self):
         while True:
             for p in players:
-                board.draw(pause_time)
-                tile = self.get_move(p) if p in manual_players else board.random_tile(p)
+                board.draw()
+                tile = self.get_move(p) if p in manual_players else board.random_move(p)
                 tile.add(p)
                 bblocks.check_end(p)
 

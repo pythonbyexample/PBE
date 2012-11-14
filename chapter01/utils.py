@@ -25,16 +25,33 @@ class Loop(object):
         self.update_attr()
 
     def update_attr(self):
+        self.item = self.items[self.index]
         setattr(self, self.name, self.items[self.index])
 
     def __eq__(self, value):
-        return bool(self.items[self.index] == value)
+        return bool(self.item == value)
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
     def __repr__(self):
-        return repr(self.items[self.index])
+        return repr(self.item)
+
+    def __bool__(self):
+        return bool(self.item)
+
+    def __add__(self, other):
+        return self.item + other
+
+    def __sub__(self, other):
+        return self.item - other
+
+    def __radd__(self, other):
+        return self.item + other
+
+    def __rsub__(self, other):
+        return other - self.item
+
 
 
 class Dice(object):
@@ -83,7 +100,7 @@ def timefmt(sec):
 
 def parse_hnuminput(iterable):
     """Convert a list of 'human input' 1-indexed string values to 0-indexed integers."""
-    return (int(val)-1 for val in iterable)
+    return [int(val)-1 for val in iterable]
 
 
 class AttrToggles(object):

@@ -19,6 +19,12 @@ class Loc(object):
         """
         return Loc(self.x + x, self.y + y)
 
+    def __eq__(self, other):
+        return self.loc == getattr(other, "loc", None)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
 # Direction (e.g. 0,1=right) works the same way but should have a different name for clarity
 Dir = Loc
 
