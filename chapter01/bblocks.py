@@ -11,7 +11,7 @@ from board import Board, Loc, Dir
 
 size           = 4
 players        = ['O', 'X']
-manual_players = ['O']
+# manual_players = ['O']
 manual_players = []
 
 pause_time     = 0.2

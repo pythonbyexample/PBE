@@ -28,7 +28,7 @@ class Loc(object):
 # Direction (e.g. 0,1=right) works the same way but should have a different name for clarity
 Dir = Loc
 
-class CommonBoard(object):
+class BaseBoard(object):
 
     def __init__(self, size, tiletpl="%s"):
         if isinstance(size, int):
@@ -91,7 +91,7 @@ class CommonBoard(object):
         item.loc     = newloc
 
 
-class Board(CommonBoard):
+class Board(BaseBoard):
     def __init__(self, size, def_tile, **kwargs):
         super(Board, self).__init__(size, **kwargs)
 
@@ -113,7 +113,7 @@ class Board(CommonBoard):
             print(ujoin(row, '', tpl=self.tiletpl))
 
 
-class StackableBoard(CommonBoard):
+class StackableBoard(BaseBoard):
     def __init__(self, size, def_tile, **kwargs):
         super(StackableBoard, self).__init__(size, **kwargs)
 
