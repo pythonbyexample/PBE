@@ -90,6 +90,11 @@ class BaseBoard(object):
         self[loc]    = self.make_tile(loc)
         item.loc     = newloc
 
+    def nextloc(self, loc, dir):
+        """Return location next to `start` point in direction `dir`."""
+        loc = Loc(loc.x + dir.x, loc.y + dir.y)
+        return loc if self.valid(loc) else None
+
 
 class Board(BaseBoard):
     def __init__(self, size, def_tile, **kwargs):
