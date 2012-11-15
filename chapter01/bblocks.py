@@ -21,7 +21,6 @@ nl             = '\n'
 space          = ' '
 prompt         = '> '
 quit_key       = 'q'
-divchar        = '-'
 tiletpl        = "%5s"
 
 
@@ -59,7 +58,7 @@ class BlocksBoard(Board):
         super(BlocksBoard, self).__init__(size, def_tile)
         for tile in self:
             tile.maxnum = len( [self.valid(n) == True for n in self.neighbour_cross_locs(tile.loc)] )
-            tile.num    = Loop(range1(tile.maxnum), name='n')
+            tile.num    = Loop(range1(tile.maxnum))
 
     def random_move(self, player):
         """If a 50% roll is made, return the move closest to completing a tile; otherwise a random move."""
@@ -80,7 +79,6 @@ class BlocksBoard(Board):
 
         for n, row in enumerate1(self.board):
             print(tiletpl % n, ujoin(row, space, tiletpl), nl*2)
-        print(divchar * (self.width*6 + 5))
         sleep(pause_time)
 
 

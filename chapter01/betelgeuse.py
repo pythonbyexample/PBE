@@ -7,7 +7,7 @@ from random import randint, random
 from time import sleep
 import math
 
-from utils import range1, parse_hnuminput, itersplit
+from utils import range1, parse_hnuminput, itersplit, ujoin
 from board import Board, Loc
 
 size           = 4
@@ -15,12 +15,13 @@ player_chars   = ['O', 'X']
 manual_players = ['O']
 manual_players = []
 
-pause_time     = 0.2
+pause_time     = 0.5
 num_stars      = 6
 star_turns     = 5
 star_defence   = 0.4
 send_chance    = 0.4
 send_cutoff    = 25
+show_ships     = True
 
 nl             = '\n'
 space          = ' '
@@ -28,7 +29,7 @@ blank          = '.'
 prompt         = '> '
 quit_key       = 'q'
 divchar        = '-'
-tiletpl        = "%5s"
+tiletpl        = "%14s"
 
 
 class Tile(object):
@@ -57,7 +58,9 @@ class Star(Tile):
             self.ships += self.production
 
     def __repr__(self):
-        return "%s %s :%d" % (self.owner or space, self.num, self.ships)
+        display_ships = show_ships or (self.owner == betelgeuse.display_ships_player)
+        ships = ":%s" % self.ships if display_ships else ''
+        return "%s %s %s" % (self.owner or space, self.num, ships)
 
 
 class BetelgeuseBoard(Board):
@@ -69,12 +72,18 @@ class BetelgeuseBoard(Board):
     def random_blank(self):
         return rndchoice( [t.loc for t in self if t.blank] )
 
+    def draw(self):
+        print(nl*5)
+        for row in self.board:
+            print(ujoin(row, '', tpl=self.tiletpl), nl*2)
+
+
 
 class Fleet(object):
     conquer_msg = "%s conquers star system #%d"
 
     def __init__(self, player, src, target, ships):
-        self.owner  = player
+        self.owner   = player
         self.src     = src
         self.target  = target
         self.ships   = ships
@@ -102,6 +111,10 @@ class Fleet(object):
         self.target.ships += self.ships
         self.die()
 
+    def __repr__(self):
+        eta = self.arrival - betelgeuse.turn
+        return "(%s %s %s s:%d, a:%d)" % (self.owner, self.src.num, self.target.num, self.ships, eta)
+
     def die(self):
         fleets.remove(self)
 
@@ -111,6 +124,9 @@ class Player(object):
         self.char   = char
         self.manual = bool(char in manual_players)
 
+    def __repr__(self):
+        return self.char
+
     def stars(self):
         return [s for s in stars if s.owner==self]
 
@@ -119,7 +135,6 @@ class Player(object):
 
     def make_random_moves(self):
         moves = [self.random_move(s) for s in self.stars()]
-        return [m for m in moves if m]
         for cmd in moves:
             if cmd: self.send(*cmd)
 
@@ -132,7 +147,7 @@ class Player(object):
             targets.sort(key=dist)
 
             if not targets: return None
-            ships = randint(star.ships/2, star.ships)
+            ships = randint(star.ships // 2, star.ships)
             return star, targets[0], ships
 
     def __repr__(self):
@@ -140,12 +155,13 @@ class Player(object):
 
 
 class Betelgeuse(object):
-    winmsg = "%s has won!"
-    turn   = 0
+    winmsg               = "%s has won!"
+    turn                 = 0
+    display_ships_player = 0
 
     def check_end(self, player):
         if len( set(x.owner for x in stars + fleets) ) == 1:
-            self.game_won(stars[0].player)
+            self.game_won(stars[0].owner)
 
     def game_won(self, player):
         print(nl, self.winmsg % player)
@@ -155,11 +171,15 @@ class Betelgeuse(object):
 class Test(object):
     invalid_inp  = "Invalid input"
     invalid_move = "Invalid move... try again"
+    stat_div     = " | "
 
     def run(self):
         while True:
             for p in players:
+                betelgeuse.display_ships_player = p if p.manual else 0
                 board.draw()
+                print(ujoin( (f for f in fleets), self.stat_div ))
+                print(ujoin( ("%s:%d" % (s, s.ships) for s in stars), self.stat_div ))
 
                 if p.manual : self.make_moves()
                 else        : p.make_random_moves()
@@ -168,8 +188,9 @@ class Test(object):
                 for fleet in fleets: fleet.move()
 
                 betelgeuse.check_end(p)
-                betelgeuse.turn += 1
                 sleep(pause_time)
+
+            betelgeuse.turn += 1
 
     def make_moves(self, player):
         while True:
