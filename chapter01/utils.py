@@ -53,6 +53,34 @@ class Loop(object):
         return other - self.item
 
 
+class Toggler(Loop):
+    """UNUSED"""
+    def __init__(self, items, name="item", initial=sentinel):
+        self.items   = items
+        self.index   = 0 if initial==sentinel else items.index(initial)
+        self.name    = name
+        self.lastind = len(self.items) - 1
+        self.update_attr()
+
+    def toggle(self):
+        self.next()
+
+
+class AttrToggles(object):
+    """Inverse-toggle two boolean attributes when one of a pair is toggled; `attribute_toggles` is a list of tuples."""
+    attribute_toggles = []
+
+    def __setattr__(self, attr, val):
+        object.__setattr__(self, attr, val)
+        toggles = self.attribute_toggles
+
+        if attr in flatten(toggles):
+            for attrs in toggles:
+                if attr in attrs:
+                    attrs = set(attrs) - set([attr])
+                    for attr in attrs:
+                        object.__setattr__(self, attr, not val)
+
 
 class Dice(object):
     """Roll multiple dice."""
@@ -102,18 +130,5 @@ def parse_hnuminput(iterable):
     """Convert a list of 'human input' 1-indexed string values to 0-indexed integers."""
     return [int(val)-1 for val in iterable]
 
-
-class AttrToggles(object):
-    """Inverse-toggle two boolean attributes when one of a pair is toggled; `attribute_toggles` is a list of tuples."""
-    attribute_toggles = []
-
-    def __setattr__(self, attr, val):
-        object.__setattr__(self, attr, val)
-        toggles = self.attribute_toggles
-
-        if attr in flatten(toggles):
-            for attrs in toggles:
-                if attr in attrs:
-                    attrs = set(attrs) - set([attr])
-                    for attr in attrs:
-                        object.__setattr__(self, attr, not val)
+def other(iterable, value):
+    return iterable[0] if value==iterable[1] else iterable[1]

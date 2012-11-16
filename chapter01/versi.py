@@ -6,21 +6,22 @@ from random import choice as rndchoice
 from random import randint
 from time import sleep
 
-from utils import enumerate1, range1, parse_hnuminput, ujoin, Loop
+from utils import enumerate1, range1, parse_hnuminput, ujoin, Loop, other
 from board import Board, Loc, Dir
 
-size          = 8
-player_chars  = 'XO'
-human_players = 'X'
+size         = 8
+player_chars = 'XO'
+ai_players   = 'O'
 
-pause_time    = 0.2
+pause_time   = 0.2
 
-nl            = '\n'
-space         = ' '
-blankchar     = '.'
-prompt        = '> '
-quit_key      = 'q'
-tiletpl       = "%5s"
+nl           = '\n'
+space        = ' '
+blankchar    = '.'
+prompt       = '> '
+quit_key     = 'q'
+tiletpl      = "%5s"
+first        = next
 
 
 class CompareChar(object):
@@ -31,7 +32,7 @@ class CompareChar(object):
         return not self.__eq__(other)
 
 
-class Blank(CompareChar):
+class Tile(CompareChar):
     blank = True
     char  = blankchar
 
@@ -42,30 +43,26 @@ class Blank(CompareChar):
         return self.char
 
 
-class Piece(Blank):
+class Piece(Tile):
+    blank = False
+
     def __init__(self, loc=None, char=None):
-        self.loc = loc
-        if char:
-            self.char = char
-            self.blank = False
+        self.loc  = loc
+        self.char = char
         if loc: board[loc] = self
 
     def flip(self):
-        pc = player_chars
-        self.char = pc[0] if self.char==pc[1] else pc[1]
+        self.char = other(player_chars, self.char)
 
     def is_opposite_of(self, other):
-        return bool( self.char and other.char and self.char != other.char)
+        return bool(not other.blank and self.char != other.char)
 
 
 class VersiBoard(Board):
-    def __init__(self, size, def_tile):
-        super(VersiBoard, self).__init__(size, def_tile)
-
     def get_valid_moves(self, player):
-        return [loc for loc in self if self.is_valid_move(player, loc)]
+        return [loc for loc in self.locations() if self.valid_move(player, loc)]
 
-    def is_valid_move(self, player, loc):
+    def valid_move(self, player, loc):
         return bool(self.get_captured(player, loc))
 
     def get_captured(self, player, start_loc):
@@ -90,12 +87,6 @@ class VersiBoard(Board):
             captured.extend(templist)
         return captured
 
-    def get_scores(self, players):
-        """Return a tuple of (player1, score), (player2, score)."""
-        p = players
-        return (sum( tile == p[0] for tile in self ), p[0]), \
-               (sum( tile == p[1] for tile in self ), p[1])
-
     def is_corner(self, loc):
         return loc.x in (0, self.maxx) and loc.y in (0, self.maxy)
 
@@ -110,35 +101,29 @@ class VersiBoard(Board):
 
 class Player(CompareChar):
     def __init__(self, char):
-        self.char  = char
-        self.human = char in human_players
+        self.char = char
+        self.ai   = char in ai_players
+
+    def score(self):
+        return sum(tile==self for tile in board)
 
     def make_move(self, loc):
         """Place new piece at `loc`, return list of captured locations."""
         captured = board.get_captured(self, loc)
         Piece(loc, self.char)
         for loc in captured: board[loc].flip()
-        return captured
 
     def get_random_move(self):
-        """Return Location of best move."""
+        """Return location of best move."""
+        def by_corner_score(loc):
+            return (not board.is_corner(loc), len(board.get_captured(self, loc)))
+
         moves = board.get_valid_moves(self)
         random.shuffle(moves)
-
-        for loc in moves:
-            if board.is_corner(loc): return loc
-
-        # go through possible moves and remember the best scoring move
-        score = -1
-        for loc in moves:
-            captured = len(board.get_captured(self, loc))
-            if captured > score:
-                score = captured
-                best_move = loc
-        return best_move
+        return sorted(moves, key=by_corner_score, reverse=True)[0]
 
     def enemy(self):
-        return players[0] if self==players[1] else players[1]
+        return other(players, self)
 
 
 class Versi(object):
@@ -157,17 +142,21 @@ class Versi(object):
             self.game_end()
 
     def game_end(self):
-        scores = sorted(board.get_scores(players))
-        if scores[0] == scores[2] : print(nl, self.tiemsg)
-        else                      : print(nl, self.winmsg % scores[0][1])
+        scores = sorted((p.score(), p) for p in players)
+        if scores[0][0] == scores[1][0]:
+            print(nl, self.tiemsg)
+        else:
+            print(nl, self.winmsg % scores[0][1])
         sys.exit()
 
     def status(self):
-        s = board.get_scores(players)
-        print(self.scores_msg % (s[1], s[0], s[3], s[2]))
+        p1, p2 = players
+        print(self.scores_msg % (p1, p1.score(), p2, p2.score()))
 
 
 class Test(object):
+    invalid_inp = "Invalid input"
+
     def run(self):
         """Display board, start the game, process moves; return True to start a new game, False to exit."""
         valid_moves = board.get_valid_moves
@@ -175,23 +164,35 @@ class Test(object):
 
         while True:
             board.draw()
-            if player.human:
-                player.make_move(self.get_move())
-                if   valid_moves(player.enemy()) : player = player.enemy()
-                elif not valid_moves(player)     : break
+            get_move = player.get_random_move if player.ai else self.get_move
+            player.make_move(get_move())
 
-            else:
-                player.make_move(player.get_random_move())
+            # give next turn to player OR keep the turn OR end game if no turns left
+            if   valid_moves(player.enemy()) : player = player.enemy()
+            else                             : versi.check_end()
+            # elif not valid_moves(player)     : versi.game_end()
 
-                # give next turn to player OR keep the turn OR end game if no turns left
-                if   valid_moves(player.enemy()) : player = player.enemy()
-                elif not valid_moves(player)     : break
+    def get_move(self, player):
+        while 1:
+            try:
+                inp = raw_input(prompt).strip()
+                if inp == quit_key: sys.exit()
+
+                cmd = inp.split() if space in inp else inp
+                x, y = parse_hnuminput(cmd)
+                loc = Loc(x, y)
+
+                if board.valid_move(player, loc):
+                    return loc
+            except (IndexError, ValueError, TypeError, KeyError):
+                print(self.invalid_inp)
+                continue
 
 
 if __name__ == "__main__":
-    board   = VersiBoard(size, Blank)
+    board   = VersiBoard(size, Tile)
     versi   = Versi()
-    players = Player(player_chars[0]), Player(player_chars[1])
+    players = [Player(c) for c in player_chars]
 
     try: Test().run()
     except KeyboardInterrupt: sys.exit()
