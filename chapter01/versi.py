@@ -6,7 +6,7 @@ from random import choice as rndchoice
 from random import randint
 from time import sleep
 
-from utils import enumerate1, range1, parse_hnuminput, ujoin, Loop, other
+from utils import enumerate1, range1, parse_hnuminput, ujoin, Loop, nextval
 from board import Board, Loc, Dir
 
 size         = 8
@@ -21,7 +21,6 @@ blankchar    = '.'
 prompt       = '> '
 quit_key     = 'q'
 tiletpl      = "%5s"
-first        = next
 
 
 class CompareChar(object):
@@ -52,10 +51,7 @@ class Piece(Tile):
         if loc: board[loc] = self
 
     def flip(self):
-        self.char = other(player_chars, self.char)
-
-    def is_opposite_of(self, other):
-        return bool(not other.blank and self.char != other.char)
+        self.char = nextval(player_chars, self.char)
 
 
 class VersiBoard(Board):
@@ -85,7 +81,7 @@ class VersiBoard(Board):
             if not self.valid(loc) or player != self[loc]:
                 continue
             captured.extend(templist)
-        return captured
+        return [self[loc] for loc in captured]
 
     def is_corner(self, loc):
         return loc.x in (0, self.maxx) and loc.y in (0, self.maxy)
@@ -109,21 +105,19 @@ class Player(CompareChar):
 
     def make_move(self, loc):
         """Place new piece at `loc`, return list of captured locations."""
-        captured = board.get_captured(self, loc)
+        for tile in board.get_captured(self, loc):
+            tile.flip()
         Piece(loc, self.char)
-        for loc in captured: board[loc].flip()
 
     def get_random_move(self):
         """Return location of best move."""
         def by_corner_score(loc):
             return (not board.is_corner(loc), len(board.get_captured(self, loc)))
-
         moves = board.get_valid_moves(self)
-        random.shuffle(moves)
         return sorted(moves, key=by_corner_score, reverse=True)[0]
 
     def enemy(self):
-        return other(players, self)
+        return nextval(players, self)
 
 
 class Versi(object):
@@ -142,11 +136,11 @@ class Versi(object):
             self.game_end()
 
     def game_end(self):
-        scores = sorted((p.score(), p) for p in players)
-        if scores[0][0] == scores[1][0]:
+        winner, loser = sorted((p.score(), p) for p in players)
+        if winner[0] == loser[0]:
             print(nl, self.tiemsg)
         else:
-            print(nl, self.winmsg % scores[0][1])
+            print(nl, self.winmsg % winner[1])
         sys.exit()
 
     def status(self):
@@ -167,7 +161,7 @@ class Test(object):
             get_move = player.get_random_move if player.ai else self.get_move
             player.make_move(get_move())
 
-            # give next turn to player OR keep the turn OR end game if no turns left
+            # give next turn to player OR end game if no turns left OR current player keeps the turn
             if   valid_moves(player.enemy()) : player = player.enemy()
             else                             : versi.check_end()
             # elif not valid_moves(player)     : versi.game_end()

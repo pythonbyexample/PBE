@@ -130,5 +130,11 @@ def parse_hnuminput(iterable):
     """Convert a list of 'human input' 1-indexed string values to 0-indexed integers."""
     return [int(val)-1 for val in iterable]
 
-def other(iterable, value):
-    return iterable[0] if value==iterable[1] else iterable[1]
+def lastind(iterable):
+    return len(iterable) - 1
+
+def nextval(iterable, value):
+    """Next value of `iterable` after `value`, wrapping around at the end."""
+    i = iterable.index(value)
+    i = 0 if i >= lastind(iterable) else i+1
+    return iterable[i]

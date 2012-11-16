@@ -1,0 +1,6 @@
+
+debug regions:
+
+# def add(L): return [(l.x+1, l.y+1) for l in L]
+# for r in self.regions: print(add(r[:3]), space, add(r[3:6]), space, add(r[6:9]), nl*2)
+
