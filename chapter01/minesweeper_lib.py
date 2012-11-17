@@ -25,8 +25,8 @@ class Tile(AttrToggles):
     number            = 0
     attribute_toggles = [("hidden", "revealed")]
 
-    def __init__(self, x, y):
-        self.loc = Loc(x,y)
+    def __init__(self, loc):
+        self.loc = loc
 
     def __repr__(self):
         if self.marked   : return minechar
@@ -95,7 +95,7 @@ class MinesweeperBoard(Board):
 
 class Minesweeper(object):
     start    = time()
-    win_msg  = "All mines cleared (%d:%02d)!"
+    win_msg  = "All mines cleared (%s)!"
     lose_msg = "KABOOM. END."
 
     def __init__(self, board):

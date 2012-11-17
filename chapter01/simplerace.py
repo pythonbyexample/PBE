@@ -9,17 +9,16 @@ from time import sleep
 
 from utils import Dice, ujoin, nextval
 
-size          = 20
-num_pieces    = 3
-cgreen        = "green"
-cblue         = "blue"
-blank         = '.'
-space         = ' '
-nl            = '\n'
-pause_time    = 0.5     # in seconds
+size       = 20
+num_pieces = 3
+blank      = '.'
+space      = ' '
+quit_key   = 'q'
+nl         = '\n'
+pause_time = 0.5     # in seconds
 
-ai_player = None
-# ai_player = cgreen
+players    = 'gb'
+ai_players = 'gb'
 
 
 class Tile(object):
@@ -27,16 +26,14 @@ class Tile(object):
         return self.char
 
 class Blank(Tile):
-    colour = None
-    char   = blank
+    char = blank
 
 class Piece(Tile):
     loc  = -1
     done = False
 
-    def __init__(self, colour):
-        self.colour = colour
-        self.char   = colour[0]
+    def __init__(self, char):
+        self.char = char
 
     def move(self, loc):
         """Move to location `loc`, if moved past the end, set `done` property."""
@@ -44,22 +41,20 @@ class Piece(Tile):
         if loc > len(track) - 1:
             self.done = True
         else:
-            if track[loc].colour:
+            if track[loc].char is not blank:
                 track[loc].loc = -1     # bump enemy piece back to start
             track[loc] = self
         self.loc = loc
 
 
 class SimpleRace(object):
-    winmsg = "\n%s wins the race!"
+    winmsg = "\n'%s' wins the race!"
 
     def __init__(self):
         """ Create pieces; create list of players with one or the other being the first to move;
             create dice object.
         """
-        green        = [Piece(cgreen) for _ in range(num_pieces)]
-        blue         = [Piece(cblue) for _ in range(num_pieces)]
-        self.players = [green, blue]
+        self.players = [[Piece(p) for _ in range(num_pieces)] for p in players]
         self.dice    = Dice(num=1)      # one 6-sided dice
         shuffle(self.players)
 
@@ -69,7 +64,7 @@ class SimpleRace(object):
 
     def valid(self, piece, loc):
         """Valid move: any move that does not land on your other piece (beyond track is ok)."""
-        return bool(loc > len(track)-1 or track[loc].colour != piece.colour)
+        return bool(loc > len(track)-1 or track[loc].char != piece.char)
 
     def valid_moves(self, player, move):
         """ Valid moves for `player`: return tuples (piece, newloc) for each piece belonging to `player`.
@@ -85,7 +80,7 @@ class SimpleRace(object):
         return sorted( dict(moves).items() )
 
     def is_ai(self, player):
-        return bool(player[0].colour == ai_player)
+        return bool(player[0].char in ai_players)
 
     def check_end(self, player):
         """Check if `player` has won the game."""
@@ -93,7 +88,8 @@ class SimpleRace(object):
             self.game_won(player)
 
     def game_won(self, player):
-        print(self.winmsg % player[0].colour)
+        self.draw()
+        print(self.winmsg % player[0].char)
         sys.exit()
 
 
@@ -109,8 +105,9 @@ class Test(object):
             If more than one valid move is available to the human player, let him make the choice
             with `get_move()`.
         """
-        if not ai_player:
-            print("You are playing:", nextval(players, ai_player))
+        player = race.players[0][0].char
+        if ai_players and player not in ai_players:
+            print("You are playing:", player)
 
         while True:
             for player in race.players:
@@ -134,8 +131,9 @@ class Test(object):
 
         while True:
             try:
-                inp = int(raw_input(self.prompt)) - 1
-                return valid_moves[inp]
+                inp = raw_input(self.prompt)
+                if inp==quit_key: sys.exit()
+                return valid_moves[int(inp)-1]
             except (IndexError, ValueError):
                 pass
 

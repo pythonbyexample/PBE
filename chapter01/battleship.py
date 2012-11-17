@@ -22,9 +22,8 @@ blank      = '.'
 hitchar    = '*'
 quit_key   = 'q'
 
-players    = 1, 2
-ai_player  = None
-ai_player  = 2
+players    = [1, 2]
+ai_players = [1, 2]
 divider    = '-' * (size[0]*4 + 6)
 
 
@@ -36,11 +35,12 @@ class Tile(AttrToggles):
     revealed          = False
     attribute_toggles = [("hidden", "revealed")]
 
-    def __init__(self, x, y):
-        self.loc = Loc(x, y)
+    def __init__(self, loc):
+        self.loc = loc
 
     def __repr__(self):
         return blank if self.hidden else self.char
+
 
 class Blank(Tile):
     char = blank
@@ -145,6 +145,7 @@ class Battleship(object):
             self.game_lost(player)
 
     def game_lost(self, player):
+        self.draw()
         print(self.losemsg % player.num)
         sys.exit()
 

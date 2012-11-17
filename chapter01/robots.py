@@ -11,7 +11,7 @@ from board import Board, Loc, Dir
 
 size          = 10, 10
 num_robots    = 3
-num_players   = 1
+num_players   = 0
 num_rocks     = 5
 pause_time    = 0.2
 missile_pause = 0.05

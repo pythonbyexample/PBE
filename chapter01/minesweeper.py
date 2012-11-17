@@ -9,7 +9,7 @@ from time import sleep
 from utils import parse_hnuminput
 from minesweeper_lib import nl, space, MinesweeperBoard, Minesweeper, Loc
 
-size       = 12, 6
+size       = 6
 num_mines  = randint(4, 8)
 pause_time = 0.7
 prompt     = '> '
