@@ -5,27 +5,27 @@ import sys
 from random import choice as rndchoice
 from time import sleep
 
-from utils import enumerate1, range1, parse_hnuminput, ujoin, flatten, AttrToggles
+from utils import enumerate1, range1, parse_hnuminput, ujoin, flatten, AttrToggles, nextval
 from board import Board, Loc
 
-size          = 5, 5
-num_ships     = 3
-pause_time    = 0.1
+size       = 5, 5
+num_ships  = 3
+pause_time = 0.1
 
-nl            = '\n'
-prompt        = '> '
-space         = ' '
-tiletpl       = '%3s'
-shipchar      = '#'
-sunkship      = '%'
-blank         = '.'
-hitchar       = '*'
-quit_key      = 'q'
+nl         = '\n'
+prompt     = '> '
+space      = ' '
+tiletpl    = '%3s'
+shipchar   = '#'
+sunkship   = '%'
+blank      = '.'
+hitchar    = '*'
+quit_key   = 'q'
 
-players       = 1, 2
-manual_player = None
-manual_player = 2
-divider       = '-' * (size[0]*4 + 6)
+players    = 1, 2
+ai_player  = None
+ai_player  = 2
+divider    = '-' * (size[0]*4 + 6)
 
 
 class Tile(AttrToggles):
@@ -119,14 +119,14 @@ class Player(object):
             for loc in B.random_placement(ship):
                 B[loc] = Ship(loc)
 
-        self.is_manual = bool(self.num == manual_player)
+        self.ai = bool(self.num in ai_players)
 
-        if self.is_manual:
+        if not self.ai:
             for tile in B:
                 tile.revealed = True
 
     def enemy(self):
-        return players[0] if players[1] is self else players[1]
+        return nextval(players, self)
 
 
 class Battleship(object):
@@ -154,18 +154,18 @@ class Test(object):
         while True:
             for player in players:
                 bship.draw()
-                self.manual_move(player) if player.is_manual else self.ai_move(player)
+                self.ai_move(player) if player.ai else self.get_move(player)
             print(divider)
 
-    def manual_move(self, player):
+    def get_move(self, player):
         while 1:
             try:
-                self._manual_move(player)
+                self._get_move(player)
                 return
             except (IndexError, ValueError, TypeError):
                 continue
 
-    def _manual_move(self, player):
+    def _get_move(self, player):
         """ Get user command and reveal the tile; check if game is won/lost.
             User input can be with a space e.g. 10 5 or without a space when possible e.g. 35.
         """

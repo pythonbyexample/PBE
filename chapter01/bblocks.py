@@ -9,19 +9,19 @@ from time import sleep
 from utils import enumerate1, range1, parse_hnuminput, ujoin, Loop
 from board import Board, Loc, Dir
 
-size           = 4
-players        = ['O', 'X']
-# manual_players = ['O']
-manual_players = []
+size        = 4
+players     = 'OX'
+ai_players  = 'OX'
+# ai_players = ['O']
 
-pause_time     = 0.2
-check_moves    = 15
+pause_time  = 0.2
+check_moves = 15
 
-nl             = '\n'
-space          = ' '
-prompt         = '> '
-quit_key       = 'q'
-tiletpl        = "%5s"
+nl          = '\n'
+space       = ' '
+prompt      = '> '
+quit_key    = 'q'
+tiletpl     = "%5s"
 
 
 class Tile(object):
@@ -103,7 +103,7 @@ class Test(object):
         while True:
             for p in players:
                 board.draw()
-                tile = self.get_move(p) if p in manual_players else board.random_move(p)
+                tile = board.random_move(p) if p in ai_players else self.get_move(p)
                 tile.add(p)
                 bblocks.check_end(p)
 
@@ -122,7 +122,6 @@ class Test(object):
             except (IndexError, ValueError, TypeError, KeyError):
                 print(self.invalid_inp)
                 continue
-
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ from random import choice as rndchoice
 from random import shuffle
 from time import sleep
 
-from utils import Dice, ujoin
+from utils import Dice, ujoin, nextval
 
 size          = 20
 num_pieces    = 3
@@ -18,8 +18,8 @@ space         = ' '
 nl            = '\n'
 pause_time    = 0.5     # in seconds
 
-manual_player = None
-# manual_player = cgreen
+ai_player = None
+# ai_player = cgreen
 
 
 class Tile(object):
@@ -79,13 +79,13 @@ class SimpleRace(object):
             gets rid of duplicate keys (locations) and then convert back to a list using `items()`
             method.
             We also need to sort `moves` by location because this looks better to the
-            user when choices are shown in `manual_move()`.
+            user when choices are shown in `get_move()`.
         """
         moves = [(p.loc+move, p) for p in player if not p.done and self.valid(p, p.loc+move)]
         return sorted( dict(moves).items() )
 
-    def is_manual(self, player):
-        return bool(player[0].colour == manual_player)
+    def is_ai(self, player):
+        return bool(player[0].colour == ai_player)
 
     def check_end(self, player):
         """Check if `player` has won the game."""
@@ -100,14 +100,17 @@ class SimpleRace(object):
 class Test(object):
     prompt = "> "
 
+    def offer_choice(self, player, valid_moves):
+        return bool(not race.is_ai(player) and len(valid_moves) > 1)
+
     def run(self):
         """ Run main game loop.
 
-            If more than one valid move is available to the manual player, let him make the choice
-            with `manual_move()`.
+            If more than one valid move is available to the human player, let him make the choice
+            with `get_move()`.
         """
-        if manual_player:
-            print("You are playing:", manual_player)
+        if not ai_player:
+            print("You are playing:", nextval(players, ai_player))
 
         while True:
             for player in race.players:
@@ -116,16 +119,13 @@ class Test(object):
                 valid_moves = race.valid_moves(player, movedist)
 
                 if valid_moves:
-                    if race.is_manual(player) and len(valid_moves) > 1:
-                        loc, piece = self.manual_move(valid_moves)
-                    else:
-                        loc, piece = rndchoice(valid_moves)
-
+                    getmove = self.get_move if self.offer_choice(player, valid_moves) else rndchoice
+                    loc, piece = getmove(valid_moves)
                     piece.move(loc)
                     race.check_end(player)
                 sleep(pause_time)
 
-    def manual_move(self, valid_moves):
+    def get_move(self, valid_moves):
         """Get player's choice of move options."""
         moves = [space] * 26
         for n, (loc, _) in enumerate(valid_moves):

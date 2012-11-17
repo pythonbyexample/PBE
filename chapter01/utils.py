@@ -138,3 +138,6 @@ def nextval(iterable, value):
     i = iterable.index(value)
     i = 0 if i >= lastind(iterable) else i+1
     return iterable[i]
+
+def first(iterable):
+    return next(iter(iterable))
