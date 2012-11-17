@@ -6,8 +6,8 @@ from random import choice as rndchoice
 from random import randint
 from time import sleep
 
-from utils import enumerate1, range1, parse_hnuminput, ujoin, Loop, nextval
-from board import Board, Loc, Dir
+from utils import enumerate1, range1, parse_hnuminput, ujoin, nextval
+from board import Board, Loc
 
 size         = 8
 player_chars = 'XO'
@@ -153,7 +153,7 @@ class Test(object):
 
     def run(self):
         """Display board, start the game, process moves; return True to start a new game, False to exit."""
-        valid_moves = board.get_valid_moves
+        moves = board.get_valid_moves
         player      = rndchoice(players)
 
         while True:
@@ -162,9 +162,9 @@ class Test(object):
             player.make_move(get_move())
 
             # give next turn to player OR end game if no turns left OR current player keeps the turn
-            if   valid_moves(player.enemy()) : player = player.enemy()
-            else                             : versi.check_end()
-            # elif not valid_moves(player)     : versi.game_end()
+            if moves(player.enemy()) : player = player.enemy()
+            else                     : versi.check_end()
+            # elif not moves(player)     : versi.game_end()
 
     def get_move(self, player):
         while 1:
@@ -180,7 +180,6 @@ class Test(object):
                     return loc
             except (IndexError, ValueError, TypeError, KeyError):
                 print(self.invalid_inp)
-                continue
 
 
 if __name__ == "__main__":

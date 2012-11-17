@@ -42,21 +42,22 @@ class Tictactoe(object):
             diag1.append(Loc(n, n))
             diag2.append(Loc(2-n, n))
 
-        lines.extend((diag1, diag2))
-        self.win_lines = lines
+        return lines + [diag1, diag2]
 
     def game_won(self, player):
         print(self.winmsg % player if player else self.drawmsg)
         sys.exit()
 
-    def check_winner(self):
+    def check_end(self):
+        if board.filled(): self.game_won(None)
+
         for player in players:
             for line in self.win_lines:
                 if board.completed(line, player):
                     self.game_won(player)
 
     def run(self):
-        self.make_win_lines()
+        self.win_lines = self.make_win_lines()
 
         while True:
             for player in players:
@@ -64,9 +65,7 @@ class Tictactoe(object):
                 board.draw()
                 print()
                 sleep(pause_time)
-
-                self.check_winner()
-                if board.filled(): self.game_won(None)
+                self.check_end()
 
 
 if __name__ == "__main__":
