@@ -7,7 +7,7 @@ from random import randint, random
 from time import sleep
 import math
 
-from utils import range1, parse_hnuminput, itersplit, ujoin
+from utils import range1, parse_hnuminput, itersplit, ujoin, first
 from board import Board, Loc
 
 size         = 8
@@ -33,22 +33,25 @@ tiletpl      = '%14s'
 neutral_char = 'N'
 
 
-class CompareChar(object):
+class PlayerBase(object):
+    """Used as base for all player's stars and fleets as well as Player class itself, to allow for
+       making equality checks between all of them.
+    """
     def __eq__(self, other):
         return bool(self.char==other.char)
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def __repr__(self):
+        return blank
 
-class Tile(CompareChar):
+
+class Tile(PlayerBase):
     blank = True
 
     def __init__(self, loc):
         self.loc = loc
-
-    def __repr__(self):
-        return blank
 
 
 class Star(Tile):
@@ -77,7 +80,7 @@ class Star(Tile):
 class BetelgeuseBoard(Board):
     def dist(self, *stars):
         l1, l2 = (s.loc for s in stars)
-        return math.sqrt( abs( (l2.x - l1.x)**2 + (l2.y - l1.y)**2 ) )
+        return math.sqrt( abs(l2.x - l1.x)**2 + abs(l2.y - l1.y)**2  )
 
     def random_blank(self):
         return rndchoice( [t.loc for t in self if t.blank] )
@@ -85,54 +88,52 @@ class BetelgeuseBoard(Board):
     def draw(self):
         print(nl*5)
         for row in self.board:
-            print(ujoin(row, '', tpl=self.tiletpl), nl*2)
+            print(ujoin(row, '', tpl=self.tiletpl), nl*4)
 
 
-
-class Fleet(CompareChar):
+class Fleet(PlayerBase):
     conquer_msg = "%s conquers star system #%d"
 
-    def __init__(self, char, src, goal, ships):
+    def __init__(self, char, origin, star, ships):
         self.char    = char
-        self.src     = src
-        self.goal    = goal
+        self.origin  = origin
+        self.star    = star     # target star
         self.ships   = ships
-        self.arrival = betelgeuse.turn + round(board.dist(src, goal) / 2)
+        self.arrival = betelgeuse.turn + round(board.dist(origin, star) / 2)
+        origin.ships -= ships
 
     def move(self):
         if betelgeuse.turn >= self.arrival:
-            if self == self.goal : self.land()
+            if self == self.star : self.land()
             else                 : self.attack()
 
     def attack(self):
+        """Note: need to do checks at the start of loop in case there are no ships in `star`."""
         while True:
-            loser = self.goal if random() > star_defence else self
-            loser.ships -= 1
             if not self.ships      : self.die(); break
-            if not self.goal.ships : self.land(conquer=True); break
+            if not self.star.ships : self.land(conquer=True); break
+            loser = self.star if random() > star_defence else self
+            loser.ships -= 1
 
     def land(self, conquer=False):
         if conquer:
-            print(self.conquer_msg % (self.char, self.goal.num))
-        self.goal.char = self.char
-        self.goal.ships += self.ships
+            print(self.conquer_msg % (self.char, self.star.num))
+        self.star.char = self.char
+        self.star.ships += self.ships
         self.die()
 
     def __repr__(self):
         eta = self.arrival - betelgeuse.turn
-        return "(%s %s %s s:%d, a:%d)" % (self.char, self.src.num, self.goal.num, self.ships, eta)
+        return "(%s %s %s s:%d, a:%d)" % (self.char, self.origin.num, self.star.num, self.ships, eta)
 
     def die(self):
         fleets.remove(self)
 
 
-class Player(CompareChar):
+class Player(PlayerBase):
     def __init__(self, char):
         self.char = char
         self.ai   = bool(char in ai_players)
-
-    def __repr__(self):
-        return self.char
 
     def stars(self):
         return [star for star in stars if star==self]
@@ -146,16 +147,13 @@ class Player(CompareChar):
             if cmd: self.send(*cmd)
 
     def random_move(self, star):
-        def dist(s): return board.dist(star, s)
+        def dist(star2): return board.dist(star, star2)
 
         if random() < send_chance and star.ships >= send_cutoff:
-            targets = sorted([star for star in stars if star != self], key=dist)
+            targets = sorted([s for s in stars if s != self], key=dist)
             if not targets: return None
             ships = randint(star.ships // 2, star.ships)
-            return star, targets[0], ships
-
-    def __repr__(self):
-        return self.char
+            return star, first(targets), ships
 
 
 class Betelgeuse(object):
@@ -164,11 +162,13 @@ class Betelgeuse(object):
     show_ships_player = 0
 
     def check_end(self, player):
-        if len( set(x.char for x in stars + fleets) ) == 1:
-            self.game_won(stars[0].char)
+        pchars = set(sf.char for sf in stars+fleets if sf in players)
+        if len(pchars) == 1:
+            self.game_won(first(pchars))
 
-    def game_won(self, player):
-        print(nl, self.winmsg % player)
+    def game_won(self, char):
+        board.draw()
+        print(nl, self.winmsg % char)
         sys.exit()
 
 

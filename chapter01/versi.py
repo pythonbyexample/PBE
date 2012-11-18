@@ -116,9 +116,6 @@ class Player(CompareChar):
         moves = board.get_valid_moves(self)
         return sorted(moves, key=by_corner_score, reverse=True)[0]
 
-    def enemy(self):
-        return nextval(players, self)
-
 
 class Versi(object):
     winmsg     = "%s has won!"
@@ -160,10 +157,11 @@ class Test(object):
             board.draw()
             get_move = player.get_random_move if player.ai else self.get_move
             player.make_move(get_move())
+            enemy = nextval(players, player)
 
             # give next turn to player OR end game if no turns left OR current player keeps the turn
-            if moves(player.enemy()) : player = player.enemy()
-            else                     : versi.check_end()
+            if moves(enemy) : player = enemy
+            else            : versi.check_end()
             # elif not moves(player)     : versi.game_end()
 
     def get_move(self, player):
