@@ -6,6 +6,7 @@ import sys
 from random import choice as rndchoice
 from random import shuffle
 from time import sleep
+from itertools import cycle
 
 from utils import Dice, ujoin, nextval
 
@@ -109,18 +110,17 @@ class Test(object):
         if ai_players and player not in ai_players:
             print("You are playing:", player)
 
-        while True:
-            for player in race.players:
-                race.draw()
-                movedist    = race.dice.rollsum()
-                valid_moves = race.valid_moves(player, movedist)
+        for player in cycle(race.players):
+            race.draw()
+            movedist    = race.dice.rollsum()
+            valid_moves = race.valid_moves(player, movedist)
 
-                if valid_moves:
-                    getmove = self.get_move if self.offer_choice(player, valid_moves) else rndchoice
-                    loc, piece = getmove(valid_moves)
-                    piece.move(loc)
-                    race.check_end(player)
-                sleep(pause_time)
+            if valid_moves:
+                getmove = self.get_move if self.offer_choice(player, valid_moves) else rndchoice
+                loc, piece = getmove(valid_moves)
+                piece.move(loc)
+                race.check_end(player)
+            sleep(pause_time)
 
     def get_move(self, valid_moves):
         """Get player's choice of move options."""

@@ -27,11 +27,8 @@ class Test(object):
             if ai_run:
                 self.ai_move()
             else:
-
-                try:
-                    self.manual_move()
-                except IndexError, ValueError:
-                    pass
+                try: self.manual_move()
+                except IndexError, ValueError: pass
 
     def manual_move(self):
         """Get user command and mark mine or reveal a location; check if game is won/lost."""

@@ -4,6 +4,7 @@ from __future__ import print_function, unicode_literals, division
 import sys
 from random import choice as rndchoice
 from time import sleep
+from itertools import cycle
 
 from utils import enumerate1, range1, parse_hnuminput, ujoin, flatten, AttrToggles, nextval
 from board import Board, Loc
@@ -152,19 +153,19 @@ class Battleship(object):
 
 class Test(object):
     def run(self):
-        while True:
-            for player in players:
-                bship.draw()
-                self.ai_move(player) if player.ai else self.get_move(player)
-            print(divider)
+        for player in cycle(players):
+            bship.draw()
+            tile = self.ai_move(player) if player.ai else self.get_move(player)
+            tile.hit()
+            bship.check_end(player.enemy())
+            sleep(pause_time)
+
+        print(divider)
 
     def get_move(self, player):
-        while 1:
-            try:
-                self._get_move(player)
-                return
-            except (IndexError, ValueError, TypeError):
-                continue
+        while True:
+            try: return self._get_move(player)
+            except (IndexError, ValueError, TypeError): pass
 
     def _get_move(self, player):
         """ Get user command and reveal the tile; check if game is won/lost.
@@ -176,16 +177,12 @@ class Test(object):
         inp   = inp.split() if space in inp else inp
         x, y  = parse_hnuminput(inp)
         enemy = player.enemy()
-
-        enemy.board[ Loc(x, y) ].hit()
-        bship.check_end(enemy)
+        return enemy.board[ Loc(x, y) ]
 
     def ai_move(self, player):
         """Very primitive `AI', always hits a random location."""
         enemy = player.enemy()
-        enemy.board.random_unhit().hit()
-        bship.check_end(enemy)
-        sleep(pause_time)
+        return enemy.board.random_unhit()
 
 
 if __name__ == "__main__":
