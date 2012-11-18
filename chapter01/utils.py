@@ -1,9 +1,18 @@
 #!/usr/bin/env python
 
+import sys
 from copy import copy
 from random import randint
 
+from board import Loc
+
 sentinel = object()
+space    = ' '
+
+class InvalidCode(Exception):
+    def __init__(self, val) : self.val = val
+    def __str__(self)       : return repr(self.val)
+
 
 class Loop(object):
     """ Loop over a list of items in forward / backward direction, keeping track of current item,
@@ -53,19 +62,6 @@ class Loop(object):
         return other - self.item
 
 
-class Toggler(Loop):
-    """UNUSED"""
-    def __init__(self, items, name="item", initial=sentinel):
-        self.items   = items
-        self.index   = 0 if initial==sentinel else items.index(initial)
-        self.name    = name
-        self.lastind = len(self.items) - 1
-        self.update_attr()
-
-    def toggle(self):
-        self.next()
-
-
 class AttrToggles(object):
     """Inverse-toggle two boolean attributes when one of a pair is toggled; `attribute_toggles` is a list of tuples."""
     attribute_toggles = []
@@ -93,6 +89,49 @@ class Dice(object):
 
     def rollsum(self):
         return sum(self.roll())
+
+
+class TextInput(object):
+    inv_inp = "Invalid input"
+
+    def __init__(self, board, fmt="loc", prompt="> ", quit_key='q', inv_inp=None):
+        self.board    = board
+        self.fmt      = fmt.split()
+        self.prompt   = prompt
+        self.quit_key = quit_key
+        self.inv_inp  = inv_inp or self.inv_inp
+
+    def parse_input(self):
+        while 1:
+            try: return self._parse_input()
+            except (IndexError, ValueError, TypeError, KeyError), e:
+                print(self.invalid_inp)
+
+    def _parse_input(self):
+        inp = raw_input(self.prompt).strip()
+        if inp == self.quit_key: sys.exit()
+
+        inp      = inp.split() if space in inp else list(inp)
+        command  = []
+        handlers = {"%d": int, "%f": float, "%s": str}
+
+        for n, code in enumerate(self.fmt):
+
+            if code == "loc":
+                x, y = inp.pop(0), inp.pop(0)
+                loc = Loc( int(x)-1, int(y)-1 )
+                if not self.board.valid(loc):
+                    raise IndexError
+                command.append(loc)
+
+            elif code in handlers:
+                command.append( handlers.get(code)(inp.pop(0)) )
+
+            else:
+                raise InvalidCode(code)
+
+        return command
+
 
 
 def ujoin(iterable, sep=' ', tpl='%s'):
