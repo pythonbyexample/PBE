@@ -6,7 +6,7 @@ import sys
 from random import randint
 from time import sleep
 
-from utils import parse_hnuminput
+from utils import TextInput
 from minesweeper_lib import nl, space, MinesweeperBoard, Minesweeper, Loc
 
 size       = 6
@@ -21,36 +21,31 @@ ai_run     = 0
 
 class Test(object):
     def test(self):
+        self.textinput = TextInput(board, ("loc", "%s loc"))
         while True:
             board.draw()
-
-            if ai_run:
-                self.ai_move()
-            else:
-                try: self.manual_move()
-                except IndexError, ValueError: pass
-
-    def manual_move(self):
-        """Get user command and mark mine or reveal a location; check if game is won/lost."""
-        inp = raw_input(prompt)
-        if inp == quit_key: sys.exit()
-
-        mark = inp.startswith(mark_key)
-        inp = inp.lstrip(mark_key + space)
-
-        if space in inp: inp = inp.split()
-        x, y = parse_hnuminput(inp)
-        tile = board[ Loc(x, y) ]
-
-        tile.toggle_mark() if mark else board.reveal(tile)
-        msweep.check_end(tile)
+            self.ai_move() if ai_run else self.get_move()
 
     def get_move(self):
         while True:
-            loc = self.textinput.getloc()
-            if board.valid_move(player, loc):
-                return loc
+            cmd  = self.textinput.getinput()
+            ok   = True
+            mark = False
+            loc  = cmd.pop()
+
+            if cmd:
+                if cmd == [mark_key] : mark = True
+                else                 : ok = False
+
+            if board.valid(loc):
+                tile = board[loc]
+                tile.toggle_mark() if mark else board.reveal(tile)
+                msweep.check_end(tile)
+                return
             else:
+                ok = False
+
+            if not ok:
                 print(self.invalid_move)
 
     def ai_move(self):
@@ -59,8 +54,9 @@ class Test(object):
 
         while loc.x:
             print(nl, "loc", loc.x+1, loc.y+1, nl)
-            msweep.check_end(board.reveal( board[loc] ))
+            msweep.check_end( board.reveal( board[loc] ) )
             loc = loc.moved(-1, 0)      # move location to the left
+
             if board[loc].revealed:
                 continue
             board.draw()

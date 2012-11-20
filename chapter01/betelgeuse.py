@@ -212,7 +212,6 @@ class Test(object):
                 print(self.invalid_move)
 
 
-
 if __name__ == "__main__":
     board      = BetelgeuseBoard(size, Tile, tiletpl=tiletpl)
     betelgeuse = Betelgeuse()

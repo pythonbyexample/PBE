@@ -95,7 +95,7 @@ class MinesweeperBoard(Board):
 
 class Minesweeper(object):
     start    = time()
-    win_msg  = "All mines cleared (%s)!"
+    win_msg  = "All mines cleared! (%s)"
     lose_msg = "KABOOM. END."
 
     def __init__(self, board):

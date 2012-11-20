@@ -185,7 +185,8 @@ class TextInput(object):
         fmt      = first(formats)
         inp      = inp.split() if space in inp else list(inp)
         commands = self.parse_fmt(inp, fmt)
-        return commands if len(commands)>1 else first(commands)
+        return commands
+        # return commands if len(commands)>1 else first(commands)
 
 
 
