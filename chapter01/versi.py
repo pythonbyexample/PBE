@@ -6,7 +6,7 @@ from random import choice as rndchoice
 from random import randint
 from time import sleep
 
-from utils import enumerate1, range1, parse_hnuminput, ujoin, nextval
+from utils import enumerate1, range1, ujoin, nextval, TextInput
 from board import Board, Loc
 
 size         = 8
@@ -133,25 +133,26 @@ class Versi(object):
             self.game_end()
 
     def game_end(self):
-        winner, loser = sorted((p.score(), p) for p in players)
-        if winner[0] == loser[0]:
+        s1, s2 = player1.score(), player2.score()
+        if s1 == s2:
             print(nl, self.tiemsg)
         else:
-            print(nl, self.winmsg % winner[1])
+            winner = player1 if s1>s2 else player2
+            print(nl, self.winmsg % winner)
         sys.exit()
 
     def status(self):
-        p1, p2 = players
-        print(self.scores_msg % (p1, p1.score(), p2, p2.score()))
+        print(self.scores_msg % (player1, player1.score(), player2, player2.score()))
 
 
 class Test(object):
-    invalid_inp = "Invalid input"
+    invalid_move = "Invalid move"
 
     def run(self):
         """Display board, start the game, process moves; return True to start a new game, False to exit."""
-        moves = board.get_valid_moves
-        player      = rndchoice(players)
+        moves          = board.get_valid_moves
+        player         = rndchoice(players)
+        self.textinput = TextInput(board)
 
         while True:
             board.draw()
@@ -164,26 +165,18 @@ class Test(object):
             else            : versi.check_end()
             # elif not moves(player)     : versi.game_end()
 
-    def get_move(self, player):
-        while 1:
-            try:
-                inp = raw_input(prompt).strip()
-                if inp == quit_key: sys.exit()
-
-                cmd = inp.split() if space in inp else inp
-                x, y = parse_hnuminput(cmd)
-                loc = Loc(x, y)
-
-                if board.valid_move(player, loc):
-                    return loc
-            except (IndexError, ValueError, TypeError, KeyError):
-                print(self.invalid_inp)
+    def get_move(self):
+        while True:
+            loc = self.textinput.getloc()
+            if board.valid_move(loc) : return loc
+            else                     : print(self.invalid_move)
 
 
 if __name__ == "__main__":
     board   = VersiBoard(size, Tile)
     versi   = Versi()
     players = [Player(c) for c in player_chars]
+    player1, player2 = players
 
     try: Test().run()
     except KeyboardInterrupt: sys.exit()

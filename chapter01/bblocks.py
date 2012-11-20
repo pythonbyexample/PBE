@@ -5,14 +5,14 @@ import sys
 from random import choice as rndchoice
 from random import randint
 from time import sleep
+from itertools import cycle
 
-from utils import enumerate1, range1, parse_hnuminput, ujoin, Loop
-from board import Board, Loc, Dir
+from utils import enumerate1, range1, ujoin, Loop, TextInput
+from board import Board, Loc
 
 size        = 4
 players     = 'OX'
-ai_players  = 'OX'
-# ai_players = ['O']
+ai_players  = 'X'
 
 pause_time  = 0.2
 check_moves = 15
@@ -96,32 +96,24 @@ class BlockyBlocks(object):
 
 
 class Test(object):
-    invalid_inp  = "Invalid input"
     invalid_move = "Invalid move... try again"
 
     def run(self):
-        while True:
-            for p in players:
-                board.draw()
-                tile = board.random_move(p) if p in ai_players else self.get_move(p)
-                tile.add(p)
-                bblocks.check_end(p)
+        self.textinput = TextInput(board)
+
+        for p in cycle(players):
+            board.draw()
+            tile = board.random_move(p) if p in ai_players else self.get_move(p)
+            tile.add(p)
+            bblocks.check_end(p)
 
     def get_move(self, player):
-        while 1:
-            try:
-                inp = raw_input(prompt).strip()
-                if inp == quit_key: sys.exit()
-
-                cmd = inp.split() if space in inp else inp
-                x, y = parse_hnuminput(cmd[:2])
-                loc = Loc(x, y)
-
-                if board.valid_move(player, loc):
-                    return board[loc]
-            except (IndexError, ValueError, TypeError, KeyError):
-                print(self.invalid_inp)
-                continue
+        while True:
+            loc = self.textinput.getloc()
+            if board.valid_move(player, loc):
+                return board[loc]
+            else:
+                print(self.invalid_move)
 
 
 if __name__ == "__main__":

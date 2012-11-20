@@ -6,7 +6,7 @@ from random import choice as rndchoice
 from random import randint
 from time import sleep
 
-from utils import enumerate1, range1, ujoin, parse_hnuminput
+from utils import enumerate1, range1, ujoin, TextInput
 from board import Board, Loc
 
 size       = 9
@@ -63,6 +63,8 @@ class Sudoku(object):
     winmsg  = "Solved!"
 
     def check(self, loc, val):
+        if not board[loc]==blank: return False
+
         for reg_line in board.lines + board.regions:
             if loc in reg_line and val in (board[loc] for loc in reg_line):
                 return False
@@ -79,10 +81,10 @@ class Sudoku(object):
 
 
 class Test(object):
-    invalid_inp  = "Invalid input"
     invalid_move = "Invalid move... try again"
 
     def run(self):
+        self.textinput = TextInput(board, "loc %d")
         while True:
             board.draw()
             loc, val   = self.get_move()
@@ -90,22 +92,12 @@ class Test(object):
             sudoku.check_end()
 
     def get_move(self):
-        while 1:
-            try:
-                inp = raw_input(prompt).strip()
-                if inp == quit_key: sys.exit()
-
-                loc = Loc( *parse_hnuminput(inp[:2]) )
-                val = int(inp[2])
-
-                if board.valid(loc) and board[loc] == blank:
-                    if sudoku.check(loc, val):
-                        board[loc] = val
-                        return loc, val
+        while True:
+            loc, val = self.textinput.getinput()
+            if sudoku.check(loc, val):
+                return loc, val
+            else:
                 print(self.invalid_move)
-            except (IndexError, ValueError, TypeError, KeyError), e:
-                print(self.invalid_inp)
-                continue
 
 
 if __name__ == "__main__":

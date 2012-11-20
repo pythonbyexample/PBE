@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
 import sys
+import re
 from copy import copy
 from random import randint
-
-from board import Loc
 
 sentinel = object()
 space    = ' '
@@ -92,47 +91,100 @@ class Dice(object):
 
 
 class TextInput(object):
-    inv_inp = "Invalid input"
+    """ Get text input from user in a specified format `fmt`.
+        Given format "loc %d", both inputs are valid: "332", "3 3 2"; when input is ambiguous, values
+        need to be separated by spaces.
 
-    def __init__(self, board, fmt="loc", prompt="> ", quit_key='q', inv_inp=None):
-        self.board    = board
-        self.fmt      = fmt.split()
-        self.prompt   = prompt
-        self.quit_key = quit_key
-        self.inv_inp  = inv_inp or self.inv_inp
+        Supported format codes:
+            loc - location in X Y format; will be checked using board.valid() method.
+            %d  - integer
+            %f  - float
+            %s  - string
 
-    def parse_input(self):
-        while 1:
-            try: return self._parse_input()
+        getloc() - convenience method to get a single location irrespective of `self.fmt`.
+
+        Note: location is accepted in "human format", i.e. it's adjusted from 1-indexed to 0-indexed.
+    """
+    invalid_inp = "Invalid input"
+    formats     = ("loc",)
+
+    def __init__(self, board, formats=None, prompt="> ", quit_key='q', accept_blank=False, invalid_inp=None):
+        if isinstance(formats, basestring): formats = [formats]
+        self.board        = board
+        self.formats      = formats
+        self.prompt       = prompt
+        self.quit_key     = quit_key
+        self.accept_blank = accept_blank
+        self.invalid_inp  = invalid_inp or self.invalid_inp
+
+    def getloc(self):
+        return self.getinput(formats=["loc"])
+
+    def getinput(self, formats=None):
+        formats = formats or self.formats
+
+        while True:
+            try:
+                return self.parse_input(formats)
             except (IndexError, ValueError, TypeError, KeyError), e:
                 print(self.invalid_inp)
 
-    def _parse_input(self):
-        inp = raw_input(self.prompt).strip()
-        if inp == self.quit_key: sys.exit()
+    def matchfmt(self, inp, fmt):
+        replace_lst = [ ("loc", "\d+ \d+"),
+                        ("%s" , "\w+"),
+                        ("%d" , "\d+"),
+                        ("%f" , "\d\.?\d?"),
+                        (" "  , " *"),
+                        ]
+        for init, repl in replace_lst:
+            fmt = fmt.replace(init, repl)
 
-        inp      = inp.split() if space in inp else list(inp)
-        command  = []
+        return re.match(fmt, inp)
+
+    def parse_fmt(self, inp, fmt):
+        """Attempt to parse `inp` using `fmt` format; return False if there is mismatch."""
+        from board import Loc
+        fmt      = fmt.split()
+        inp      = copy(inp)
+        commands = []
         handlers = {"%d": int, "%f": float, "%s": str}
 
-        for n, code in enumerate(self.fmt):
+        for n, code in enumerate(fmt):
 
             if code == "loc":
                 x, y = inp.pop(0), inp.pop(0)
                 loc = Loc( int(x)-1, int(y)-1 )
                 if not self.board.valid(loc):
-                    raise IndexError
-                command.append(loc)
+                    return False
+                commands.append(loc)
 
             elif code in handlers:
-                command.append( handlers.get(code)(inp.pop(0)) )
+                commands.append( handlers.get(code)(inp.pop(0)) )
 
             else:
                 raise InvalidCode(code)
 
-        return command
+        if inp: raise ValueError
+        return commands
+
+    def parse_input(self, formats):
+        inp = raw_input(self.prompt).strip()
+        if inp == self.quit_key: sys.exit()
+        if self.accept_blank and not inp:
+            return ''
+
+        formats = [fmt for fmt in formats if self.matchfmt(inp, fmt)]
+        if not formats:
+            raise ValueError
+
+        fmt      = first(formats)
+        inp      = inp.split() if space in inp else list(inp)
+        commands = self.parse_fmt(inp, fmt)
+        return commands if len(commands)>1 else first(commands)
 
 
+
+# ==== Functions =======================================================
 
 def ujoin(iterable, sep=' ', tpl='%s'):
     return sep.join( [tpl % unicode(x) for x in iterable] )

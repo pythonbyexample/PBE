@@ -45,6 +45,14 @@ class Test(object):
         tile.toggle_mark() if mark else board.reveal(tile)
         msweep.check_end(tile)
 
+    def get_move(self):
+        while True:
+            loc = self.textinput.getloc()
+            if board.valid_move(player, loc):
+                return loc
+            else:
+                print(self.invalid_move)
+
     def ai_move(self):
         """Very primitive `AI', does not mark mines & does not try to avoid them."""
         loc = board.random_hidden().loc

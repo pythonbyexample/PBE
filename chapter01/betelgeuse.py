@@ -178,6 +178,7 @@ class Test(object):
     stat_div     = " | "
 
     def run(self):
+        self.textinput = TextInput(board, "%d %d %d")
         while True:
             for player in players:
                 betelgeuse.show_ships_player = player if not player.ai else 0
@@ -217,6 +218,15 @@ class Test(object):
             except (IndexError, ValueError, TypeError, KeyError):
                 print(self.invalid_inp)
                 continue
+
+    def get_move2(self):
+        while True:
+            src, goal, ships = self.textinput.getinput()
+            if board.valid_move(player, loc):
+                return board[loc]
+            else:
+                print(self.invalid_move)
+
 
 
 if __name__ == "__main__":
