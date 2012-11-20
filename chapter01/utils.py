@@ -130,11 +130,13 @@ class TextInput(object):
                 print(self.invalid_inp)
 
     def matchfmt(self, inp, fmt):
-        replace_lst = [ ("loc", "\d+ \d+"),
-                        ("%s" , "\w+"),
-                        ("%d" , "\d+"),
-                        ("%f" , "\d\.?\d?"),
-                        (" "  , " *"),
+        replace_lst = [
+                        ("loc" , "\d+ \d+"),
+                        ("%s"  , "\w+"),
+                        ("%d"  , "\d+"),
+                        ("%hd" , "\d+"),
+                        ("%f"  , "\d\.?\d?"),
+                        (" "   , " *"),
                         ]
         for init, repl in replace_lst:
             fmt = fmt.replace(init, repl)
@@ -157,6 +159,9 @@ class TextInput(object):
                 if not self.board.valid(loc):
                     return False
                 commands.append(loc)
+
+            elif code == "%hd":     # 'human' format, 1-indexed, integer
+                commands.append( int(inp.pop(0)) - 1 )
 
             elif code in handlers:
                 commands.append( handlers.get(code)(inp.pop(0)) )

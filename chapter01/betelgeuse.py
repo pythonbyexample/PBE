@@ -7,13 +7,13 @@ from random import randint, random
 from time import sleep
 import math
 
-from utils import range1, parse_hnuminput, itersplit, ujoin, first
+from utils import range1, TextInput, itersplit, ujoin, first
 from board import Board, Loc
 
 size         = 8
 player_chars = 'IX'
-ai_players   = 'X'
 ai_players   = 'IX'
+ai_players   = 'X'
 
 pause_time   = 0.5
 num_stars    = 6
@@ -178,22 +178,18 @@ class Test(object):
     stat_div     = " | "
 
     def run(self):
-        self.textinput = TextInput(board, "%d %d %d")
+        self.textinput = TextInput(board, "%hd %hd %d", accept_blank=True)
+
         while True:
             for player in players:
                 betelgeuse.show_ships_player = player if not player.ai else 0
                 board.draw()
-                print(ujoin( (f for f in fleets), self.stat_div ))
-                print(ujoin( ("%s:%d" % (s, s.ships) for s in stars), self.stat_div ))
-
-                player.make_random_moves() if player.ai else self.make_moves()
-
-                for star in stars: star.turn()
-                for fleet in fleets: fleet.move()
-
+                player.make_random_moves() if player.ai else self.make_moves(player)
                 betelgeuse.check_end(player)
                 sleep(pause_time)
 
+            for star in stars: star.turn()
+            for fleet in fleets: fleet.move()
             betelgeuse.turn += 1
 
     def make_moves(self, player):
@@ -201,29 +197,17 @@ class Test(object):
             cmd = self.get_move(player)
             if not cmd: break
             player.send(*cmd)
+            board.draw()
 
     def get_move(self, player):
         while True:
-            try:
-                inp = raw_input(prompt).strip()
-                if inp == quit_key: sys.exit()
-                if not inp: return
+            cmd = self.textinput.getinput()
+            if not cmd: return
 
-                cmd       = inp.split() if space in inp else inp
-                src, goal = parse_hnuminput(cmd[:2])
-                ships     = int(cmd[2])
-
-                if star[src].ships >= ships:
-                    return stars[src], stars[goal], ships
-            except (IndexError, ValueError, TypeError, KeyError):
-                print(self.invalid_inp)
-                continue
-
-    def get_move2(self):
-        while True:
-            src, goal, ships = self.textinput.getinput()
-            if board.valid_move(player, loc):
-                return board[loc]
+            src, goal, ships = cmd
+            src, goal = stars[src], stars[goal]
+            if src == player and src.ships >= ships:
+                return src, goal, ships
             else:
                 print(self.invalid_move)
 
