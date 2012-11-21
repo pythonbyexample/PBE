@@ -4,9 +4,8 @@ from __future__ import print_function, unicode_literals, division
 import sys
 from random import choice as rndchoice
 from time import sleep
-from itertools import cycle
 
-from utils import enumerate1, range1, parse_hnuminput, ujoin, flatten, AttrToggles, nextval
+from utils import TextInput, AttrToggles, enumerate1, range1, ujoin, flatten, nextval
 from board import Board, Loc
 
 size       = 5, 5
@@ -153,31 +152,24 @@ class Battleship(object):
 
 class Test(object):
     def run(self):
-        for player in cycle(players):
-            bship.draw()
-            tile = self.ai_move(player) if player.ai else self.get_move(player)
-            tile.hit()
-            bship.check_end(player.enemy())
-            sleep(pause_time)
+        self.textinput = TextInput(board, "loc")
 
-        print(divider)
+        while True:
+            for player in players:
+                bship.draw()
+                tile = self.ai_move(player) if player.ai else self.get_move(player)
+                tile.hit()
+                bship.check_end(player.enemy())
+                sleep(pause_time)
+            print(divider)
 
     def get_move(self, player):
-        while True:
-            try: return self._get_move(player)
-            except (IndexError, ValueError, TypeError): pass
-
-    def _get_move(self, player):
-        """ Get user command and reveal the tile; check if game is won/lost.
-            User input can be with a space e.g. 10 5 or without a space when possible e.g. 35.
-        """
-        inp = raw_input(prompt)
-        if inp == quit_key: sys.exit()
-
-        inp   = inp.split() if space in inp else inp
-        x, y  = parse_hnuminput(inp)
+        """Get user command and return the tile."""
         enemy = player.enemy()
-        return enemy.board[ Loc(x, y) ]
+        while True:
+            loc = self.textinput.getloc()
+            if enemy.board.valid(loc) : return enemy.board[loc]
+            else                      : print(self.textinput.invalid_inp)
 
     def ai_move(self, player):
         """Very primitive `AI', always hits a random location."""

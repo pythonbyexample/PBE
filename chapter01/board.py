@@ -1,4 +1,5 @@
 from __future__ import print_function, unicode_literals, division
+import math
 from utils import ujoin
 
 
@@ -94,6 +95,9 @@ class BaseBoard(object):
         """Return location next to `start` point in direction `dir`."""
         loc = Loc(loc.x + dir.x, loc.y + dir.y)
         return loc if self.valid(loc) else None
+
+    def dist(self, l1, l2):
+        return math.sqrt( abs(l2.x - l1.x)**2 + abs(l2.y - l1.y)**2  )
 
 
 class Board(BaseBoard):

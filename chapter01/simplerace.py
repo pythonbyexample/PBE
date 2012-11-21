@@ -8,7 +8,7 @@ from random import shuffle
 from time import sleep
 from itertools import cycle
 
-from utils import Dice, ujoin, nextval
+from utils import Dice, TextInput, ujoin, nextval, lasind
 
 size       = 20
 num_pieces = 3
@@ -95,7 +95,7 @@ class SimpleRace(object):
 
 
 class Test(object):
-    prompt = "> "
+    self.invalid_move = "Invalid move"
 
     def offer_choice(self, player, valid_moves):
         return bool(not race.is_ai(player) and len(valid_moves) > 1)
@@ -106,6 +106,7 @@ class Test(object):
             If more than one valid move is available to the human player, let him make the choice
             with `get_move()`.
         """
+        self.textinput = TextInput(board, '%hd')
         player = race.players[0][0].char
         if ai_players and player not in ai_players:
             print("You are playing:", player)
@@ -130,12 +131,11 @@ class Test(object):
         print(ujoin(moves))
 
         while True:
-            try:
-                inp = raw_input(self.prompt)
-                if inp==quit_key: sys.exit()
-                return valid_moves[int(inp)-1]
-            except (IndexError, ValueError):
-                pass
+            move = self.textinput.getinput_val()
+            if move <= lasind(valid_moves):
+                return valid_moves[move]
+            else:
+                print(self.invalid_move)
 
 
 if __name__ == "__main__":

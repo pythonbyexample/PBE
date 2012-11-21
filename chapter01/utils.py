@@ -108,17 +108,21 @@ class TextInput(object):
     invalid_inp = "Invalid input"
     formats     = ("loc",)
 
-    def __init__(self, board, formats=None, prompt="> ", quit_key='q', accept_blank=False, invalid_inp=None):
+    def __init__(self, board, formats=None, options=(), prompt="> ", quit_key='q', accept_blank=False, invalid_inp=None):
         if isinstance(formats, basestring): formats = [formats]
         self.board        = board
         self.formats      = formats
+        self.options      = options
         self.prompt       = prompt
         self.quit_key     = quit_key
         self.accept_blank = accept_blank
         self.invalid_inp  = invalid_inp or self.invalid_inp
 
     def getloc(self):
-        return self.getinput(formats=["loc"])
+        return first( self.getinput(formats=["loc"]) )
+
+    def getinput_val(self):
+        return first(self.getinput())
 
     def getinput(self, formats=None):
         formats = formats or self.formats

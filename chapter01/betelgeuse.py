@@ -15,6 +15,12 @@ player_chars = 'IX'
 ai_players   = 'IX'
 ai_players   = 'X'
 
+neutral_char = 'N'
+blank        = '.'
+nl           = '\n'
+space        = ' '
+tiletpl      = '%14s'
+
 pause_time   = 0.5
 num_stars    = 6
 star_turns   = 5
@@ -22,15 +28,6 @@ star_defence = 0.4
 send_chance  = 0.4
 send_cutoff  = 25
 show_ships   = True
-
-nl           = '\n'
-space        = ' '
-blank        = '.'
-prompt       = '> '
-quit_key     = 'q'
-divchar      = '-'
-tiletpl      = '%14s'
-neutral_char = 'N'
 
 
 class PlayerBase(object):
@@ -66,22 +63,18 @@ class Star(Tile):
         self.production = randint(8, 12)
         board[loc]      = self
 
-    def turn(self):
-        if betelgeuse.turn % star_turns == 0:
-            self.ships += self.production if (self in players) else (self.production // 2)
-
     def __repr__(self):
         data = [self.char or neutral_char, self.num]
         if show_ships or self==betelgeuse.show_ships_player:
             data.append("%s:%s" % (self.production, self.ships))
         return ujoin(data, space)
 
+    def go(self):
+        if betelgeuse.turn % star_turns == 0:
+            self.ships += self.production if (self in players) else (self.production // 2)
+
 
 class BetelgeuseBoard(Board):
-    def dist(self, *stars):
-        l1, l2 = (s.loc for s in stars)
-        return math.sqrt( abs(l2.x - l1.x)**2 + abs(l2.y - l1.y)**2  )
-
     def random_blank(self):
         return rndchoice( [t.loc for t in self if t.blank] )
 
@@ -99,10 +92,14 @@ class Fleet(PlayerBase):
         self.origin  = origin
         self.star    = star     # target star
         self.ships   = ships
-        self.arrival = betelgeuse.turn + round(board.dist(origin, star) / 2)
+        self.arrival = betelgeuse.turn + round(board.dist(origin.loc, star.loc) / 2)
         origin.ships -= ships
 
-    def move(self):
+    def __repr__(self):
+        eta = self.arrival - betelgeuse.turn
+        return "(%s %s %s s:%d, a:%d)" % (self.char, self.origin.num, self.star.num, self.ships, eta)
+
+    def go(self):
         if betelgeuse.turn >= self.arrival:
             if self == self.star : self.land()
             else                 : self.attack()
@@ -121,10 +118,6 @@ class Fleet(PlayerBase):
         self.star.char = self.char
         self.star.ships += self.ships
         self.die()
-
-    def __repr__(self):
-        eta = self.arrival - betelgeuse.turn
-        return "(%s %s %s s:%d, a:%d)" % (self.char, self.origin.num, self.star.num, self.ships, eta)
 
     def die(self):
         fleets.remove(self)
@@ -147,7 +140,7 @@ class Player(PlayerBase):
             if cmd: self.send(*cmd)
 
     def random_move(self, star):
-        def dist(star2): return board.dist(star, star2)
+        def dist(star2): return board.dist(star.loc, star2.loc)
 
         if random() < send_chance and star.ships >= send_cutoff:
             targets = sorted([s for s in stars if s != self], key=dist)
@@ -173,9 +166,7 @@ class Betelgeuse(object):
 
 
 class Test(object):
-    invalid_inp  = "Invalid input"
     invalid_move = "Invalid move... try again"
-    stat_div     = " | "
 
     def run(self):
         self.textinput = TextInput(board, "%hd %hd %d", accept_blank=True)
@@ -188,8 +179,7 @@ class Test(object):
                 betelgeuse.check_end(player)
                 sleep(pause_time)
 
-            for star in stars: star.turn()
-            for fleet in fleets: fleet.move()
+            for x in stars + fleets: x.go()
             betelgeuse.turn += 1
 
     def make_moves(self, player):
