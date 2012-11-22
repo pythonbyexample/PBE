@@ -61,7 +61,7 @@ class SudokuBoard(Board):
 class Sudoku(object):
     winmsg  = "Solved!"
 
-    def check(self, loc, val):
+    def valid_move(self, loc, val):
         if not board[loc]==blank: return False
 
         for reg_line in board.lines + board.regions:
@@ -90,8 +90,8 @@ class Test(object):
     def get_move(self):
         while True:
             cmd = self.textinput.getinput()
-            if sudoku.check(*cmd) : return cmd
-            else                  : print(self.textinput.invalid_move)
+            if sudoku.valid_move(*cmd) : return cmd
+            else                       : print(self.textinput.invalid_move)
 
 
 if __name__ == "__main__":

@@ -145,7 +145,7 @@ class TextInput(object):
             except (IndexError, ValueError, TypeError, KeyError), e:
                 print(self.invalid_inp)
 
-    def matchfmt(self, inp, fmt):
+    def matchfmt(self, fmt, inp):
         for init, repl in self.regexes:
             fmt = fmt.replace(init, repl)
         return re.match(fmt, inp)
@@ -156,13 +156,13 @@ class TextInput(object):
         fmt      = fmt.split()
         inp      = copy(inp)
         commands = []
-        handlers = {"%d": int, "%f": float, "%s": str, None: str}
+        handlers = {"%d": int, "%f": float, "%s": str}
         regexes  = dict(self.regexes)
 
         def nomatch(val): return bool( optional and not re.match(regex, val) )
 
         for n, code in enumerate(fmt):
-            regex    = regexes.get(code)
+            regex    = regexes.get(code, code)
             optional = code.endswith('?')
             if optional: code = code[:-1]
 
@@ -181,10 +181,10 @@ class TextInput(object):
                 else                   : commands.append( int(inp.pop(0)) - 1 )
 
             else:
+                regex = u"^%s$" % regex     # make sure we don't match optional pattern
                 if nomatch(first(inp)) : continue
-                else                   : commands.append( handlers.get(code)(inp.pop(0)) )
+                else                   : commands.append( handlers.get(code, str)(inp.pop(0)) )
 
-        if inp: raise ValueError
         return commands
 
     def parse_input(self, formats):
@@ -193,7 +193,7 @@ class TextInput(object):
         if self.accept_blank and not inp:
             return ''
 
-        formats = [fmt for fmt in formats if self.matchfmt(inp, fmt)]
+        formats = [fmt for fmt in formats if self.matchfmt(fmt, inp)]
         if not formats:
             raise ValueError
 

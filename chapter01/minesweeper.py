@@ -21,24 +21,15 @@ class Test(object):
         self.textinput = TextInput(board, "m? loc")
         while True:
             board.draw()
-            self.ai_move() if ai_run else self.get_move()
+            self.ai_move() if ai_run else self.make_move()
 
-    def get_move(self):
-        while True:
-            cmd  = self.textinput.getinput()
-            ok   = True
-            mark = False
-            loc  = cmd.pop()
-
-            if cmd == [mark_key]:
-                mark = True
-            elif cmd:
-                print(self.textinput.invalid_move)
-                continue
-
-            tile = board[loc]
-            tile.toggle_mark() if mark else board.reveal(tile)
-            msweep.check_end(tile)
+    def make_move(self):
+        cmd  = self.textinput.getinput()
+        loc  = cmd.pop()
+        mark = bool(cmd)
+        tile = board[loc]
+        tile.toggle_mark() if mark else board.reveal(tile)
+        msweep.check_end(tile)
 
     def ai_move(self):
         """Very primitive `AI', does not mark mines & does not try to avoid them."""
