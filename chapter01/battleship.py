@@ -5,12 +5,12 @@ import sys
 from random import choice as rndchoice
 from time import sleep
 
-from utils import TextInput, AttrToggles, enumerate1, range1, ujoin, flatten, nextval
+from utils import TextInput, AttrToggles, enumerate1, range1, ujoin, flatten, nextval, first
 from board import Board, Loc
 
 size       = 5, 5
 num_ships  = 3
-pause_time = 0.1
+pause_time = 0.4
 
 nl         = '\n'
 space      = ' '
@@ -19,6 +19,7 @@ tiletpl    = '%3s'
 shipchar   = '#'
 sunkship   = '%'
 hitchar    = '*'
+padding    = 2, 1
 
 players    = [1, 2]
 ai_players = [1, 2]
@@ -60,9 +61,10 @@ class Ship(Tile):
 
 class BattleshipBoard(Board):
     def __init__(self, size):
-        super(BattleshipBoard, self).__init__(size, Blank, tiletpl=tiletpl)
+        super(BattleshipBoard, self).__init__(size, Blank, num_grid=True, padding=padding,
+                                              pause_time=0, screen_sep=0)
 
-    def draw(self):
+    def draw2(self):
         print(space*3, ujoin(range1(self.width), tpl=tiletpl), nl )
         for n, row in enumerate1(self.board):
             print(tiletpl % n, ujoin(row, tpl=tiletpl), nl)
@@ -132,11 +134,11 @@ class Battleship(object):
 
     def draw(self):
         p1, p2 = players
-
         print(nl*5)
         p1.board.draw()
         print(divider)
         p2.board.draw()
+        sleep(pause_time)
 
     def check_end(self, player):
         if all(ship.is_hit for ship in player.board.ships()):
@@ -159,7 +161,6 @@ class Test(object):
                 tile = self.ai_move(player) if player.ai else self.get_move(player)
                 tile.hit()
                 bship.check_end(player.enemy())
-                sleep(pause_time)
             print(divider)
 
     def get_move(self, player):

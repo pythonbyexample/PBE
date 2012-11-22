@@ -13,14 +13,10 @@ size         = 8
 player_chars = 'XO'
 ai_players   = 'O'
 
-pause_time   = 0.2
-
 nl           = '\n'
 space        = ' '
 blankchar    = '.'
-prompt       = '> '
-quit_key     = 'q'
-tiletpl      = "%5s"
+padding      = 4, 2
 
 
 class CompareChar(object):
@@ -86,7 +82,7 @@ class VersiBoard(Board):
     def is_corner(self, loc):
         return loc.x in (0, self.maxx) and loc.y in (0, self.maxy)
 
-    def draw(self):
+    def draw2(self):
         print(nl*5)
         print(space*5, ujoin( range1(self.width), space, tiletpl ), nl)
 
@@ -173,7 +169,7 @@ class Test(object):
 
 
 if __name__ == "__main__":
-    board   = VersiBoard(size, Tile)
+    board   = VersiBoard(size, Tile, num_grid=True, padding=padding)
     versi   = Versi()
     players = [Player(c) for c in player_chars]
     player1, player2 = players

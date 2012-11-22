@@ -4,7 +4,6 @@ from __future__ import print_function, unicode_literals, division
 import sys
 from random import choice as rndchoice
 from random import randint, random
-from time import sleep
 import math
 
 from utils import range1, TextInput, ujoin, first
@@ -19,7 +18,7 @@ neutral_char   = 'N'
 blank          = '.'
 nl             = '\n'
 space          = ' '
-tiletpl        = '%14s'
+padding        = 13, 4
 
 pause_time     = 0.5
 num_stars      = 6
@@ -79,7 +78,7 @@ class BetelgeuseBoard(Board):
     def random_blank(self):
         return rndchoice( [t.loc for t in self if t.blank] )
 
-    def draw(self):
+    def draw2(self):
         print(nl*5)
         for row in self.board:
             print(ujoin(row, '', tpl=self.tiletpl), nl*4)
@@ -175,7 +174,6 @@ class Test(object):
                 board.draw()
                 player.make_random_moves() if player.ai else self.make_moves(player)
                 betelgeuse.check_end(player)
-                sleep(pause_time)
 
             for x in stars + fleets: x.go()
             betelgeuse.turn += 1
@@ -201,7 +199,7 @@ class Test(object):
 
 
 if __name__ == "__main__":
-    board      = BetelgeuseBoard(size, Tile, tiletpl=tiletpl)
+    board      = BetelgeuseBoard(size, Tile, padding=padding, pause_time=pause_time)
     betelgeuse = Betelgeuse()
     fleets     = []
     stars      = [Star(board.random_blank(), n) for n in range1(num_stars)]

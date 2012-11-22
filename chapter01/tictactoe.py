@@ -4,12 +4,11 @@ from __future__ import print_function, unicode_literals, division
 
 import sys
 from random import choice as rndchoice
-from time import sleep
+from itertools import cycle
 
 from board import Loc, Board
 
 size       = 3
-pause_time = 0.3
 blank      = '.'
 players    = 'xo'
 
@@ -26,8 +25,8 @@ class TictactoeBoard(Board):
 
 
 class Tictactoe(object):
-    winmsg  = "%s is the winner!"
-    drawmsg = "It's a draw!"
+    winmsg  = "\n %s is the winner!"
+    drawmsg = "\n It's a draw!"
 
     def make_win_lines(self):
         """ Create a list of winning lines -- when a player fills any one of them, he wins.
@@ -59,13 +58,10 @@ class Tictactoe(object):
     def run(self):
         self.win_lines = self.make_win_lines()
 
-        while True:
-            for player in players:
-                board[ board.random_blank() ] = player
-                board.draw()
-                print()
-                sleep(pause_time)
-                self.check_end()
+        for player in cycle(players):
+            board[ board.random_blank() ] = player
+            board.draw()
+            self.check_end()
 
 
 if __name__ == "__main__":

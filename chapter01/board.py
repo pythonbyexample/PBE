@@ -1,6 +1,11 @@
 from __future__ import print_function, unicode_literals, division
 import math
-from utils import ujoin
+from time import sleep
+
+from utils import ujoin, range1, enumerate1
+
+nl    = '\n'
+space = ' '
 
 
 class Loc(object):
@@ -30,12 +35,19 @@ class Loc(object):
 Dir = Loc
 
 class BaseBoard(object):
+    stackable  = False
 
-    def __init__(self, size, tiletpl="%s"):
+    def __init__(self, size, num_grid=False, padding=(0, 0), pause_time=0.2, screen_sep=5):
         if isinstance(size, int):
             size = size, size   # handle square board
         self.width, self.height = size
-        self.tiletpl = tiletpl
+
+        self.num_grid   = num_grid
+        self.xpad       = padding[0]
+        self.ypad       = padding[1]
+        self.pause_time = pause_time
+        self.screen_sep = screen_sep
+        self.tiletpl    = "%%%ds" % (padding[0] + 1)
         self.directions()
 
     def __iter__(self):
@@ -43,6 +55,26 @@ class BaseBoard(object):
 
     def locations(self):
         return (Loc(x, y) for y in range(self.height) for x in range(self.width))
+
+    def draw(self, pause=None):
+        pause = pause or self.pause_time
+        print(nl * self.screen_sep)
+
+        if self.num_grid:
+            print(space*(self.xpad + 1), ujoin( range1(self.width), space, self.tiletpl ), nl * self.ypad)
+
+        for n, row in enumerate1(self.board):
+            args = [self.tiletpl % n] if self.num_grid else []
+            if self.stackable:
+                row = (tile[-1] for tile in row)
+            args = args + [ujoin(row, space, self.tiletpl), nl * self.ypad]
+            print(*args)
+
+        self.status()
+        sleep(pause)
+
+    def status(self):
+        pass
 
     def valid(self, loc):
         return bool( loc.x >= 0 and loc.y >= 0 and loc.x <= self.width-1 and loc.y <= self.height-1 )
@@ -117,12 +149,10 @@ class Board(BaseBoard):
     def __delitem__(self, loc):
         self.board[loc.y][loc.x] = self.make_tile(loc)
 
-    def draw(self):
-        for row in self.board:
-            print(ujoin(row, '', tpl=self.tiletpl))
-
 
 class StackableBoard(BaseBoard):
+    stackable = True
+
     def __init__(self, size, def_tile, **kwargs):
         super(StackableBoard, self).__init__(size, **kwargs)
 
@@ -133,15 +163,11 @@ class StackableBoard(BaseBoard):
     def __getitem__(self, loc):
         return self.board[loc.y][loc.x][-1]
 
-    def items(self, loc):
-        return self.board[loc.y][loc.x]
-
     def __setitem__(self, loc, item):
         self.board[loc.y][loc.x].append(item)
 
     def __delitem__(self, loc):
         del self.board[loc.y][loc.x][-1]
 
-    def draw(self):
-        for row in self.board:
-            print(ujoin( (i[-1] for i in row), tpl=self.tiletpl))
+    def items(self, loc):
+        return self.board[loc.y][loc.x]

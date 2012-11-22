@@ -14,12 +14,11 @@ size        = 4
 players     = 'OX'
 ai_players  = 'X'
 
-pause_time  = 0.2
 check_moves = 15
 
 nl          = '\n'
 space       = ' '
-tiletpl     = "%5s"
+padding     = 5, 3
 
 
 class Tile(object):
@@ -53,7 +52,7 @@ class Tile(object):
 
 class BlocksBoard(Board):
     def __init__(self, size, def_tile):
-        super(BlocksBoard, self).__init__(size, def_tile)
+        super(BlocksBoard, self).__init__(size, def_tile, num_grid=True, padding=padding)
         for tile in self:
             tile.maxnum = len( [self.valid(n) == True for n in self.neighbour_cross_locs(tile.loc)] )
             tile.num    = Loop(range1(tile.maxnum))
@@ -71,7 +70,7 @@ class BlocksBoard(Board):
     def valid_move(self, player, loc):
         return bool( self.valid(loc) and self[loc].player in (None, player) )
 
-    def draw(self):
+    def draw2(self):
         print(nl*5)
         print(space*5, ujoin( range1(self.width), space, tiletpl ), nl)
 

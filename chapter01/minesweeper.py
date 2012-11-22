@@ -11,7 +11,6 @@ from minesweeper_lib import nl, MinesweeperBoard, Minesweeper
 
 size       = 6
 num_mines  = randint(4, 8)
-pause_time = 0.7
 mark_key   = 'm'
 ai_run     = 0
 
@@ -26,9 +25,8 @@ class Test(object):
     def make_move(self):
         cmd  = self.textinput.getinput()
         loc  = cmd.pop()
-        mark = bool(cmd)
         tile = board[loc]
-        tile.toggle_mark() if mark else board.reveal(tile)
+        tile.toggle_mark() if cmd else board.reveal(tile)
         msweep.check_end(tile)
 
     def ai_move(self):
@@ -43,7 +41,6 @@ class Test(object):
             if board[loc].revealed:
                 continue
             board.draw()
-            sleep(pause_time)
 
 
 if __name__ == "__main__":

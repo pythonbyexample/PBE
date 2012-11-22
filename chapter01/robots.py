@@ -187,11 +187,8 @@ class RBoard(Board):
     def random_blank(self):
         return rndchoice( [t.loc for t in self if t.blank] )
 
-    def draw(self, pause):
-        print(nl*5)
-        super(RBoard, self).draw()
-        print(nl, self.stat_sep.join(p.status() for p in players) )
-        sleep(pause)
+    def status(self):
+        print( nl, self.stat_sep.join(p.status() for p in players) )
 
 
 class RobotsGame(object):

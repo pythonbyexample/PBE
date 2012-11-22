@@ -14,7 +14,7 @@ blank      = ' '
 hiddenchar = '.'
 minechar   = '*'
 nl         = '\n'
-tiletpl    = '%3s'
+padding    = 2, 1
 
 
 class Tile(AttrToggles):
@@ -44,7 +44,7 @@ class MinesweeperBoard(Board):
     """Minesweeper playing board."""
 
     def __init__(self, size, num_mines):
-        super(MinesweeperBoard, self).__init__(size, Tile)
+        super(MinesweeperBoard, self).__init__(size, Tile, num_grid=True, padding=padding)
 
         self.divider = '-' * (self.width * 4 + 4)
 
@@ -67,7 +67,7 @@ class MinesweeperBoard(Board):
     def random_empty(self):
         return rndchoice( [tile for tile in self if not tile.mine] )
 
-    def draw(self):
+    def draw2(self):
         print(space*3, ujoin( range1(self.width), space, tiletpl ), nl)
 
         for n, row in enumerate1(self.board):
