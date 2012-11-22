@@ -13,14 +13,12 @@ num_ships  = 3
 pause_time = 0.1
 
 nl         = '\n'
-prompt     = '> '
 space      = ' '
+blank      = '.'
 tiletpl    = '%3s'
 shipchar   = '#'
 sunkship   = '%'
-blank      = '.'
 hitchar    = '*'
-quit_key   = 'q'
 
 players    = [1, 2]
 ai_players = [1, 2]
@@ -152,7 +150,8 @@ class Battleship(object):
 
 class Test(object):
     def run(self):
-        self.textinput = TextInput(board, "loc")
+        # board is only used to check if location is within range (using board.valid())
+        self.textinput = TextInput(first(players).board, "loc")
 
         while True:
             for player in players:
@@ -164,17 +163,12 @@ class Test(object):
             print(divider)
 
     def get_move(self, player):
-        """Get user command and return the tile."""
-        enemy = player.enemy()
-        while True:
-            loc = self.textinput.getloc()
-            if enemy.board.valid(loc) : return enemy.board[loc]
-            else                      : print(self.textinput.invalid_inp)
+        """Get user command and return the tile to attack."""
+        return player.enemy().board[ self.textinput.getloc() ]
 
     def ai_move(self, player):
-        """Very primitive `AI', always hits a random location."""
-        enemy = player.enemy()
-        return enemy.board.random_unhit()
+        """Very primitive 'AI', always hits a random location."""
+        return player.enemy().board.random_unhit()
 
 
 if __name__ == "__main__":
