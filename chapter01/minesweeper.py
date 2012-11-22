@@ -7,21 +7,18 @@ from random import randint
 from time import sleep
 
 from utils import TextInput
-from minesweeper_lib import nl, space, MinesweeperBoard, Minesweeper, Loc
+from minesweeper_lib import nl, MinesweeperBoard, Minesweeper
 
 size       = 6
 num_mines  = randint(4, 8)
 pause_time = 0.7
-prompt     = '> '
-quit_key   = 'q'
 mark_key   = 'm'
-
 ai_run     = 0
 
 
 class Test(object):
     def test(self):
-        self.textinput = TextInput(board, ("loc", "%s loc"))
+        self.textinput = TextInput(board, "m? loc")
         while True:
             board.draw()
             self.ai_move() if ai_run else self.get_move()
@@ -33,20 +30,15 @@ class Test(object):
             mark = False
             loc  = cmd.pop()
 
-            if cmd:
-                if cmd == [mark_key] : mark = True
-                else                 : ok = False
+            if cmd == [mark_key]:
+                mark = True
+            elif cmd:
+                print(self.textinput.invalid_move)
+                continue
 
-            if board.valid(loc):
-                tile = board[loc]
-                tile.toggle_mark() if mark else board.reveal(tile)
-                msweep.check_end(tile)
-                return
-            else:
-                ok = False
-
-            if not ok:
-                print(self.invalid_move)
+            tile = board[loc]
+            tile.toggle_mark() if mark else board.reveal(tile)
+            msweep.check_end(tile)
 
     def ai_move(self):
         """Very primitive `AI', does not mark mines & does not try to avoid them."""

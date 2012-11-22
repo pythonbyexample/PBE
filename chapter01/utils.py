@@ -105,8 +105,19 @@ class TextInput(object):
 
         Note: location is accepted in "human format", i.e. it's adjusted from 1-indexed to 0-indexed.
     """
-    invalid_inp = "Invalid input"
-    formats     = ("loc",)
+    invalid_inp  = "Invalid input"
+    invalid_move = "Invalid move"
+    formats      = ("loc",)
+
+    # needs to be a tuple in exact order for matchfmt() method
+    regexes     = (
+                   ("loc" , "\d+ \d+"),
+                   ("%s"  , "\w+"),
+                   ("%d"  , "\d+"),
+                   ("%hd" , "\d+"),
+                   ("%f"  , "\d\.?\d?"),
+                   (" "   , " *"),
+                    )
 
     def __init__(self, board, formats=None, options=(), prompt="> ", quit_key='q', accept_blank=False, invalid_inp=None):
         if isinstance(formats, basestring): formats = [formats]
@@ -117,6 +128,7 @@ class TextInput(object):
         self.quit_key     = quit_key
         self.accept_blank = accept_blank
         self.invalid_inp  = invalid_inp or self.invalid_inp
+
 
     def getloc(self):
         return first( self.getinput(formats=["loc"]) )
@@ -134,17 +146,8 @@ class TextInput(object):
                 print(self.invalid_inp)
 
     def matchfmt(self, inp, fmt):
-        replace_lst = [
-                        ("loc" , "\d+ \d+"),
-                        ("%s"  , "\w+"),
-                        ("%d"  , "\d+"),
-                        ("%hd" , "\d+"),
-                        ("%f"  , "\d\.?\d?"),
-                        (" "   , " *"),
-                        ]
-        for init, repl in replace_lst:
+        for init, repl in self.regexes:
             fmt = fmt.replace(init, repl)
-
         return re.match(fmt, inp)
 
     def parse_fmt(self, inp, fmt):
@@ -153,25 +156,33 @@ class TextInput(object):
         fmt      = fmt.split()
         inp      = copy(inp)
         commands = []
-        handlers = {"%d": int, "%f": float, "%s": str}
+        handlers = {"%d": int, "%f": float, "%s": str, None: str}
+        regexes  = dict(self.regexes)
+
+        def nomatch(val): return bool( optional and not re.match(regex, val) )
 
         for n, code in enumerate(fmt):
+            regex    = regexes.get(code)
+            optional = code.endswith('?')
+            if optional: code = code[:-1]
 
             if code == "loc":
-                x, y = inp.pop(0), inp.pop(0)
-                loc = Loc( int(x)-1, int(y)-1 )
-                if not self.board.valid(loc):
-                    return False
-                commands.append(loc)
+                if nomatch( ujoin(inp[:2]) ):
+                    continue
+                else:
+                    x, y = inp.pop(0), inp.pop(0)
+                    loc = Loc( int(x)-1, int(y)-1 )
+                    if not self.board.valid(loc):
+                        raise IndexError
+                    commands.append(loc)
 
             elif code == "%hd":     # 'human' format, 1-indexed, integer
-                commands.append( int(inp.pop(0)) - 1 )
-
-            elif code in handlers:
-                commands.append( handlers.get(code)(inp.pop(0)) )
+                if nomatch(first(inp)) : continue
+                else                   : commands.append( int(inp.pop(0)) - 1 )
 
             else:
-                raise InvalidCode(code)
+                if nomatch(first(inp)) : continue
+                else                   : commands.append( handlers.get(code)(inp.pop(0)) )
 
         if inp: raise ValueError
         return commands

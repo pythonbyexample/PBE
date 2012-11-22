@@ -7,27 +7,28 @@ from random import randint, random
 from time import sleep
 import math
 
-from utils import range1, TextInput, itersplit, ujoin, first
+from utils import range1, TextInput, ujoin, first
 from board import Board, Loc
 
-size         = 8
-player_chars = 'IX'
-ai_players   = 'IX'
-ai_players   = 'X'
+size           = 8
+player_chars   = 'IX'
+ai_players     = 'IX'
+ai_players     = 'X'
 
-neutral_char = 'N'
-blank        = '.'
-nl           = '\n'
-space        = ' '
-tiletpl      = '%14s'
+neutral_char   = 'N'
+blank          = '.'
+nl             = '\n'
+space          = ' '
+tiletpl        = '%14s'
 
-pause_time   = 0.5
-num_stars    = 6
-star_turns   = 5
-star_defence = 0.4
-send_chance  = 0.4
-send_cutoff  = 25
-show_ships   = True
+pause_time     = 0.5
+num_stars      = 6
+star_turns     = 5
+star_defence   = 0.4
+production_rng = 8, 12
+send_chance    = 0.4
+send_cutoff    = 25
+show_ships     = True
 
 
 class PlayerBase(object):
@@ -60,7 +61,7 @@ class Star(Tile):
     def __init__(self, loc, num):
         self.loc        = loc
         self.num        = num
-        self.production = randint(8, 12)
+        self.production = randint(*production_rng)
         board[loc]      = self
 
     def __repr__(self):
@@ -107,19 +108,18 @@ class Fleet(PlayerBase):
     def attack(self):
         """Note: need to do checks at the start of loop in case there are no ships in `star`."""
         while True:
-            if not self.ships      : self.die(); break
+            if not self.ships      : self.dismiss(); break
             if not self.star.ships : self.land(conquer=True); break
             loser = self.star if random() > star_defence else self
             loser.ships -= 1
 
     def land(self, conquer=False):
-        if conquer:
-            print(self.conquer_msg % (self.char, self.star.num))
+        # if conquer: print(self.conquer_msg % (self.char, self.star.num))
         self.star.char = self.char
         self.star.ships += self.ships
-        self.die()
+        self.dismiss()
 
-    def die(self):
+    def dismiss(self):
         fleets.remove(self)
 
 
@@ -166,8 +166,6 @@ class Betelgeuse(object):
 
 
 class Test(object):
-    invalid_move = "Invalid move... try again"
-
     def run(self):
         self.textinput = TextInput(board, "%hd %hd %d", accept_blank=True)
 
@@ -199,7 +197,7 @@ class Test(object):
             if src == player and src.ships >= ships:
                 return src, goal, ships
             else:
-                print(self.invalid_move)
+                print(self.textinput.invalid_move)
 
 
 if __name__ == "__main__":

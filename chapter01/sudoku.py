@@ -12,25 +12,24 @@ from board import Board, Loc
 size       = 9
 pause_time = 0.2
 
-nl         = '\n'
 space      = ' '
-prompt     = '> '
-quit_key   = 'q'
-tiletpl    = "%2s"
-divider    = '-' * (27 + 9)
+nl         = '\n'
 blank      = '.'
+tiletpl    = '%2s'
+divider    = '-' * (27 + 9)
 
 rng3       = range(3)
 rng9       = range(9)
 offsets    = (0, 3, 6)
 
-# in format produced by QQwing program
+# in format produced by QQwing program; just one puzzle for testing
 puzzles    = [".13.....22.....48....7...19...9..8..7......2....3.......263.9..4.9.7.6....149...8"]
 
 
 class SudokuBoard(Board):
     def __init__(self, size, def_tile, puzzle):
         super(SudokuBoard, self).__init__(size, def_tile)
+
         for loc, val in zip(self.locations(), puzzle):
             self[loc] = val if val==blank else int(val)
 
@@ -79,10 +78,7 @@ class Sudoku(object):
         sys.exit()
 
 
-
 class Test(object):
-    invalid_move = "Invalid move... try again"
-
     def run(self):
         self.textinput = TextInput(board, "loc %d")
         while True:
@@ -93,11 +89,9 @@ class Test(object):
 
     def get_move(self):
         while True:
-            loc, val = self.textinput.getinput()
-            if sudoku.check(loc, val):
-                return loc, val
-            else:
-                print(self.invalid_move)
+            cmd = self.textinput.getinput()
+            if sudoku.check(*cmd) : return cmd
+            else                  : print(self.textinput.invalid_move)
 
 
 if __name__ == "__main__":

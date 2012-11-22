@@ -19,8 +19,6 @@ check_moves = 15
 
 nl          = '\n'
 space       = ' '
-prompt      = '> '
-quit_key    = 'q'
 tiletpl     = "%5s"
 
 
