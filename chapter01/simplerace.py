@@ -8,18 +8,18 @@ from random import shuffle
 from time import sleep
 from itertools import cycle
 
-from utils import Dice, TextInput, ujoin, nextval, lasind
+from utils import Dice, TextInput, ujoin, nextval, lastind, first
 
-size       = 20
-num_pieces = 3
-blank      = '.'
-space      = ' '
-quit_key   = 'q'
-nl         = '\n'
-pause_time = 0.5     # in seconds
+size         = 20
+num_pieces   = 3
+blank        = '.'
+space        = ' '
+quit_key     = 'q'
+nl           = '\n'
+pause_time   = 0.5     # in seconds
 
-players    = 'gb'
-ai_players = 'gb'
+player_chars = 'gb'
+ai_players   = 'b'
 
 
 class Tile(object):
@@ -28,6 +28,7 @@ class Tile(object):
 
 class Blank(Tile):
     char = blank
+
 
 class Piece(Tile):
     loc  = -1
@@ -39,7 +40,7 @@ class Piece(Tile):
     def move(self, loc):
         """Move to location `loc`, if moved past the end, set `done` property."""
         track[self.loc] = Blank()
-        if loc > len(track) - 1:
+        if loc > lastind(track):
             self.done = True
         else:
             if track[loc].char is not blank:
@@ -55,9 +56,8 @@ class SimpleRace(object):
         """ Create pieces; create list of players with one or the other being the first to move;
             create dice object.
         """
-        self.players = [[Piece(p) for _ in range(num_pieces)] for p in players]
-        self.dice    = Dice(num=1)      # one 6-sided dice
-        shuffle(self.players)
+        self.dice = Dice(num=1)     # one 6-sided dice
+        shuffle(players)
 
     def draw(self):
         """Display the racing track."""
@@ -80,9 +80,6 @@ class SimpleRace(object):
         moves = [(p.loc+move, p) for p in player if not p.done and self.valid(p, p.loc+move)]
         return sorted( dict(moves).items() )
 
-    def is_ai(self, player):
-        return bool(player[0].char in ai_players)
-
     def check_end(self, player):
         """Check if `player` has won the game."""
         if all(piece.done for piece in player):
@@ -90,15 +87,26 @@ class SimpleRace(object):
 
     def game_won(self, player):
         self.draw()
-        print(self.winmsg % player[0].char)
+        print(self.winmsg % player.char)
         sys.exit()
 
 
-class Test(object):
-    self.invalid_move = "Invalid move"
+class Player(object):
+    def __init__(self, char):
+        self.char   = char
+        self.ai     = char in ai_players
+        self.pieces = [Piece(char) for _ in range(num_pieces)]
 
+    def __repr__(self):
+        return self.char
+
+    def __iter__(self):
+        return iter(self.pieces)
+
+
+class Test(object):
     def offer_choice(self, player, valid_moves):
-        return bool(not race.is_ai(player) and len(valid_moves) > 1)
+        return bool(not player.ai and len(valid_moves) > 1)
 
     def run(self):
         """ Run main game loop.
@@ -106,12 +114,13 @@ class Test(object):
             If more than one valid move is available to the human player, let him make the choice
             with `get_move()`.
         """
-        self.textinput = TextInput(board, '%hd')
-        player = race.players[0][0].char
-        if ai_players and player not in ai_players:
+
+        self.textinput = TextInput(None, '%hd')
+        player = first(players)
+        if ai_players and player.char not in ai_players:
             print("You are playing:", player)
 
-        for player in cycle(race.players):
+        for player in cycle(players):
             race.draw()
             movedist    = race.dice.rollsum()
             valid_moves = race.valid_moves(player, movedist)
@@ -132,14 +141,14 @@ class Test(object):
 
         while True:
             move = self.textinput.getinput_val()
-            if move <= lasind(valid_moves):
-                return valid_moves[move]
-            else:
-                print(self.invalid_move)
+
+            if move <= lastind(valid_moves) : return valid_moves[move]
+            else                            : print(self.textinput.invalid_move)
 
 
 if __name__ == "__main__":
-    track = [Blank() for _ in range(size)]
-    race  = SimpleRace()
+    track   = [Blank() for _ in range(size)]
+    players = [Player(c) for c in player_chars]
+    race    = SimpleRace()
     try: Test().run()
     except KeyboardInterrupt: pass
