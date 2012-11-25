@@ -11,7 +11,7 @@ from board import Board, Loc
 
 size         = 8
 player_chars = 'XO'
-ai_players   = 'XO'
+ai_players   = 'O'
 
 nl           = '\n'
 space        = ' '

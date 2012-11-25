@@ -113,12 +113,13 @@ class TextInput(object):
 
     # needs to be a tuple in exact order for matchfmt() method
     regexes     = (
-                   ("loc" , "\d+ \d+"),
-                   ("%s"  , "\w+"),
-                   ("%d"  , "\d+"),
-                   ("%hd" , "\d+"),
-                   ("%f"  , "\d\.?\d?"),
-                   (" "   , " *"),
+                   ("loc?" , "(\d+ \d+)?"),
+                   ("loc"  , "\d+ \d+"),
+                   ("%s"   , "\w+"),
+                   ("%d"   , "\d+"),
+                   ("%hd"  , "\d+"),
+                   ("%f"   , "\d\.?\d?"),
+                   (" "    , " *"),
                     )
 
     def __init__(self, formats=None, board=None, options=(), prompt="> ", quit_key='q', accept_blank=False, invalid_inp=None):
@@ -164,11 +165,16 @@ class TextInput(object):
         def nomatch(val): return bool( optional and not re.match(regex, val) )
 
         for n, code in enumerate(fmt):
-            regex    = regexes.get(code, code)
             optional = code.endswith('?')
             if optional: code = code[:-1]
+            regex    = u"^%s$" % regexes.get(code, code)
+
+            if not inp:
+                if optional: continue
+                else: raise ValueError
 
             if code == "loc":
+
                 if nomatch( ujoin(inp[:2]) ):
                     continue
                 else:
@@ -183,7 +189,7 @@ class TextInput(object):
                 else                   : commands.append( int(inp.pop(0)) - 1 )
 
             else:
-                regex = u"^%s$" % regex     # make sure we don't match optional pattern
+                # regex = u"^%s$" % regex     # make sure we don't match optional pattern
                 if nomatch(first(inp)) : continue
                 else                   : commands.append( handlers.get(code, str)(inp.pop(0)) )
 

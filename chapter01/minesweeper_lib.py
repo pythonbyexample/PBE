@@ -31,9 +31,15 @@ class Tile(AttrToggles):
         elif self.mine   : return minechar
         else             : return str(self.number or blank)
 
+    def toggle_mark(self):
+        self.marked = not self.marked
+        self.hidden = not self.hidden
+
 
 class MinesweeperBoard(Board):
     def __init__(self, *args, **kwargs):
+        num_mines = kwargs.pop("num_mines")
+
         super(MinesweeperBoard, self).__init__(*args, **kwargs)
         self.divider = '-' * (self.width * 4 + 4)
 
@@ -93,5 +99,6 @@ class Minesweeper(object):
         sys.exit()
 
     def game_won(self):
+        self.board.draw()
         print( self.win_msg % timefmt(time() - self.start) )
         sys.exit()
