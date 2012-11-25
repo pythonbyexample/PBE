@@ -13,11 +13,12 @@ size       = 6
 num_mines  = randint(4, 8)
 mark_key   = 'm'
 ai_run     = 0
+padding    = 2, 1
 
 
 class Test(object):
     def test(self):
-        self.textinput = TextInput(board, "m? loc")
+        self.textinput = TextInput("m? loc", board)
         while True:
             board.draw()
             self.ai_move() if ai_run else self.make_move()
@@ -44,7 +45,7 @@ class Test(object):
 
 
 if __name__ == "__main__":
-    board = MinesweeperBoard(size, num_mines)
+    board = MinesweeperBoard(size, num_mines, num_grid=True, padding=padding)
     msweep = Minesweeper(board)
     try: Test().test()
     except KeyboardInterrupt: pass

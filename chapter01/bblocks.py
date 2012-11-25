@@ -7,24 +7,18 @@ from random import randint
 from time import sleep
 from itertools import cycle
 
-from utils import enumerate1, range1, ujoin, Loop, TextInput
+from utils import Loop, TextInput, enumerate1, range1, ujoin, first, nl, space
 from board import Board, Loc
 
 size        = 4
 players     = 'OX'
 ai_players  = 'X'
-
 check_moves = 15
-
-nl          = '\n'
-space       = ' '
 padding     = 5, 3
 
 
 class Tile(object):
-    num    = 1
-    maxnum = 1
-    player = None
+    num = maxnum = player = None
 
     def __init__(self, loc):
         self.loc = loc
@@ -51,32 +45,23 @@ class Tile(object):
 
 
 class BlocksBoard(Board):
-    def __init__(self, size, def_tile):
-        super(BlocksBoard, self).__init__(size, def_tile, num_grid=True, padding=padding)
+    def __init__(self, *args, **kwargs):
+        super(BlocksBoard, self).__init__(*args, **kwargs)
+        neighbours = self.neighbour_cross_locs
         for tile in self:
-            tile.maxnum = len( [self.valid(n) == True for n in self.neighbour_cross_locs(tile.loc)] )
+            tile.maxnum = len( [self.valid(n) for n in neighbours(tile.loc)] )
             tile.num    = Loop(range1(tile.maxnum))
 
     def random_move(self, player):
-        """If a 50% roll is made, return the move closest to completing a tile; otherwise a random move."""
+        """Randomly choose between returning the move closest to completing a tile or a random move."""
         tiles = [t for t in self if self.valid_move(player, t.loc)]
 
         def to_max(t): return t.maxnum - t.num
         tiles.sort(key=to_max)
-
-        if randint(0,1) : return tiles[0]
-        else            : return rndchoice(tiles)
+        return rndchoice( [first(tiles), rndchoice(tiles)] )
 
     def valid_move(self, player, loc):
-        return bool( self.valid(loc) and self[loc].player in (None, player) )
-
-    def draw2(self):
-        print(nl*5)
-        print(space*5, ujoin( range1(self.width), space, tiletpl ), nl)
-
-        for n, row in enumerate1(self.board):
-            print(tiletpl % n, ujoin(row, space, tiletpl), nl*2)
-        sleep(pause_time)
+        return bool(self[loc].player in (None, player))
 
 
 class BlockyBlocks(object):
@@ -93,10 +78,8 @@ class BlockyBlocks(object):
 
 
 class Test(object):
-    invalid_move = "Invalid move... try again"
-
     def run(self):
-        self.textinput = TextInput(board)
+        self.textinput = TextInput(board=board)
 
         for p in cycle(players):
             board.draw()
@@ -107,14 +90,12 @@ class Test(object):
     def get_move(self, player):
         while True:
             loc = self.textinput.getloc()
-            if board.valid_move(player, loc):
-                return board[loc]
-            else:
-                print(self.invalid_move)
+            if board.valid_move(player, loc) : return board[loc]
+            else                             : print(self.textinput.invalid_move)
 
 
 if __name__ == "__main__":
-    board   = BlocksBoard(size, Tile)
+    board   = BlocksBoard(size, def_tile, num_grid=True, padding=padding)
     bblocks = BlockyBlocks()
 
     try: Test().run()

@@ -7,6 +7,8 @@ from random import randint
 
 sentinel = object()
 space    = ' '
+nl       = '\n'
+
 
 class InvalidCode(Exception):
     def __init__(self, val) : self.val = val
@@ -119,7 +121,7 @@ class TextInput(object):
                    (" "   , " *"),
                     )
 
-    def __init__(self, board, formats=None, options=(), prompt="> ", quit_key='q', accept_blank=False, invalid_inp=None):
+    def __init__(self, formats=None, board=None, options=(), prompt="> ", quit_key='q', accept_blank=False, invalid_inp=None):
         if isinstance(formats, basestring): formats = [formats]
         self.board        = board
         self.formats      = formats
@@ -133,7 +135,7 @@ class TextInput(object):
     def getloc(self):
         return first( self.getinput(formats=["loc"]) )
 
-    def getinput_val(self):
+    def getval(self):
         return first(self.getinput())
 
     def getinput(self, formats=None):
@@ -148,7 +150,7 @@ class TextInput(object):
     def matchfmt(self, fmt, inp):
         for init, repl in self.regexes:
             fmt = fmt.replace(init, repl)
-        return re.match(fmt, inp)
+        return re.match(u"^%s$" % fmt, inp)
 
     def parse_fmt(self, inp, fmt):
         """Attempt to parse `inp` using `fmt` format; return False if there is mismatch."""
@@ -172,7 +174,7 @@ class TextInput(object):
                 else:
                     x, y = inp.pop(0), inp.pop(0)
                     loc = Loc( int(x)-1, int(y)-1 )
-                    if not self.board.valid(loc):
+                    if self.board and not self.board.valid(loc):
                         raise IndexError
                     commands.append(loc)
 
@@ -185,6 +187,7 @@ class TextInput(object):
                 if nomatch(first(inp)) : continue
                 else                   : commands.append( handlers.get(code, str)(inp.pop(0)) )
 
+        if inp: raise ValueError
         return commands
 
     def parse_input(self, formats):
@@ -253,3 +256,7 @@ def nextval(iterable, value):
 
 def first(iterable):
     return next(iter(iterable))
+
+def getitem(iterable, index, default=None):
+    try               : return iterable[index]
+    except IndexError : return default

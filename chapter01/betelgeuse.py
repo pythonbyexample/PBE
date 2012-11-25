@@ -78,11 +78,6 @@ class BetelgeuseBoard(Board):
     def random_blank(self):
         return rndchoice( [t.loc for t in self if t.blank] )
 
-    def draw2(self):
-        print(nl*5)
-        for row in self.board:
-            print(ujoin(row, '', tpl=self.tiletpl), nl*4)
-
 
 class Fleet(PlayerBase):
     conquer_msg = "%s conquers star system #%d"
@@ -166,7 +161,7 @@ class Betelgeuse(object):
 
 class Test(object):
     def run(self):
-        self.textinput = TextInput(board, "%hd %hd %d", accept_blank=True)
+        self.textinput = TextInput("%hd %hd %d", board, accept_blank=True)
 
         while True:
             for player in players:

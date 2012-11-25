@@ -123,9 +123,9 @@ class BaseBoard(object):
         self[loc]    = self.make_tile(loc)
         item.loc     = newloc
 
-    def nextloc(self, loc, dir):
+    def nextloc(self, loc, dir, n=1):
         """Return location next to `start` point in direction `dir`."""
-        loc = Loc(loc.x + dir.x, loc.y + dir.y)
+        loc = Loc(loc.x + dir.x*n, loc.y + dir.y*n)
         return loc if self.valid(loc) else None
 
     def dist(self, l1, l2):

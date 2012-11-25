@@ -8,26 +8,21 @@ from random import shuffle
 from time import sleep
 from itertools import cycle
 
-from utils import Dice, TextInput, ujoin, nextval, lastind, first
+from utils import Dice, TextInput, ujoin, nextval, lastind, first, enumerate1, getitem, nl, space
 
 size         = 20
 num_pieces   = 3
 blank        = '.'
-space        = ' '
-quit_key     = 'q'
-nl           = '\n'
 pause_time   = 0.5     # in seconds
-
 player_chars = 'gb'
 ai_players   = 'b'
 
 
 class Tile(object):
+    char = blank
+
     def __repr__(self):
         return self.char
-
-class Blank(Tile):
-    char = blank
 
 
 class Piece(Tile):
@@ -39,13 +34,15 @@ class Piece(Tile):
 
     def move(self, loc):
         """Move to location `loc`, if moved past the end, set `done` property."""
-        track[self.loc] = Blank()
+        track[self.loc] = Tile()
+
         if loc > lastind(track):
             self.done = True
         else:
             if track[loc].char is not blank:
                 track[loc].loc = -1     # bump enemy piece back to start
             track[loc] = self
+
         self.loc = loc
 
 
@@ -65,7 +62,7 @@ class SimpleRace(object):
 
     def valid(self, piece, loc):
         """Valid move: any move that does not land on your other piece (beyond track is ok)."""
-        return bool(loc > len(track)-1 or track[loc].char != piece.char)
+        return bool(loc > lastind(track) or track[loc].char != piece.char)
 
     def valid_moves(self, player, move):
         """ Valid moves for `player`: return tuples (piece, newloc) for each piece belonging to `player`.
@@ -74,8 +71,8 @@ class SimpleRace(object):
             choice between two identical moves, so we need to convert the list of tuples to a dict which
             gets rid of duplicate keys (locations) and then convert back to a list using `items()`
             method.
-            We also need to sort `moves` by location because this looks better to the
-            user when choices are shown in `get_move()`.
+            We also need to sort `moves` by location because looks better to the user when moves
+            are sorted in order from left to right.
         """
         moves = [(p.loc+move, p) for p in player if not p.done and self.valid(p, p.loc+move)]
         return sorted( dict(moves).items() )
@@ -87,7 +84,7 @@ class SimpleRace(object):
 
     def game_won(self, player):
         self.draw()
-        print(self.winmsg % player.char)
+        print(self.winmsg % player)
         sys.exit()
 
 
@@ -105,8 +102,6 @@ class Player(object):
 
 
 class Test(object):
-    def offer_choice(self, player, valid_moves):
-        return bool(not player.ai and len(valid_moves) > 1)
 
     def run(self):
         """ Run main game loop.
@@ -114,9 +109,11 @@ class Test(object):
             If more than one valid move is available to the human player, let him make the choice
             with `get_move()`.
         """
+        def offer_choice(): return bool(not player.ai and len(valid_moves) > 1)
 
-        self.textinput = TextInput(None, '%hd')
+        self.textinput = TextInput('%hd')
         player = first(players)
+
         if ai_players and player.char not in ai_players:
             print("You are playing:", player)
 
@@ -126,28 +123,27 @@ class Test(object):
             valid_moves = race.valid_moves(player, movedist)
 
             if valid_moves:
-                getmove = self.get_move if self.offer_choice(player, valid_moves) else rndchoice
+                getmove = self.get_move if offer_choice() else rndchoice
                 loc, piece = getmove(valid_moves)
                 piece.move(loc)
                 race.check_end(player)
             sleep(pause_time)
 
     def get_move(self, valid_moves):
-        """Get player's choice of move options."""
-        moves = [space] * 26
-        for n, (loc, _) in enumerate(valid_moves):
-            moves[loc] = n + 1
+        """Get player's choice of available moves."""
+        moves = [space] * (size + 6)
+        for n, (loc, _) in enumerate1(valid_moves):
+            moves[loc] = n
         print(ujoin(moves))
 
         while True:
-            move = self.textinput.getinput_val()
-
-            if move <= lastind(valid_moves) : return valid_moves[move]
-            else                            : print(self.textinput.invalid_move)
+            move = getitem(valid_moves, self.textinput.getval())
+            if move is None : print(self.textinput.invalid_move)
+            else            : return move
 
 
 if __name__ == "__main__":
-    track   = [Blank() for _ in range(size)]
+    track   = [Tile() for _ in range(size)]
     players = [Player(c) for c in player_chars]
     race    = SimpleRace()
     try: Test().run()

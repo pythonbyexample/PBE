@@ -80,7 +80,7 @@ class Sudoku(object):
 
 class Test(object):
     def run(self):
-        self.textinput = TextInput(board, "loc %d")
+        self.textinput = TextInput("loc %d", board)
         while True:
             board.draw()
             loc, val   = self.get_move()
