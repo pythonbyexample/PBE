@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function, unicode_literals, division
+
 import sys
 import re
 from copy import copy
@@ -115,9 +117,13 @@ class TextInput(object):
     regexes     = (
                    ("loc?" , "(\d+ \d+)?"),
                    ("loc"  , "\d+ \d+"),
+                   ("%s?"  , "\w*"),
                    ("%s"   , "\w+"),
+                   ("%d?"  , "\d*"),
                    ("%d"   , "\d+"),
+                   ("%hd?" , "\d*"),
                    ("%hd"  , "\d+"),
+                   ("%f?"  , "\d*\.?\d*"),  # TODO: this one needs more work..
                    ("%f"   , "\d\.?\d?"),
                    (" "    , " *"),
                     )
@@ -143,6 +149,7 @@ class TextInput(object):
         formats = formats or self.formats
 
         while True:
+            # return self.parse_input(formats)
             try:
                 return self.parse_input(formats)
             except (IndexError, ValueError, TypeError, KeyError), e:
@@ -151,11 +158,13 @@ class TextInput(object):
     def matchfmt(self, fmt, inp):
         for init, repl in self.regexes:
             fmt = fmt.replace(init, repl)
-        return re.match(u"^%s$" % fmt, inp)
+        # print("^%s$" % fmt, inp)
+        return re.match("^%s$" % fmt, inp)
 
     def parse_fmt(self, inp, fmt):
         """Attempt to parse `inp` using `fmt` format; return False if there is mismatch."""
         from board import Loc
+
         fmt      = fmt.split()
         inp      = copy(inp)
         commands = []
@@ -167,7 +176,7 @@ class TextInput(object):
         for n, code in enumerate(fmt):
             optional = code.endswith('?')
             if optional: code = code[:-1]
-            regex    = u"^%s$" % regexes.get(code, code)
+            regex    = "^%s$" % regexes.get(code, code)
 
             if not inp:
                 if optional: continue
@@ -189,7 +198,6 @@ class TextInput(object):
                 else                   : commands.append( int(inp.pop(0)) - 1 )
 
             else:
-                # regex = u"^%s$" % regex     # make sure we don't match optional pattern
                 if nomatch(first(inp)) : continue
                 else                   : commands.append( handlers.get(code, str)(inp.pop(0)) )
 
@@ -200,7 +208,7 @@ class TextInput(object):
         inp = raw_input(self.prompt).strip()
         if inp == self.quit_key: sys.exit()
         if self.accept_blank and not inp:
-            return ''
+            return None
 
         formats = [fmt for fmt in formats if self.matchfmt(fmt, inp)]
         if not formats:

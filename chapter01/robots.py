@@ -6,21 +6,17 @@ from random import choice as rndchoice
 from random import randint
 from time import sleep
 
-from utils import enumerate1, range1, parse_hnuminput, ujoin, flatten, Loop
-from board import Board, Loc, Dir
+from utils import Loop, TextInput, enumerate1, range1, parse_hnuminput, ujoin, flatten, getitem, nl, space
+from board import Board, Loc
 
-size          = 10, 10
+
+size          = 30, 20
+num_players   = 1
 num_robots    = 3
-num_players   = 0
 num_rocks     = 5
 pause_time    = 0.2
-missile_pause = 0.05
-max_turns     = 20
-
-nl            = '\n'
-space         = ' '
-prompt        = '> '
-quit_key      = 'q'
+missile_pause = 0.02
+max_turns     = 25
 
 chars         = dict(Player='@', Missile='*', Rock='#', Goal='!', Blank='.')
 health_dict   = dict(Player=5, Robot=5, Missile=1, Rock=10, Goal=99)
@@ -118,27 +114,18 @@ class Robot(Mobile):
 
 class Player(Mobile):
     player      = True
-    status_msg  = "%s [%s]"
+    status_msg  = "%shp | %s"
     invalid_msg = "Invalid input"
 
     def move(self):
         loc = board.getloc(self.loc, self.direction.dir)
         if loc and board[loc].goal:
-            rgame.game_won()
+            board.move(self, loc)
+            rgame.game_end(True)
+
         super(Player, self).move()
         if self.turn >= max_turns:
-            rgame.game_lost()
-
-    def create_program(self):
-        while 1:
-            try:
-                inp = raw_input(prompt).strip()
-                if inp == quit_key: sys.exit()
-
-                return rgame.expand_program(inp)
-            except (IndexError, ValueError, TypeError, KeyError):
-                print(self.invalid_msg)
-                continue
+            rgame.game_end(False)
 
     def status(self):
         return self.status_msg % (self.health, board.dirnames[self.direction.dir])
@@ -195,30 +182,55 @@ class RobotsGame(object):
     winmsg  = "Victory! You've reached the goal!"
     losemsg = "You failed to reach the goal in %d turns.."
 
-    def expand_cmd(self, cmd):
-        count = 1
-        if len(cmd) == 2:
-            count = int(cmd[0])
-            cmd = cmd[-1]
+    def expand_cmd(self, command):
+        cmd   = command.pop()
+        count = getitem(command, 0, 1)
         return [commands[cmd]] * count
 
-    def expand_program(self, inp):
-        return flatten( self.expand_cmd(cmd) for cmd in inp.split() ) if inp else ["random"]
+    def expand_program(self, cmds):
+        L = []
+        while True:
+            count = 1
+            if not cmds: break
+            cmd = cmds.pop(0)
 
-    def game_won(self):
-        print(nl, self.winmsg)
-        sys.exit()
+            if isinstance(cmd, int):
+                if not cmds:
+                    return None
+                count, cmd = cmd, cmds.pop(0)
 
-    def game_lost(self):
-        print(nl, self.losemsg % max_turns)
+            if isinstance(cmd, int):
+                return None
+            L.extend( [commands[cmd]] * count )
+
+        return L or ["random"]
+
+    def game_end(self, win):
+        board.draw()
+        print( nl, self.winmsg if win else (self.losemsg % max_turns) )
         sys.exit()
 
 
 class Test(object):
     def run(self):
+        cmdpat         = "%%d? (%s)" % ujoin(commands.keys(), '|')
+        pattern        = cmdpat + (" %s?" % cmdpat) * 14
+        print("pattern", pattern)
+        self.textinput = TextInput(pattern, board)
+
         while True:
             board.draw(pause_time)
-            for mobile in players + robots: mobile.go()
+            for player in players:
+                player.program = player.program or self.create_program()
+                player.go()
+            for robot in robots: robot.go()
+
+    def create_program(self):
+        while 1:
+            program = rgame.expand_program( self.textinput.getinput() )
+
+            if program : return program
+            else       : print(self.textinput.invalid_inp)
 
 
 if __name__ == "__main__":
