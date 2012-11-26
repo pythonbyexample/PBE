@@ -6,14 +6,12 @@ import os
 from random import choice as rndchoice
 from string import letters
 
-from utils import ujoin
+from utils import ujoin, space, nl
 
 num_words    = 6
 initial_hide = 0.7
 start_points = 30
 hiddenltr    = '_'
-nl           = '\n'
-space        = ' '
 
 wordsfn      = "words"
 testwords    = "sunny clouds snowflake".split()

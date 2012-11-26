@@ -6,14 +6,10 @@ from random import choice as rndchoice
 from random import randint
 from time import sleep
 
-from utils import enumerate1, range1, ujoin, TextInput
+from utils import enumerate1, range1, ujoin, TextInput, space, nl
 from board import Board, Loc
 
 size       = 9
-pause_time = 0.2
-
-space      = ' '
-nl         = '\n'
 blank      = '.'
 tiletpl    = '%2s'
 divider    = '-' * (27 + 9)

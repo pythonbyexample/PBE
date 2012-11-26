@@ -14,6 +14,7 @@ size          = 15, 10
 num_players   = 1
 num_robots    = 3
 num_rocks     = 5
+
 pause_time    = 0.2
 missile_pause = 0.06
 max_turns     = 25

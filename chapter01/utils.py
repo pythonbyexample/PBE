@@ -139,7 +139,6 @@ class TextInput(object):
         self.accept_blank = accept_blank
         self.invalid_inp  = invalid_inp or self.invalid_inp
 
-
     def getloc(self):
         return first( self.getinput(formats=["loc"]) )
 
