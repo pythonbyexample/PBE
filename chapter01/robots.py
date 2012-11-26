@@ -10,13 +10,14 @@ from utils import Loop, TextInput, enumerate1, range1, parse_hnuminput, ujoin, f
 from board import Board, Loc
 
 
-size          = 30, 20
+size          = 15, 10
 num_players   = 1
 num_robots    = 3
 num_rocks     = 5
 pause_time    = 0.2
-missile_pause = 0.02
+missile_pause = 0.06
 max_turns     = 25
+max_cmds      = 15
 
 chars         = dict(Player='@', Missile='*', Rock='#', Goal='!', Blank='.')
 health_dict   = dict(Player=5, Robot=5, Missile=1, Rock=10, Goal=99)
@@ -24,7 +25,7 @@ commands      = dict(m="move", t="turn_cw", T="turn_ccw", f="fire", w="wait", r=
 
 
 class Tile(object):
-    robot  = blank = missile = rock = goal = False
+    player = robot = blank = missile = rock = goal = False
     health = None
 
     def __init__(self, loc):
@@ -35,6 +36,10 @@ class Tile(object):
     def __repr__(self):
         return self.char
 
+    def destroy(self):
+        """Note: we need to check for `loc` for a special case of a missile with loc=None."""
+        if self.loc: del board[self.loc]
+
 
 class Blank(Tile):
     blank = True
@@ -44,14 +49,8 @@ class PlacedTile(Tile):
         super(PlacedTile, self).__init__(loc)
         if loc: board[loc] = self
 
-    def die(self):
-        del board[self.loc]
-
-class Rock(PlacedTile):
-    rock = True
-
-class Goal(PlacedTile):
-    goal = True
+class Rock(PlacedTile): rock = True
+class Goal(PlacedTile): goal = True
 
 
 class Mobile(PlacedTile):
@@ -68,21 +67,16 @@ class Mobile(PlacedTile):
         cmd()
         self.turn += 1
 
-    def turn_cw(self):
-        self.direction.next()
-
-    def turn_ccw(self):
-        self.direction.prev()
-
-    def wait(self):
-        pass
+    def turn_cw(self)  : self.direction.next()
+    def turn_ccw(self) : self.direction.prev()
+    def wait(self)     : pass
 
     def random(self):
-        cmd = getattr( self, rndchoice(commands.values()) )
-        cmd()
+        method = getattr( self, rndchoice(commands.values()) )
+        method()
 
     def fire(self):
-        start = board.getloc(self.loc, self.direction.dir)
+        start = board.nextloc(self.loc, self.direction.dir)
         if not start: return
 
         if board[start].blank:
@@ -91,7 +85,7 @@ class Mobile(PlacedTile):
             Missile().hit(board[start])
 
     def move(self):
-        loc = board.getloc(self.loc, self.direction.dir)
+        loc = board.nextloc(self.loc, self.direction.dir)
         if loc and board[loc].blank:
             board.move(self, loc)
         else:
@@ -102,12 +96,12 @@ class Mobile(PlacedTile):
 
 
 class Robot(Mobile):
-    robot  = True
+    robot = True
 
     def __repr__(self):
         return str(self.health)
 
-    def die(self):
+    def destroy(self):
         del board[self.loc]
         robots.remove(self)
 
@@ -115,10 +109,9 @@ class Robot(Mobile):
 class Player(Mobile):
     player      = True
     status_msg  = "%shp | %s"
-    invalid_msg = "Invalid input"
 
     def move(self):
-        loc = board.getloc(self.loc, self.direction.dir)
+        loc = board.nextloc(self.loc, self.direction.dir)
         if loc and board[loc].goal:
             board.move(self, loc)
             rgame.game_end(True)
@@ -130,7 +123,7 @@ class Player(Mobile):
     def status(self):
         return self.status_msg % (self.health, board.dirnames[self.direction.dir])
 
-    def die(self):
+    def destroy(self):
         del board[self.loc]
         players.remove(self)
 
@@ -140,9 +133,9 @@ class Missile(Mobile):
 
     def go(self):
         while True:
-            loc = board.getloc(self.loc, self.direction.dir)
+            loc = board.nextloc(self.loc, self.direction.dir)
             if not loc:
-                self.die()
+                self.destroy()
                 break
 
             if board[loc].blank:
@@ -155,21 +148,12 @@ class Missile(Mobile):
     def hit(self, target):
         target.health -= 1
         if not target.health:
-            target.die()
-        self.die()
-
-    def die(self):
-        """Note: we need to check for `loc` for a special case of a missile with loc=None."""
-        if self.loc: del board[self.loc]
+            target.destroy()
+        self.destroy()
 
 
 class RBoard(Board):
     stat_sep = " | "
-
-    def getloc(self, start, dir):
-        """Return location next to `start` point in direction `dir`."""
-        loc = Loc(start.x + dir.x, start.y + dir.y)
-        return loc if self.valid(loc) else None
 
     def random_blank(self):
         return rndchoice( [t.loc for t in self if t.blank] )
@@ -182,59 +166,51 @@ class RobotsGame(object):
     winmsg  = "Victory! You've reached the goal!"
     losemsg = "You failed to reach the goal in %d turns.."
 
-    def expand_cmd(self, command):
-        cmd   = command.pop()
-        count = getitem(command, 0, 1)
-        return [commands[cmd]] * count
-
-    def expand_program(self, cmds):
-        L = []
-        while True:
-            count = 1
-            if not cmds: break
-            cmd = cmds.pop(0)
-
-            if isinstance(cmd, int):
-                if not cmds:
-                    return None
-                count, cmd = cmd, cmds.pop(0)
-
-            if isinstance(cmd, int):
-                return None
-            L.extend( [commands[cmd]] * count )
-
-        return L or ["random"]
-
     def game_end(self, win):
         board.draw()
         print( nl, self.winmsg if win else (self.losemsg % max_turns) )
         sys.exit()
 
+    def expand_program(self, cmds):
+        L = []
+        while True:
+            if not cmds: break
+            count = 1
+            cmd   = cmds.pop(0)
+
+            if isinstance(cmd, int):
+                count, cmd = cmd, cmds.pop(0)
+
+            L.extend( [commands[cmd]] * count )
+        return L
+
 
 class Test(object):
     def run(self):
-        cmdpat         = "%%d? (%s)" % ujoin(commands.keys(), '|')
-        pattern        = cmdpat + (" %s?" % cmdpat) * 14
-        print("pattern", pattern)
-        self.textinput = TextInput(pattern, board)
+        cmdpat  = "%d?"
+        cmdpat  = cmdpat + " (%s)" % ujoin(commands.keys(), '|')
+        pattern = cmdpat + (" %s?" % cmdpat) * (max_cmds - 1)
+
+        self.textinput = TextInput(pattern, board, accept_blank=True)
 
         while True:
-            board.draw(pause_time)
-            for player in players:
-                player.program = player.program or self.create_program()
-                player.go()
-            for robot in robots: robot.go()
+            board.draw()
+            for unit in players + robots:
+                cprog        = self.create_program if unit.player else unit.create_program
+                unit.program = unit.program or cprog()
+                unit.go()
 
     def create_program(self):
-        while 1:
-            program = rgame.expand_program( self.textinput.getinput() )
-
-            if program : return program
-            else       : print(self.textinput.invalid_inp)
+        while True:
+            try:
+                program = self.textinput.getinput() or ['r']
+                return rgame.expand_program(program)
+            except (KeyError, IndexError):
+                print(self.textinput.invalid_inp)
 
 
 if __name__ == "__main__":
-    board   = RBoard(size, Blank)
+    board   = RBoard(size, Blank, pause_time=pause_time)
     rgame   = RobotsGame()
 
     randloc = board.random_blank

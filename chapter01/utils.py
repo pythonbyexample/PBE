@@ -113,17 +113,18 @@ class TextInput(object):
     invalid_move = "Invalid move"
     formats      = ("loc",)
 
-    # needs to be a tuple in exact order for matchfmt() method
+    # needs to be in precise order for matchfmt() method
     regexes     = (
                    ("loc?" , "(\d+ \d+)?"),
-                   ("loc"  , "\d+ \d+"),
                    ("%s?"  , "\w*"),
-                   ("%s"   , "\w+"),
                    ("%d?"  , "\d*"),
-                   ("%d"   , "\d+"),
                    ("%hd?" , "\d*"),
-                   ("%hd"  , "\d+"),
                    ("%f?"  , "\d*\.?\d*"),  # TODO: this one needs more work..
+
+                   ("loc"  , "\d+ \d+"),
+                   ("%s"   , "\w+"),
+                   ("%d"   , "\d+"),
+                   ("%hd"  , "\d+"),
                    ("%f"   , "\d\.?\d?"),
                    (" "    , " *"),
                     )
