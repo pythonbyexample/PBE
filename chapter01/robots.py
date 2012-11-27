@@ -11,7 +11,7 @@ from board import Board, Loc
 
 
 size          = 15, 10
-num_players   = 1
+num_players   = 0
 num_robots    = 3
 num_rocks     = 5
 
@@ -33,6 +33,7 @@ class Tile(object):
         self.loc    = loc
         self.char   = chars.get(self.__class__.__name__)
         self.health = health_dict.get(self.__class__.__name__)
+        if loc: board[loc] = self
 
     def __repr__(self):
         return self.char
@@ -42,19 +43,12 @@ class Tile(object):
         if self.loc: del board[self.loc]
 
 
-class Blank(Tile):
-    blank = True
-
-class PlacedTile(Tile):
-    def __init__(self, loc):
-        super(PlacedTile, self).__init__(loc)
-        if loc: board[loc] = self
-
-class Rock(PlacedTile): rock = True
-class Goal(PlacedTile): goal = True
+class Blank(Tile) : blank = True
+class Rock(Tile)  : rock = True
+class Goal(Tile)  : goal = True
 
 
-class Mobile(PlacedTile):
+class Mobile(Tile):
     turn = 1
 
     def __init__(self, loc=None, direction=None):
@@ -211,13 +205,15 @@ class Test(object):
 
 
 if __name__ == "__main__":
-    board   = RBoard(size, Blank, pause_time=pause_time)
-    rgame   = RobotsGame()
+    board   = RBoard(size, Blank, pause_time=pause_time, init_tiles=False)
+    board.place_tiles()
 
+    rgame   = RobotsGame()
     randloc = board.random_blank
     players = [ Player(randloc()) for _ in range(num_players) ]
     robots  = [ Robot(randloc()) for _ in range(num_robots) ]
     rocks   = [ Rock(randloc()) for _ in range(num_rocks) ]
+
     Goal(randloc())
 
     try: Test().run()

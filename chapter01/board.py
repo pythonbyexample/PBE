@@ -37,17 +37,19 @@ Dir = Loc
 class BaseBoard(object):
     stackable  = False
 
-    def __init__(self, size, num_grid=False, padding=(0, 0), pause_time=0.2, screen_sep=5):
+    def __init__(self, size, num_grid=False, padding=(0, 0), pause_time=0.2, screen_sep=5, init_tiles=True):
         if isinstance(size, int):
             size = size, size   # handle square board
         self.width, self.height = size
 
-        self.num_grid   = num_grid
-        self.xpad       = padding[0]
-        self.ypad       = padding[1]
-        self.pause_time = pause_time
-        self.screen_sep = screen_sep
-        self.tiletpl    = "%%%ds" % (padding[0] + 1)
+        self.num_grid    = num_grid
+        self.xpad        = padding[0]
+        self.ypad        = padding[1]
+        self.pause_time  = pause_time
+        self.screen_sep  = screen_sep
+        self.init_tiles  = init_tiles     # place tiles in __init__; otherwise use place_tiles() post-init
+
+        self.tiletpl     = "%%%ds" % (padding[0] + 1)
         self.directions()
 
     def __iter__(self):
@@ -138,7 +140,9 @@ class Board(BaseBoard):
 
         self.def_tile = def_tile
         xrng, yrng    = range(self.width), range(self.height)
-        self.board    = [ [self.make_tile(Loc(x, y)) for x in xrng] for y in yrng ]
+        maketile      = self.make_tile if self.init_tiles else lambda loc: None
+
+        self.board    = [ [maketile(Loc(x, y)) for x in xrng] for y in yrng ]
 
     def __getitem__(self, loc):
         return self.board[loc.y][loc.x]
@@ -149,6 +153,10 @@ class Board(BaseBoard):
     def __delitem__(self, loc):
         self.board[loc.y][loc.x] = self.make_tile(loc)
 
+    def place_tiles(self):
+        for loc in self.locations():
+            self[loc] = self.make_tile(loc)
+
 
 class StackableBoard(BaseBoard):
     stackable = True
@@ -158,7 +166,9 @@ class StackableBoard(BaseBoard):
 
         self.def_tile = def_tile
         xrng, yrng    = range(self.width), range(self.height)
-        self.board    = [ [[self.make_tile(Loc(x, y))] for x in xrng] for y in yrng ]
+        maketile      = self.make_tile if self.init_tiles else (lambda loc: None)
+
+        self.board    = [ [[maketile(Loc(x, y))] for x in xrng] for y in yrng ]
 
     def __getitem__(self, loc):
         return self.board[loc.y][loc.x][-1]
@@ -168,6 +178,11 @@ class StackableBoard(BaseBoard):
 
     def __delitem__(self, loc):
         del self.board[loc.y][loc.x][-1]
+
+    def place_tiles(self):
+        for loc in self.locations():
+            del self[loc]
+            self[loc] = self.make_tile(loc)
 
     def items(self, loc):
         return self.board[loc.y][loc.x]
