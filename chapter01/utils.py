@@ -241,7 +241,7 @@ def range1(x):
 
 def envelope(value, minval, maxval):
     """Adjust `value` to be within min/max bounds."""
-    return min(max(val, minval), maxval)
+    return min(max(value, minval), maxval)
 
 def flatten(iterable):
     return [item for sublist in iterable for item in sublist]

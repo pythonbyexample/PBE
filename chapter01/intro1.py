@@ -2,15 +2,11 @@
 
 from __future__ import print_function, unicode_literals, division
 from random import random
-
-nl = '\n'
+from utils import nl
 
 
 class Tree(object):
     height = 0
-
-    def __repr__(self):
-        return "<'%s' tree, %.1fft>" % (self.__class__.__name__, self.height)
 
     def grow(self):
         self.height += self.growth_rate + self.growth_rate * random() / 3
@@ -18,8 +14,14 @@ class Tree(object):
 class Bamboo(Tree):
     growth_rate = 10
 
+    def __repr__(self):
+        return "<Bamboo tree, %.1f ft>" % self.height
+
 class Birch(Tree):
     growth_rate = 1.2
+
+    def __repr__(self):
+        return "<Birch tree, %.1f ft>" % self.height
 
 
 def main():
@@ -32,6 +34,5 @@ def main():
     for _ in range(5):
         for tree in trees: tree.grow()
     print(trees, nl)
-
 
 main()
