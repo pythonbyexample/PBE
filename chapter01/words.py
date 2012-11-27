@@ -7,12 +7,15 @@ from random import choice as rndchoice
 
 from utils import TextInput, ujoin, enumerate1, range1, first, space, nl
 
-num_words    = 6
-initial_hide = 0.7
-start_points = 30
-hidden_char  = '_'
-randcmd      = 'r'      # must be one char
-wordsfn      = "words"
+num_words      = 2
+initial_hide   = 0.7
+hidden_char    = '_'
+randcmd        = 'r'      # must be one char
+
+wordsfn        = "words"
+limit_9        = True
+random_reveals = num_words // 2
+guesses_divby  = 3
 
 
 class Word(object):
@@ -23,7 +26,10 @@ class Word(object):
 
     def __str__(self):
         word = ( (hidden_char if n in self.hidden else l) for n, l in enumerate(self.word) )
-        return ujoin(word, space*3)
+        return ujoin(word, space * self.spacing())
+
+    def spacing(self):
+        return 3 if len(self) > 9 else 2
 
     def __len__(self):
         return len(self.word)
@@ -64,13 +70,21 @@ class Word(object):
 
 
 class Words(object):
-    winmsg = "Congratulations! You've revealed all words!"
+    winmsg  = "Congratulations! You've revealed all words! (score: %d)"
+    losemsg = "You've ran out of guesses.."
+    stattpl = "random reveals: %d | attempts: %d"
 
     def __init__(self, wordlist):
+        self.random_reveals = random_reveals
         self.words = set()
+
         while len(self.words) < num_words:
-            self.words.add( Word(rndchoice(wordlist)) )
-        self.words = list(self.words)
+            word = rndchoice(wordlist).rstrip()
+            if limit_9 and len(word)>9: continue
+            self.words.add(Word(word))
+
+        self.words   = list(self.words)
+        self.guesses = sum(len(w) for w in self.words) // guesses_divby
 
     def __getitem__(self, i) : return self.words[i]
     def __iter__(self)       : return iter(self.words)
@@ -81,17 +95,32 @@ class Words(object):
 
         for n, word in enumerate1(self.words):
             print(tpl % n, space, word, nl)
-            lnumbers = ujoin(range1(len(word)), space*2, tpl)
+            lnumbers = ujoin(range1(len(word)), space * (word.spacing()-1), tpl)
             print(space*3, lnumbers, nl*2)
 
+        print(self.stattpl % (self.random_reveals, self.guesses), nl)
+
     def randreveal(self):
-        rndchoice([w for w in self if w.hidden]).randreveal()
+        if self.random_reveals:
+            rndchoice([w for w in self if w.hidden]).randreveal()
+            self.random_reveals -= 1
 
     def check_end(self):
         if not any(word.hidden for word in self):
             self.display()
-            print(self.winmsg)
+            print(self.winmsg % (self.random_reveals*3 + self.guesses))
             sys.exit()
+        elif not (self.guesses or self.random_reveals):
+            self.display()
+            print(self.losemsg)
+            sys.exit()
+
+    def guess(self, word, lind, letter):
+        if self.guesses:
+            if words[word].guess(lind, letter):
+                pass
+            else:
+                self.guesses -= 1
 
 
 class Test(object):
@@ -106,11 +135,9 @@ class Test(object):
             else                     : self.reveal_letter( *cmd )
             words.check_end()
 
-    def reveal_letter(self, word, lind, letter):
-        try:
-            words[word].guess(lind, letter)
-        except IndexError:
-            print(self.textinput.invalid_move)
+    def reveal_letter(self, *cmd):
+        try               : words.guess(*cmd)
+        except IndexError : print(self.textinput.invalid_move)
 
 
 if __name__ == "__main__":

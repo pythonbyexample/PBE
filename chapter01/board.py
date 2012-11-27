@@ -171,3 +171,15 @@ class StackableBoard(BaseBoard):
 
     def items(self, loc):
         return self.board[loc.y][loc.x]
+
+    def move(self, item_or_loc, newloc):
+        if isinstance(item_or_loc, Loc):
+            loc  = item_or_loc
+            item = self[loc]
+        else:
+            item = item_or_loc
+            loc  = item_or_loc.loc
+
+        self[newloc] = item
+        item.loc     = newloc
+        self.items(loc).remove(item)
