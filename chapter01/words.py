@@ -2,16 +2,17 @@
 
 from __future__ import print_function, unicode_literals, division
 
-import os
+import sys
 from random import choice as rndchoice
 from string import letters
 
-from utils import ujoin, space, nl
+from utils import TextInput, ujoin, enumerate1, range1, first, space, nl
 
 num_words    = 6
 initial_hide = 0.7
 start_points = 30
 hidden_char  = '_'
+randcmd      = 'r'      # must be one char
 
 wordsfn      = "words"
 testwords    = "sunny clouds snowflake".split()
@@ -25,14 +26,17 @@ class Word(object):
 
     def __str__(self):
         word = ( (hidden_char if n in self.hidden else l) for n, l in enumerate(self.word) )
-        return space.join(word)
+        return ujoin(word, space*3)
+
+    def __len__(self):
+        return len(self.word)
 
     def guess(self, i, letter):
         """Reveal all instances of `l` if word[i] == `l` & reveal random letter in one other word."""
         if i in self.hidden and self.word[i] == letter:
             self.reveal(letter)
 
-            L = [w for w in words if len(w.hidden) > 1 and w != self]
+            L = [w for w in words if w.hidden and w != self]
             if L: rndchoice(L).randreveal()
             return True
 
@@ -63,24 +67,56 @@ class Word(object):
 
 
 class Words(object):
-    pass
+    winmsg = "Congratulations! You've revealed all words!"
 
-def display():
-    print(ujoin(words, nl), nl)
+    def __init__(self, wordlist):
+        self.words = set()
+        while len(self.words) < num_words:
+            self.words.add( Word(rndchoice(wordlist)) )
+        self.words = list(self.words)
 
-def main():
-    display()
-    words[0].randreveal()
-    display()
+    def __getitem__(self, i) : return self.words[i]
+    def __iter__(self)       : return iter(self.words)
 
-    word = words[2]
-    word.guess(0, 's')
-    display()
-    word.guess(1, 'n')
-    display()
+    def display(self):
+        tpl = "%2s"
+        print(nl*5)
+
+        for n, word in enumerate1(self.words):
+            print(tpl % n, space, word, nl)
+            lnumbers = ujoin(range1(len(word)), space*2, tpl)
+            print(space*3, lnumbers, nl*2)
+
+    def randreveal(self):
+        rndchoice([w for w in self if w.hidden]).randreveal()
+
+    def check_end(self):
+        if not any(word.hidden for word in self):
+            self.display()
+            print(self.winmsg)
+            sys.exit()
+
+
+class Test(object):
+    def run(self):
+        self.textinput = TextInput(("%hd %hd %s", randcmd))
+
+        while True:
+            words.display()
+            cmd = self.textinput.getinput()
+
+            if first(cmd) == randcmd : words.randreveal()
+            else                     : self.reveal_letter( *cmd )
+            words.check_end()
+
+    def reveal_letter(self, word, lind, letter):
+        try:
+            words[word].guess(lind, letter)
+        except IndexError:
+            print(self.textinput.invalid_move)
 
 
 if __name__ == "__main__":
-    wordlist = open(wordsfn).readlines()
-    words    = [Word(word) for word in testwords]
-    main()
+    twords = [Word(word) for word in testwords]
+    words = Words(open(wordsfn).readlines())
+    Test().run()
