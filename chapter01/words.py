@@ -4,7 +4,6 @@ from __future__ import print_function, unicode_literals, division
 
 import sys
 from random import choice as rndchoice
-from string import letters
 
 from utils import TextInput, ujoin, enumerate1, range1, first, space, nl
 
@@ -13,9 +12,7 @@ initial_hide = 0.7
 start_points = 30
 hidden_char  = '_'
 randcmd      = 'r'      # must be one char
-
 wordsfn      = "words"
-testwords    = "sunny clouds snowflake".split()
 
 
 class Word(object):
@@ -117,6 +114,5 @@ class Test(object):
 
 
 if __name__ == "__main__":
-    twords = [Word(word) for word in testwords]
-    words = Words(open(wordsfn).readlines())
+    words = Words( open(wordsfn).readlines() )
     Test().run()
