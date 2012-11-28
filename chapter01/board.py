@@ -8,6 +8,12 @@ nl    = '\n'
 space = ' '
 
 
+class BaseTile(object):
+    def __init__(self, loc=None):
+        self.loc = loc
+        setattr(self, self.__class__.__name__.lower(), True)
+
+
 class Loc(object):
     def __init__(self, x, y):
         self.loc = x, y

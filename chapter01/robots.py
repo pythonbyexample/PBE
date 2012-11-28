@@ -7,11 +7,11 @@ from random import randint
 from time import sleep
 
 from utils import Loop, TextInput, enumerate1, range1, parse_hnuminput, ujoin, flatten, getitem, nl, space
-from board import Board, Loc
+from board import Board, Loc, BaseTile
 
 
 size          = 15, 10
-num_players   = 0
+num_players   = 1
 num_robots    = 3
 num_rocks     = 5
 
@@ -25,12 +25,12 @@ health_dict   = dict(Player=5, Robot=5, Missile=1, Rock=10, Goal=99)
 commands      = dict(m="move", t="turn_cw", T="turn_ccw", f="fire", w="wait", r="random")
 
 
-class Tile(object):
+class Tile(BaseTile):
     player = robot = blank = missile = rock = goal = False
     health = None
 
     def __init__(self, loc):
-        self.loc    = loc
+        super(Tile, self).__init__(loc)
         self.char   = chars.get(self.__class__.__name__)
         self.health = health_dict.get(self.__class__.__name__)
         if loc: board[loc] = self
@@ -43,9 +43,9 @@ class Tile(object):
         if self.loc: del board[self.loc]
 
 
-class Blank(Tile) : blank = True
-class Rock(Tile)  : rock = True
-class Goal(Tile)  : goal = True
+class Blank(Tile) : pass
+class Rock(Tile)  : pass
+class Goal(Tile)  : pass
 
 
 class Mobile(Tile):
@@ -91,8 +91,6 @@ class Mobile(Tile):
 
 
 class Robot(Mobile):
-    robot = True
-
     def __repr__(self):
         return str(self.health)
 
@@ -102,8 +100,7 @@ class Robot(Mobile):
 
 
 class Player(Mobile):
-    player      = True
-    status_msg  = "%shp | %s"
+    status_msg = "%shp | %s"
 
     def move(self):
         loc = board.nextloc(self.loc, self.direction.dir)
@@ -124,8 +121,6 @@ class Player(Mobile):
 
 
 class Missile(Mobile):
-    missile = True
-
     def go(self):
         while True:
             loc = board.nextloc(self.loc, self.direction.dir)
@@ -146,6 +141,8 @@ class Missile(Mobile):
             target.destroy()
         self.destroy()
 
+
+### BOARD ###
 
 class RBoard(Board):
     stat_sep = " | "

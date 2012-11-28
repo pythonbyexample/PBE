@@ -92,8 +92,11 @@ class Player(CompareChar):
         self.char = char
         self.ai   = char in ai_players
 
-    def __repr__(self): return self.char
-    def score(self): return sum(tile==self for tile in board)
+    def __repr__(self) : return self.char
+
+    def score(self)    : return sum(tile==self for tile in board)
+    def enemy(self)    : return nextval(players, self)
+
 
     def make_move(self, loc):
         for tile in board.get_captured(self, loc):
@@ -108,9 +111,6 @@ class Player(CompareChar):
         moves = board.get_valid_moves(self)
         shuffle(moves)
         return first( sorted(moves, key=by_corner_score, reverse=True) )
-
-    def enemy(self):
-        return nextval(players, self)
 
 
 class Versi(object):

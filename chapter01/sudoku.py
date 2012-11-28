@@ -7,19 +7,38 @@ from random import randint
 from time import sleep
 
 from utils import enumerate1, range1, ujoin, TextInput, space, nl
-from board import Board, Loc
+from board import Board, Loc, BaseTile
 
-size       = 9
-blank      = '.'
-tiletpl    = '%2s'
-divider    = '-' * (27 + 9)
+size      = 9
+blankchar = '.'
+tiletpl   = '%2s'
+divider   = '-' * (27 + 9)
 
-rng3       = range(3)
-rng9       = range(9)
-offsets    = (0, 3, 6)
+rng3      = range(3)
+rng9      = range(9)
+offsets   = (0, 3, 6)
 
 # in format produced by QQwing program; just one puzzle for testing
 puzzles    = [".13.....22.....48....7...19...9..8..7......2....3.......263.9..4.9.7.6....149...8"]
+
+
+class Tile(BaseTile):
+    initial = blank = False
+    num = char = None
+
+    def __repr__(self)      : return self.char or str(self.num)
+
+    def __eq__(self, other) : return bool(self.num == other)
+    def __ne__(self, other) : return bool(self.num != other)
+
+
+class Number(Tile):
+    def __init__(self, num):
+        super(Number, self).__init__()
+        self.num = int(num)
+
+class Blank(Tile)     : char  = blankchar
+class Initial(Number) : pass
 
 
 class SudokuBoard(Board):
@@ -27,7 +46,8 @@ class SudokuBoard(Board):
         super(SudokuBoard, self).__init__(size, def_tile)
 
         for loc, val in zip(self.locations(), puzzle):
-            self[loc] = val if val==blank else int(val)
+            if val != blankchar:
+                self[loc] = Initial(val)
 
         self.regions = [self.make_region(xo, yo) for xo in offsets for yo in offsets]
 
@@ -58,7 +78,7 @@ class Sudoku(object):
     winmsg  = "Solved!"
 
     def valid_move(self, loc, val):
-        if not board[loc]==blank: return False
+        if board[loc].initial: return False
 
         for reg_line in board.lines + board.regions:
             if loc in reg_line and val in (board[loc] for loc in reg_line):
@@ -66,12 +86,9 @@ class Sudoku(object):
         return True
 
     def check_end(self):
-        if not any(t==blank for t in board):
-            self.game_won()
-
-    def game_won(self):
-        print(nl, self.winmsg)
-        sys.exit()
+        if not any(t.blank for t in board):
+            print(nl, self.winmsg)
+            sys.exit()
 
 
 class Test(object):
@@ -80,7 +97,7 @@ class Test(object):
         while True:
             board.draw()
             loc, val   = self.get_move()
-            board[loc] = val
+            board[loc] = Number(val)
             sudoku.check_end()
 
     def get_move(self):
@@ -91,7 +108,7 @@ class Test(object):
 
 
 if __name__ == "__main__":
-    board  = SudokuBoard(size, blank, rndchoice(puzzles))
+    board  = SudokuBoard(size, Blank, rndchoice(puzzles))
     sudoku = Sudoku()
 
     try: Test().run()
