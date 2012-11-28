@@ -7,7 +7,7 @@ from random import randint, shuffle
 from time import sleep
 
 from utils import TextInput, ujoin, nextval, enumerate1, range1, space, nl, first
-from board import Board, Loc
+from board import Board, Loc, BaseTile
 
 size         = 8
 player_chars = 'XO'
@@ -15,32 +15,27 @@ ai_players   = 'O'
 ai_players   = 'XO'
 blankchar    = '.'
 padding      = 4, 2
-pause_time   = 0.03
+pause_time   = 0.3
 
 
 class CompareChar(object):
     def __eq__(self, other): return bool(self.char==other.char)
+    def __ne__(self, other): return bool(self.char!=other.char)
 
-    def __ne__(self, other): return not self.__eq__(other)
 
-
-class BaseTile(CompareChar):
+class Tile(BaseTile, CompareChar):
     blank = piece = False
 
-    def __init__(self, loc) : self.loc = loc
-    def __repr__(self)      : return self.char
+    def __repr__(self): return self.char
 
 
-class Tile(BaseTile):
-    blank = True
-    char  = blankchar
+class Blank(Tile):
+    char = blankchar
 
 
-class Piece(BaseTile):
-    piece = True
-
+class Piece(Tile):
     def __init__(self, loc=None, char=None):
-        self.loc  = loc
+        super(Piece, self).__init__(loc)
         self.char = char
         if loc: board[loc] = self
 
@@ -157,7 +152,7 @@ class Test(object):
 
 
 if __name__ == "__main__":
-    board            = VersiBoard(size, Tile, num_grid=True, padding=padding, pause_time=pause_time)
+    board            = VersiBoard(size, Blank, num_grid=True, padding=padding, pause_time=pause_time)
     players          = [Player(c) for c in player_chars]
     player1, player2 = players
     versi            = Versi()

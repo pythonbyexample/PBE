@@ -7,7 +7,7 @@ from time import sleep
 from itertools import cycle
 
 from utils import TextInput, AttrToggles, enumerate1, range1, ujoin, flatten, nextval, first, space, nl
-from board import Board, Loc
+from board import Board, Loc, BaseTile
 
 size       = 5, 5
 num_ships  = 3
@@ -24,16 +24,13 @@ ai_players = [1, 2]
 divider    = '-' * (size[0] * 4 + 6)
 
 
-class Tile(AttrToggles):
+class Tile(BaseTile, AttrToggles):
     """Tile that may be a ship or blank space (water)."""
     ship              = False
     is_hit            = False
     hidden            = True
     revealed          = False
     attribute_toggles = [("hidden", "revealed")]
-
-    def __init__(self, loc):
-        self.loc = loc
 
     def __repr__(self):
         return blank if self.hidden else self.char
@@ -49,7 +46,6 @@ class Blank(Tile):
 
 class Ship(Tile):
     char = shipchar
-    ship = True
 
 
 class BattleshipBoard(Board):

@@ -7,12 +7,12 @@ from random import randint, random
 import math
 
 from utils import range1, TextInput, ujoin, first, space, nl
-from board import Board, Loc
+from board import Board, Loc, BaseTile
 
 size           = 8
 player_chars   = 'IX'
-ai_players     = 'X'
 ai_players     = 'IX'
+ai_players     = 'X'
 
 neutral_char   = 'N'
 blank          = '.'
@@ -33,32 +33,24 @@ class PlayerBase(object):
     """Used as base for all player's stars and fleets as well as Player class itself, to allow for
        making equality checks between all of them.
     """
-    def __eq__(self, other):
-        return bool(self.char==other.char)
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __repr__(self):
-        return self.char or blank
+    def __eq__(self, other) : return bool(self.char==other.char)
+    def __ne__(self, other) : return bool(self.char!=other.char)
+    def __repr__(self)      : return self.char or blank
 
 
-class Tile(PlayerBase):
-    blank = True
+class Tile(BaseTile, PlayerBase):
+    blank = False
     char  = None
 
-    def __init__(self, loc):
-        self.loc = loc
+class Blank(Tile): pass
 
-
-class Star(Tile):
-    blank = False
+class Star(Blank):
     char  = neutral_char
     ships = 0
     sep   = ':'
 
     def __init__(self, loc, num):
-        self.loc        = loc
+        super(Star, self).__init__(loc)
         self.num        = num
         self.production = randint(*production_rng)
         board[loc]      = self
@@ -75,8 +67,10 @@ class Star(Tile):
 
 
 class BetelgeuseBoard(Board):
-    def random_blank(self):
-        return rndchoice( [t.loc for t in self if t.blank] )
+    stat = "turn: %d"
+
+    def random_blank(self) : return rndchoice( [t.loc for t in self if t.blank] )
+    def status(self)       : print(self.stat % betelgeuse.turn)
 
 
 class Fleet(PlayerBase):
@@ -146,7 +140,7 @@ class Player(PlayerBase):
 
 class Betelgeuse(object):
     winmsg            = "%s has won!"
-    turn              = 0
+    turn              = 1
     show_ships_player = None
 
     def check_end(self, player):
@@ -180,19 +174,23 @@ class Test(object):
 
     def get_move(self, player):
         while True:
-            cmd = self.textinput.getinput()
-            if not cmd: return
-
-            src, goal, ships = cmd
-            src, goal = stars[src], stars[goal]
-            if src == player and src.ships >= ships:
-                return src, goal, ships
-            else:
+            try:
+                return self._get_move(player)
+            except (IndexError, AssertionError):
                 print(self.textinput.invalid_move)
+
+    def _get_move(self, player):
+        cmd = self.textinput.getinput()
+        if not cmd: return
+
+        src, goal, ships = cmd
+        src, goal = stars[src], stars[goal]
+        assert src == player and src.ships >= ships
+        return src, goal, ships
 
 
 if __name__ == "__main__":
-    board      = BetelgeuseBoard(size, Tile, padding=padding, pause_time=pause_time)
+    board      = BetelgeuseBoard(size, Blank, padding=padding, pause_time=pause_time)
     betelgeuse = Betelgeuse()
     fleets     = []
     stars      = [Star(board.random_blank(), n) for n in range1(num_stars)]

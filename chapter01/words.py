@@ -7,16 +7,16 @@ from random import choice as rndchoice
 
 from utils import TextInput, ujoin, enumerate1, range1, first, space, nl
 
-num_words      = 2
-initial_hide   = 0.7                # how much of the word to hide, 0.7 = 70%
+num_words      = 5
 hidden_char    = '_'
-randcmd        = 'r'                # reveal random letter; must be one char
 lettertpl      = "%2s"
+initial_hide   = 0.7                # how much of the word to hide, 0.7 = 70%
+randcmd        = 'r'                # reveal random letter; must be one char
+limit9         = True               # only use 9-or-less letter words
+random_reveals = num_words // 2     # allow player to reveal x random letters
 
 wordsfn        = "words"
-limit9         = True               # only use 9-or-less letter words
 
-random_reveals = num_words // 2     # allow player to reveal x random letters
 
 guesses_divby  = 3      # calc allowed wrong guesses by dividing total # of letters by this number
 
