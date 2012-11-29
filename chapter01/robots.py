@@ -6,12 +6,12 @@ from random import choice as rndchoice
 from random import randint
 from time import sleep
 
-from utils import Loop, TextInput, enumerate1, range1, ujoin, flatten, getitem, nl, space
+from utils import Loop, TextInput, enumerate1, range1, ujoin, flatten, nl, space
 from board import Board, Loc, BaseTile
 
 
 size          = 15, 10
-num_players   = 0
+num_players   = 1
 num_robots    = 6
 num_rocks     = 5
 
@@ -181,7 +181,7 @@ class Test(object):
         cmdpat  = cmdpat + " (%s)" % ujoin(commands.keys(), '|')
         pattern = cmdpat + (" %s?" % cmdpat) * (max_cmds - 1)
 
-        self.textinput = TextInput(pattern, board, accept_blank=True)
+        self.textinput = TextInput(pattern, board, accept_blank=True, singlechar_cmds=True)
 
         while True:
             board.draw()

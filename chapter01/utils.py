@@ -129,15 +129,17 @@ class TextInput(object):
                    (" "    , " *"),
                     )
 
-    def __init__(self, formats=None, board=None, options=(), prompt="> ", quit_key='q', accept_blank=False, invalid_inp=None):
+    def __init__(self, formats=None, board=None, options=(), prompt="> ", quit_key='q', accept_blank=False, invalid_inp=None,
+                 singlechar_cmds=False):
         if isinstance(formats, basestring): formats = [formats]
-        self.board        = board
-        self.formats      = formats
-        self.options      = options
-        self.prompt       = prompt
-        self.quit_key     = quit_key
-        self.accept_blank = accept_blank
-        self.invalid_inp  = invalid_inp or self.invalid_inp
+        self.board           = board
+        self.formats         = formats
+        self.options         = options
+        self.prompt          = prompt
+        self.quit_key        = quit_key
+        self.accept_blank    = accept_blank
+        self.singlechar_cmds = singlechar_cmds
+        self.invalid_inp     = invalid_inp or self.invalid_inp
 
     def getloc(self):
         return first( self.getinput(formats=["loc"]) )
@@ -158,7 +160,6 @@ class TextInput(object):
     def matchfmt(self, fmt, inp):
         for init, repl in self.regexes:
             fmt = fmt.replace(init, repl)
-        # print("^%s$" % fmt, inp)
         return re.match("^%s$" % fmt, inp)
 
     def parse_fmt(self, inp, fmt):
@@ -214,7 +215,10 @@ class TextInput(object):
         if not formats:
             raise ValueError
 
-        fmt      = first(formats)
+        fmt = first(formats)
+        if self.singlechar_cmds:
+            inp = inp.replace(space, '')
+
         inp      = inp.split() if space in inp else list(inp)
         commands = self.parse_fmt(inp, fmt)
         return commands

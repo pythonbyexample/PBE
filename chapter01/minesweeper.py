@@ -20,7 +20,7 @@ class Test(object):
     def test(self):
         # allow entering of multiple (up to 10) locations
         pattern        = "%s? loc%s" % (mark_key, " loc?"*9)
-        self.textinput = TextInput(pattern, board)
+        self.textinput = TextInput(pattern, board, singlechar_cmds=True)
         while True:
             board.draw()
             self.ai_move() if ai_run else self.make_move()
