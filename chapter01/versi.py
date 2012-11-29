@@ -61,19 +61,19 @@ class VersiBoard(Board):
         # check each of the eight directions
         for dir in self.dirlist2:
             templist = []
-            loc      = self.nextloc(start_loc, dir)
+            tile     = self.next_tile(start_loc, dir)
 
             # keep adding locations as long as it's an enemy piece
-            while loc and self[loc] == player.enemy():
-                templist.append(loc)
-                loc = self.nextloc(loc, dir)
+            while tile and tile == player.enemy():
+                templist.append(tile)
+                tile = self.next_tile(tile, dir)
 
             # if reached end of board or next tile is not our piece, skip to next direction
-            if not loc or player != self[loc]:
+            if not tile or player != tile:
                 continue
             captured.extend(templist)
 
-        return [self[loc] for loc in captured]
+        return captured
 
     def is_corner(self, loc):
         return loc.x in (0, self.width) and loc.y in (0, self.height)

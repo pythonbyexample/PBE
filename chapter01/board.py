@@ -37,8 +37,7 @@ class Loc(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
-# Direction (e.g. 0,1=right) works the same way but should have a different name for clarity
-Dir = Loc
+Dir = Loc   # Directions (e.g. 0,1=right) work the same way but should have a different name for clarity
 
 class BaseBoard(object):
     stackable  = False
@@ -61,8 +60,24 @@ class BaseBoard(object):
     def __iter__(self):
         return ( self[Loc(x, y)] for y in range(self.height) for x in range(self.width) )
 
-    def locations(self):
-        return (Loc(x, y) for y in range(self.height) for x in range(self.width))
+    def tiles(self, *attrs):
+        return ( t for t in self if all(getattr(t, attr) for attr in attrs) )
+
+    def not_tiles(self, *attrs):
+        return ( t for t in self if all(not getattr(t, attr) for attr in attrs) )
+
+    def locations(self, *attrs):
+        locs = (Loc(x, y) for y in range(self.height) for x in range(self.width))
+        return (l for l in locs if all(getattr(self[loc], attr) for attr in attrs))
+
+    def not_locations(self, *attrs):
+        locs = (Loc(x, y) for y in range(self.height) for x in range(self.width))
+        return ( l for l in locs if all(not getattr(self[loc], attr) for attr in attrs) )
+
+    def ploc(self, tile_loc):
+        """Parse location out of tile-or-loc `tile_loc`."""
+        if isinstance(tile_loc, Loc) : return tile_loc
+        else                         : return tile_loc.loc
 
     def draw(self, pause=None):
         pause = pause or self.pause_time
@@ -94,49 +109,50 @@ class BaseBoard(object):
         self.dirlist2 = [Dir(*d) for d in dirs]
         self.dirnames = dict(zip(self.dirlist2, "up ru right rd down ld left lu".split()))
 
-    def neighbour_locs(self, tile):
+    def neighbour_locs(self, tile_loc):
         """Return the generator of neighbour locations of `tile`."""
-        x, y = tile.loc
+        x, y = self.ploc(tile_loc)
         coords = (-1,0,1)
         locs = set((x+n, y+m) for n in coords for m in coords) - set( [(x,y)] )
         return ( Loc(*tpl) for tpl in locs if self.valid(Loc(*tpl)) )
 
-    def neighbours(self, tile):
+    def neighbours(self, tile_loc):
         """Return the generator of neighbours of `tile`."""
-        return (self[loc] for loc in self.neighbour_locs(tile))
+        return (self[loc] for loc in self.neighbour_locs(tile_loc))
 
-    def neighbour_cross_locs(self, tile):
+    def neighbour_cross_locs(self, tile_loc):
         """Return a generator of neighbour 'cross' (i.e. no diagonal) locations of `tile`."""
-        x, y = tile.loc
+        x, y = self.ploc(tile_loc)
         locs = ((x-1, y), (x+1, y), (x, y-1), (x, y+1))
         return [ Loc(*tpl) for tpl in locs if self.valid(Loc(*tpl)) ]
 
-    def cross_neighbours(self, tile):
+    def cross_neighbours(self, tile_loc):
         """Return the generator of 'cross' (i.e. no diagonal) neighbours of `tile`."""
-        return (self[loc] for loc in self.neighbour_cross_locs(tile))
+        return (self[loc] for loc in self.neighbour_cross_locs(tile_loc))
 
     def make_tile(self, loc):
         """Make a tile using `self.def_tile`. If def_tile is simply a string, return it, otherwise instantiate with x, y as arguments."""
         return self.def_tile if isinstance(self.def_tile, basestring) else self.def_tile(loc)
 
-    def move(self, item_or_loc, newloc):
-        if isinstance(item_or_loc, Loc):
-            loc  = item_or_loc
-            item = self[loc]
-        else:
-            item = item_or_loc
-            loc  = item_or_loc.loc
-
+    def move(self, tile_loc, newloc):
+        loc          = self.ploc(tile_loc)
+        item         = self[loc]
         self[newloc] = item
         self[loc]    = self.make_tile(loc)
         item.loc     = newloc
 
-    def nextloc(self, loc, dir, n=1):
-        """Return location next to `start` point in direction `dir`."""
+    def nextloc(self, tile_loc, dir, n=1):
+        """Return location next to `tile_loc` point in direction `dir`."""
+        loc = self.ploc(tile_loc)
         loc = Loc(loc.x + dir.x*n, loc.y + dir.y*n)
         return loc if self.valid(loc) else None
 
-    def dist(self, l1, l2):
+    def next_tile(self, tile_loc, dir, n=1):
+        loc = self.nextloc(tile_loc, dir, n)
+        return self[loc] if loc else None
+
+    def dist(self, tile_loc1, tile_loc2):
+        l1, l2 = self.ploc(tile_loc1), self.ploc(tile_loc2)
         return math.sqrt( abs(l2.x - l1.x)**2 + abs(l2.y - l1.y)**2  )
 
 
@@ -153,10 +169,12 @@ class Board(BaseBoard):
     def __getitem__(self, loc):
         return self.board[loc.y][loc.x]
 
-    def __setitem__(self, loc, item):
+    def __setitem__(self, tile_loc, item):
+        loc                      = self.ploc(tile_loc)
         self.board[loc.y][loc.x] = item
 
-    def __delitem__(self, loc):
+    def __delitem__(self, tile_loc):
+        loc                      = self.ploc(tile_loc)
         self.board[loc.y][loc.x] = self.make_tile(loc)
 
     def place_tiles(self):
@@ -179,10 +197,12 @@ class StackableBoard(BaseBoard):
     def __getitem__(self, loc):
         return self.board[loc.y][loc.x][-1]
 
-    def __setitem__(self, loc, item):
+    def __setitem__(self, tile_loc, item):
+        loc = self.ploc(tile_loc)
         self.board[loc.y][loc.x].append(item)
 
-    def __delitem__(self, loc):
+    def __delitem__(self, tile_loc):
+        loc = self.ploc(tile_loc)
         del self.board[loc.y][loc.x][-1]
 
     def place_tiles(self):
@@ -190,17 +210,13 @@ class StackableBoard(BaseBoard):
             del self[loc]
             self[loc] = self.make_tile(loc)
 
-    def items(self, loc):
+    def items(self, tile_loc):
+        loc = self.ploc(tile_loc)
         return self.board[loc.y][loc.x]
 
-    def move(self, item_or_loc, newloc):
-        if isinstance(item_or_loc, Loc):
-            loc  = item_or_loc
-            item = self[loc]
-        else:
-            item = item_or_loc
-            loc  = item_or_loc.loc
-
+    def move(self, tile_loc, newloc):
+        loc          = self.ploc(tile_loc)
+        item         = self[loc]
         self[newloc] = item
         item.loc     = newloc
         self.items(loc).remove(item)

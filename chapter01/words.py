@@ -7,6 +7,7 @@ from random import choice as rndchoice
 
 from utils import TextInput, ujoin, enumerate1, range1, first, space, nl
 
+
 num_words      = 5
 hidden_char    = '_'
 lettertpl      = "%2s"

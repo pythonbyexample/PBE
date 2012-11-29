@@ -6,13 +6,13 @@ from random import choice as rndchoice
 from random import randint
 from time import sleep
 
-from utils import Loop, TextInput, enumerate1, range1, parse_hnuminput, ujoin, flatten, getitem, nl, space
+from utils import Loop, TextInput, enumerate1, range1, ujoin, flatten, getitem, nl, space
 from board import Board, Loc, BaseTile
 
 
 size          = 15, 10
 num_players   = 1
-num_robots    = 3
+num_robots    = 6
 num_rocks     = 5
 
 pause_time    = 0.2
@@ -71,20 +71,17 @@ class Mobile(Tile):
         method()
 
     def fire(self):
-        start = board.nextloc(self.loc, self.direction.dir)
-        if not start: return
+        start = board.next_tile(self, self.direction.dir)
 
-        if board[start].blank:
-            Missile(start, self.direction).go()
-        else:
-            Missile().hit(board[start])
+        if not start     : return
+        elif start.blank : Missile(start.loc, self.direction).go()
+        else             : Missile().hit(start)
 
     def move(self):
-        loc = board.nextloc(self.loc, self.direction.dir)
-        if loc and board[loc].blank:
-            board.move(self, loc)
-        else:
-            self.program = []
+        tile = board.next_tile(self, self.direction.dir)
+
+        if tile and tile.blank : board.move(self, tile.loc)
+        else                   : self.program = []
 
     def create_program(self):
         return [ rndchoice(commands.values()) ] * randint(1, 6)
@@ -95,7 +92,7 @@ class Robot(Mobile):
         return str(self.health)
 
     def destroy(self):
-        del board[self.loc]
+        del board[self]
         robots.remove(self)
 
 
@@ -103,9 +100,9 @@ class Player(Mobile):
     status_msg = "%shp | %s"
 
     def move(self):
-        loc = board.nextloc(self.loc, self.direction.dir)
-        if loc and board[loc].goal:
-            board.move(self, loc)
+        tile = board.next_tile(self, self.direction.dir)
+        if tile and tile.goal:
+            board.move(self, tile.loc)
             rgame.game_end(True)
 
         super(Player, self).move()
@@ -116,23 +113,23 @@ class Player(Mobile):
         return self.status_msg % (self.health, board.dirnames[self.direction.dir])
 
     def destroy(self):
-        del board[self.loc]
+        del board[self]
         players.remove(self)
 
 
 class Missile(Mobile):
     def go(self):
         while True:
-            loc = board.nextloc(self.loc, self.direction.dir)
-            if not loc:
+            tile = board.next_tile(self, self.direction.dir)
+
+            if not tile:
                 self.destroy()
                 break
-
-            if board[loc].blank:
-                board.move(self, loc)
+            elif tile.blank:
+                board.move(self, tile.loc)
                 board.draw(missile_pause)
             else:
-                self.hit(board[loc])
+                self.hit(tile)
                 break
 
     def hit(self, target):
@@ -178,6 +175,7 @@ class RobotsGame(object):
 
 
 class Test(object):
+
     def run(self):
         cmdpat  = "%d?"
         cmdpat  = cmdpat + " (%s)" % ujoin(commands.keys(), '|')
