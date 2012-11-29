@@ -13,14 +13,14 @@ size         = 8
 player_chars = 'XO'
 ai_players   = 'O'
 ai_players   = 'XO'
-blankchar    = '.'
+blank        = '.'
 padding      = 4, 2
 pause_time   = 0.3
 
 
 class CompareChar(object):
-    def __eq__(self, other): return bool(self.char==other.char)
-    def __ne__(self, other): return bool(self.char!=other.char)
+    def __eq__(self, other): return bool(self.char == other.char)
+    def __ne__(self, other): return bool(self.char != other.char)
 
 
 class Tile(BaseTile, CompareChar):
@@ -29,8 +29,7 @@ class Tile(BaseTile, CompareChar):
     def __repr__(self): return self.char
 
 
-class Blank(Tile):
-    char = blankchar
+class Blank(Tile): char = blank
 
 
 class Piece(Tile):
@@ -76,7 +75,7 @@ class VersiBoard(Board):
         return captured
 
     def is_corner(self, loc):
-        return loc.x in (0, self.width) and loc.y in (0, self.height)
+        return loc.x in (0, self.width-1) and loc.y in (0, self.height-1)
 
     def status(self):
         print(self.scores_msg % (player1, player1.score(), player2, player2.score()))

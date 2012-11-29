@@ -9,14 +9,14 @@ from time import sleep
 from utils import enumerate1, range1, ujoin, TextInput, space, nl
 from board import Board, Loc, BaseTile
 
-size      = 9
-blankchar = '.'
-tiletpl   = '%2s'
-divider   = '-' * (27 + 9)
+size    = 9
+blank   = '.'
+tiletpl = '%2s'
+divider = '-' * (27 + 9)
 
-rng3      = range(3)
-rng9      = range(9)
-offsets   = (0, 3, 6)
+rng3    = range(3)
+rng9    = range(9)
+offsets = (0, 3, 6)
 
 # in format produced by QQwing program; just one puzzle for testing
 puzzles    = [".13.....22.....48....7...19...9..8..7......2....3.......263.9..4.9.7.6....149...8"]
@@ -24,10 +24,9 @@ puzzles    = [".13.....22.....48....7...19...9..8..7......2....3.......263.9..4.
 
 class Tile(BaseTile):
     initial = blank = False
-    num = char = None
+    num     = char = None
 
     def __repr__(self)      : return self.char or str(self.num)
-
     def __eq__(self, other) : return bool(self.num == other)
     def __ne__(self, other) : return bool(self.num != other)
 
@@ -37,7 +36,7 @@ class Number(Tile):
         super(Number, self).__init__()
         self.num = int(num)
 
-class Blank(Tile)     : char  = blankchar
+class Blank(Tile)     : char = blank
 class Initial(Number) : pass
 
 
@@ -46,7 +45,7 @@ class SudokuBoard(Board):
         super(SudokuBoard, self).__init__(size, def_tile)
 
         for loc, val in zip(self.locations(), puzzle):
-            if val != blankchar:
+            if val != blank:
                 self[loc] = Initial(val)
 
         self.regions = [self.make_region(xo, yo) for xo in offsets for yo in offsets]
@@ -75,7 +74,7 @@ class SudokuBoard(Board):
 
 
 class Sudoku(object):
-    winmsg  = "Solved!"
+    winmsg = "Solved!"
 
     def valid_move(self, loc, val):
         if board[loc].initial: return False

@@ -41,19 +41,16 @@ class Tile(BaseTile, AttrToggles):
         self.char     = sunkship if self.ship else hitchar
 
 
-class Blank(Tile):
-    char = blank
-
-class Ship(Tile):
-    char = shipchar
+class Blank(Tile) : char = blank
+class Ship(Tile)  : char = shipchar
 
 
 class BattleshipBoard(Board):
-    def all_unhit(self)    : return [tile for tile in self if not tile.is_hit]
-    def ships(self)        : return [tile for tile in self if tile.ship]
+    # def all_unhit(self)    : return self.not_tiles("is_hit")
+    # def ships(self)        : return self.tiles("ship")
 
-    def random_blank(self) : return rndchoice( [tile for tile in self if not tile.ship] )
-    def random_unhit(self) : return rndchoice(self.all_unhit())
+    def random_blank(self) : return rndchoice(self.tiles_not("ship"))
+    def random_unhit(self) : return rndchoice(self.tiles_not("is_hit"))
 
     def next_validloc(self, start, dir, n):
         loc = self.nextloc(start, dir, n)
@@ -63,7 +60,7 @@ class BattleshipBoard(Board):
     def random_placement(self, ship):
         """Return list of random locations for `ship` length."""
         while True:
-            start = self.random_blank().loc
+            start = self.random_blank()
             dir   = rndchoice(self.dirlist)
             locs  = [ self.next_validloc(start, dir, n) for n in range(ship) ]
             if all(locs): break
@@ -74,10 +71,10 @@ class BattleshipBoard(Board):
 class Player(object):
     def __init__(self, num):
         """Create player's board and randomly place `num_ships` ships on it."""
-        self.num = num
-        self.ai  = bool(num in ai_players)
-        B = self.board = BattleshipBoard(size, Blank, num_grid=True, padding=padding,
-                                              pause_time=0, screen_sep=0)
+        self.num   = num
+        self.ai    = bool(num in ai_players)
+        B          = BattleshipBoard(size, Blank, num_grid=True, padding=padding, pause_time=0, screen_sep=0)
+        self.board = B
 
         for ship in range1(num_ships):
             for loc in B.random_placement(ship):
@@ -86,8 +83,7 @@ class Player(object):
         if not self.ai:
             for tile in B: tile.revealed = True
 
-    def enemy(self):
-        return nextval(players, self)
+    def enemy(self): return nextval(players, self)
 
 
 class Battleship(object):
@@ -102,7 +98,7 @@ class Battleship(object):
         sleep(pause_time)
 
     def check_end(self, player):
-        if all(ship.is_hit for ship in player.board.ships()):
+        if all(ship.is_hit for ship in player.board.tiles("ship")):
             self.draw()
             print(self.losemsg % player.num)
             sys.exit()

@@ -6,30 +6,27 @@ import sys
 from random import choice as rndchoice
 from time import time
 
-from utils import ujoin, range1, enumerate1, timefmt, space, nl, AttrToggles
-from board import Loc, Board
+from utils import AttrToggles, ujoin, range1, enumerate1, timefmt, space, nl
+from board import Loc, Board, BaseTile
 
 blank      = ' '
 hiddenchar = '.'
 minechar   = '*'
 
 
-class Tile(AttrToggles):
-    hidden            = True
-    revealed          = False
-    mine              = False
-    marked            = False
-    number            = 0
+class Tile(BaseTile, AttrToggles):
+    hidden   = True
+    revealed = False
+    mine     = False
+    marked   = False
+    number   = None
+
     attribute_toggles = [("hidden", "revealed")]
 
-    def __init__(self, loc):
-        self.loc = loc
-
     def __repr__(self):
-        if self.marked   : return minechar
-        elif self.hidden : return hiddenchar
-        elif self.mine   : return minechar
-        else             : return str(self.number or blank)
+        if   self.hidden              : return hiddenchar
+        elif self.marked or self.mine : return minechar
+        else                          : return str(self.number or blank)
 
     def toggle_mark(self):
         self.marked = not self.marked
@@ -47,18 +44,16 @@ class MinesweeperBoard(Board):
             self.random_empty().mine = True
 
         for tile in self:
-            tile.number = sum( ntile.mine for ntile in self.neighbours(tile) )
+            tile.number = sum( nbtile.mine for nbtile in self.neighbours(tile) )
 
     def cleared(self):
-        """All mines defused?"""
         return all( self.marked_or_revealed(tile) for tile in self )
 
     def marked_or_revealed(self, tile) : return bool(tile.revealed or tile.mine and tile.marked)
-    def random_hidden(self)            : return rndchoice( [tile for tile in self if tile.hidden] )
-    def random_empty(self)             : return rndchoice( [tile for tile in self if not tile.mine] )
+    def random_hidden(self)            : return rndchoice(self.locations("hidden"))
+    def random_empty(self)             : return rndchoice(self.tiles_not("mine"))
 
     def reveal(self, tile):
-        """Unhide `tile`."""
         if not tile.number:
             self.reveal_blank_neighbours(tile)
         tile.revealed = True
@@ -72,8 +67,8 @@ class MinesweeperBoard(Board):
         if tile.revealed : return
 
         tile.revealed = True
-        for ntile in self.neighbours(tile):
-            self.reveal_blank_neighbours(ntile)
+        for nbtile in self.neighbours(tile):
+            self.reveal_blank_neighbours(nbtile)
 
 
 class Minesweeper(object):

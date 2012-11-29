@@ -1,1 +1,6 @@
 - pychecker, pylint
+
+x apply 'accept tiles' changes
+x apply 'tiles(), not_tiles()' changes
+- Pyglet
+- small gamification tut

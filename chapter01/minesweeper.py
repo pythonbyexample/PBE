@@ -37,7 +37,7 @@ class Test(object):
 
     def ai_move(self):
         """Very primitive `AI', does not mark mines & does not try to avoid them."""
-        loc = board.random_hidden().loc
+        loc = board.random_hidden()
 
         while loc.x:
             print(nl, "loc", loc.x+1, loc.y+1, nl)

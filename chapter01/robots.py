@@ -11,12 +11,12 @@ from board import Board, Loc, BaseTile
 
 
 size          = 15, 10
-num_players   = 1
+num_players   = 0
 num_robots    = 6
 num_rocks     = 5
 
 pause_time    = 0.2
-missile_pause = 0.06
+missile_pause = 0.03
 max_turns     = 25
 max_cmds      = 15
 
@@ -145,7 +145,7 @@ class RBoard(Board):
     stat_sep = " | "
 
     def random_blank(self):
-        return rndchoice( [t.loc for t in self if t.blank] )
+        return rndchoice(self.locations("blank"))
 
     def status(self):
         print( nl, self.stat_sep.join(p.status() for p in players) )
@@ -200,8 +200,8 @@ class Test(object):
 
 
 if __name__ == "__main__":
-    board   = RBoard(size, Blank, pause_time=pause_time, init_tiles=False)
-    board.place_tiles()
+    board = RBoard(size, Blank, pause_time=pause_time)
+    # board.place_tiles()
 
     rgame   = RobotsGame()
     randloc = board.random_blank

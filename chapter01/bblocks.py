@@ -8,7 +8,7 @@ from time import sleep
 from itertools import cycle
 
 from utils import Loop, TextInput, enumerate1, range1, ujoin, first, nl, space
-from board import Board, Loc
+from board import Board, Loc, BaseTile
 
 size        = 4
 players     = 'OX'
@@ -17,11 +17,8 @@ check_moves = 15
 padding     = 5, 3
 
 
-class Tile(object):
+class Tile(BaseTile):
     num = maxnum = player = None
-
-    def __init__(self, loc):
-        self.loc = loc
 
     def __repr__(self):
         return "%s %s" % (self.player or space, self.num)
@@ -31,7 +28,8 @@ class Tile(object):
             `bblocks.counter` is used to avoid infinite recursion loops.
         """
         bblocks.counter.next()
-        if bblocks.counter == check_moves: bblocks.check_end(player)
+        if bblocks.counter == check_moves:
+            bblocks.check_end(player)
 
         if self._add(player):
             for tile in board.cross_neighbours(self):
@@ -48,8 +46,9 @@ class BlocksBoard(Board):
     def __init__(self, *args, **kwargs):
         super(BlocksBoard, self).__init__(*args, **kwargs)
         neighbours = self.neighbour_cross_locs
+
         for tile in self:
-            tile.maxnum = len( [self.valid(n) for n in neighbours(tile.loc)] )
+            tile.maxnum = len( [self.valid(nbloc) for nbloc in neighbours(tile)] )
             tile.num    = Loop(range1(tile.maxnum))
 
     def random_move(self, player):
@@ -61,7 +60,7 @@ class BlocksBoard(Board):
         return rndchoice( [first(tiles), rndchoice(tiles)] )
 
     def valid_move(self, player, loc):
-        return bool(self[loc].player in (None, player))
+        return bool( self[loc].player in (None, player) )
 
 
 class BlockyBlocks(object):
@@ -69,12 +68,9 @@ class BlockyBlocks(object):
     counter = Loop(range1(check_moves))
 
     def check_end(self, player):
-        if all(t.player==player for t in board):
-            self.game_won(player)
-
-    def game_won(self, player):
-        print(nl, self.winmsg % player)
-        sys.exit()
+        if all(tile.player==player for tile in board):
+            print(nl, self.winmsg % player)
+            sys.exit()
 
 
 class Test(object):
