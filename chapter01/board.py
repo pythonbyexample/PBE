@@ -140,12 +140,25 @@ class BaseBoard(object):
         item         = self[loc]
         self[newloc] = item
         self[loc]    = self.make_tile(loc)
-        item.loc     = newloc
 
-    def nextloc(self, tile_loc, dir, n=1):
+        if hasattr(item, "loc"):
+            item.loc = newloc
+
+    def nextloc(self, tile_loc, dir, n=1, wrap=False):
         """Return location next to `tile_loc` point in direction `dir`."""
         loc = self.ploc(tile_loc)
-        loc = Loc(loc.x + dir.x*n, loc.y + dir.y*n)
+        x = loc.x + dir.x*n
+        y = loc.y + dir.y*n
+
+        if wrap:
+            while not self.valid(Loc(x,y)):
+                if x > (self.width - 1)  : x -= self.width
+                elif x < 0               : x += self.width
+
+                if y > (self.height - 1) : y -= self.height
+                elif y < 0               : y += self.height
+
+        loc = Loc(x, y)
         return loc if self.valid(loc) else None
 
     def next_tile(self, tile_loc, dir, n=1):
@@ -212,6 +225,7 @@ class StackableBoard(BaseBoard):
 
     def init_board(self):
         if not self.board_initialized:
+            self.board_initialized = True
             xrng, yrng = range(self.width), range(self.height)
             self.board = [ [[self.make_tile(Loc(x, y))] for x in xrng] for y in yrng ]
 
@@ -223,5 +237,7 @@ class StackableBoard(BaseBoard):
         loc          = self.ploc(tile_loc)
         item         = self[loc]
         self[newloc] = item
-        item.loc     = newloc
         self.items(loc).remove(item)
+
+        if hasattr(item, "loc"):
+            item.loc = newloc
