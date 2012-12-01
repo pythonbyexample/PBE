@@ -9,7 +9,7 @@ from time import sleep
 from utils import TextInput, ujoin, enumerate1, range1, first, envelope, space, nl
 from board import Loc, StackableBoard, BaseTile
 
-pause_time = 0.1
+pause_time = 0.5
 blank      = '.'
 plchar     = '@'
 size       = 30, 20
@@ -19,6 +19,9 @@ rockchar   = '#'
 scrolltype = 2
 wrap       = True
 
+
+def topitems(iterable):
+    return [x[-1] for x in iterable]
 
 class Tile(BaseTile):
     blank = rock = player = False
@@ -34,6 +37,7 @@ class Tile(BaseTile):
 class Blank(Tile) : char = blank
 class Rock(Tile)  : char = rockchar
 
+
 class Player(Tile):
     char = plchar
 
@@ -46,22 +50,35 @@ class Player(Tile):
 
 
 class ScrollBoard(StackableBoard):
-    def __init__(self, size, vsize, def_tile, scrolltype):
+    def __init__(self, size, vsize, def_tile, scrolltype, viswrap=False):
         super(ScrollBoard, self).__init__(size, def_tile)
         self.vwidth, self.vheight = vsize
 
         self.scrolltype = scrolltype
+        self.viswrap    = viswrap
         self.vtopleft   = Loc(0,0)
         self.maxv_x     = self.width - self.vwidth
         self.maxv_y     = self.height - self.vheight
 
     def draw(self):
+        if self.viswrap: self.viswrap_draw(); return
+
         print(nl*5)
         for n, row in enumerate(self.board):
             x, y = self.vtopleft
             if y + self.vheight > n >= y:
-                print(space, ujoin( [t[-1] for t in row[ x : x+self.vwidth ]] ) )
-        # print(player.loc)
+                print(space, ujoin( topitems(row[ x : x+self.vwidth ]) ))
+        sleep(pause_time)
+
+    def viswrap_draw(self):
+        print(nl*5)
+        rows = Loop(self.board, "row", index=self.vtopleft.y)
+
+        for _ in range(self.vheight):
+            cols = Loop(rows.row, index=self.vtopleft.x)
+            print(space, ujoin( topitems(cols.n_items(self.vwidth)) ))
+            rows.next()
+
         sleep(pause_time)
 
     def rand_blank(self):
@@ -71,8 +88,11 @@ class ScrollBoard(StackableBoard):
         loc           = self.ploc(item_loc)
         halfwidth     = self.vwidth // 2
         halfheight    = self.vheight // 2
-        x             = max(0, loc.x - halfwidth)
-        y             = max(0, loc.y - halfheight)
+        x             = loc.x - halfwidth
+        y             = loc.y - halfheight
+
+        if not self.viswrap:
+            x, y = max(0, x), max(0, y)
         self.vtopleft = Loc(x, y)
 
     def move(self, item, newloc):
