@@ -152,7 +152,7 @@ class TextInput(object):
             # return self.parse_input(formats)
             try:
                 return self.parse_input(formats)
-            except (IndexError, ValueError, TypeError, KeyError), e:
+            except (IndexError, ValueError, TypeError, KeyError):
                 print(self.invalid_inp)
 
     def matchfmt(self, fmt, inp):
