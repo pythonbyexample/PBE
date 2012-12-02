@@ -274,3 +274,6 @@ def first(iterable):
 def getitem(iterable, index, default=None):
     try               : return iterable[index]
     except IndexError : return default
+
+def topitems(iterable):
+    return [x[-1] for x in iterable]
