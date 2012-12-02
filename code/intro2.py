@@ -4,13 +4,13 @@ from __future__ import print_function, unicode_literals, division
 from random import random, randint
 from utils import Dice, envelope, lastind, nl
 
-blank  = '.'
-char   = '@'
-loc    = 0
-length = 79
-ahead  = 1
-back   = -1
-track  = [blank] * length
+blank   = '.'
+char    = '@'
+loc     = 0
+length  = 79
+forward = 1
+back    = -1
+track   = [blank] * length
 
 
 def move(dir, n):
@@ -29,7 +29,7 @@ def demo1():
     display()
     track[loc] = char
     display()
-    move(ahead, 10)
+    move(forward, 10)
     display()
     move(back, 2)
     display()
@@ -57,7 +57,7 @@ def demo2():
     track2[loc2].append(char)
     move2(back, 10)
     display2()
-    move2(ahead, 10)
+    move2(forward, 10)
     move2(back, 2)
     display2()
 
@@ -66,7 +66,7 @@ def demo2():
 
     x = dice.rollsum()
     print("x =", x)
-    move2(ahead, x)
+    move2(forward, x)
     display2()
 
 
