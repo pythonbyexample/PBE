@@ -25,17 +25,20 @@ class Loc(object):
     def __iter__(self):
         return iter(self.loc)
 
-    def moved(self, x, y):
-        """ Return a new Loc moved according to delta modifiers `x` and `y`,
-            e.g. 1,0 to move right.
-        """
-        return Loc(self.x + x, self.y + y)
-
     def __eq__(self, other):
         return self.loc == getattr(other, "loc", None)
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash(self.loc)
+
+    def moved(self, x, y):
+        """ Return a new Loc moved according to delta modifiers `x` and `y`,
+            e.g. 1,0 to move right.
+        """
+        return Loc(self.x + x, self.y + y)
 
 Dir = Loc   # Directions (e.g. 0,1=right) work the same way but should have a different name for clarity
 
@@ -133,7 +136,12 @@ class BaseBoard(object):
 
     def make_tile(self, loc):
         """Make a tile using `self.def_tile`. If def_tile is simply a string, return it, otherwise instantiate with x, y as arguments."""
-        return self.def_tile if isinstance(self.def_tile, basestring) else self.def_tile(loc)
+        try:
+            isstr = isinstance(self.def_tile, basestring)
+        except NameError:
+            isstr = isinstance(self.def_tile, str)
+
+        return self.def_tile if isstr else self.def_tile(loc)
 
     def move(self, tile_loc, newloc):
         loc          = self.ploc(tile_loc)

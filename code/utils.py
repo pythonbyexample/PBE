@@ -23,18 +23,32 @@ class Loop(object):
     """
     def __init__(self, items, name="item", index=0):
         self.items   = items
-        self.index   = index
         self.name    = name
+        self.length  = len(self.items)
         self.lastind = len(self.items) - 1
-        self.update_attr()
+        self.index   = 0
+        self.next(index)
 
-    def next(self):
-        self.index = self.index+1 if self.index < self.lastind else 0
+    def next(self, n=1):
+        # len=3, last=2, cur=0, next(7) ; 1201201 7%3: cur+n%len
+        if n < 0:
+            self.prev(abs(n))
+        self.index = (self.index + n) % self.length
         self.update_attr()
+        return self.item
 
-    def prev(self):
-        self.index = self.index-1 if self.index > 0 else self.lastind
+    def prev(self, n):
+        # len=3, last=2, cur=1, prev(5) ; 02102 -4%3: cur+n%len  3 + -1
+        self.index = self.length - abs((self.index - n) % self.length)
+        # self.index = self.index-1 if self.index > 0 else self.lastind
         self.update_attr()
+        return self.item
+
+    def n_items(self, n):
+        """Return next `n` items, starting with current item."""
+        for _ in range(n):
+            yield self.item
+            self.next()
 
     def update_attr(self):
         self.item = self.items[self.index]
@@ -129,15 +143,17 @@ class TextInput(object):
                    (" "    , " *"),
                     )
 
-    def __init__(self, formats=None, board=None, options=(), prompt="> ", quit_key='q', accept_blank=False, invalid_inp=None):
+    def __init__(self, formats=None, board=None, options=(), prompt="> ", quit_key='q', accept_blank=False, invalid_inp=None,
+                 singlechar_cmds=False):
         if isinstance(formats, basestring): formats = [formats]
-        self.board        = board
-        self.formats      = formats
-        self.options      = options
-        self.prompt       = prompt
-        self.quit_key     = quit_key
-        self.accept_blank = accept_blank
-        self.invalid_inp  = invalid_inp or self.invalid_inp
+        self.board           = board
+        self.formats         = formats
+        self.options         = options
+        self.prompt          = prompt
+        self.quit_key        = quit_key
+        self.accept_blank    = accept_blank
+        self.singlechar_cmds = singlechar_cmds
+        self.invalid_inp     = invalid_inp or self.invalid_inp
 
     def getloc(self):
         return first( self.getinput(formats=["loc"]) )
@@ -158,7 +174,6 @@ class TextInput(object):
     def matchfmt(self, fmt, inp):
         for init, repl in self.regexes:
             fmt = fmt.replace(init, repl)
-        # print("^%s$" % fmt, inp)
         return re.match("^%s$" % fmt, inp)
 
     def parse_fmt(self, inp, fmt):
@@ -214,7 +229,10 @@ class TextInput(object):
         if not formats:
             raise ValueError
 
-        fmt      = first(formats)
+        fmt = first(formats)
+        if self.singlechar_cmds:
+            inp = inp.replace(space, '')
+
         inp      = inp.split() if space in inp else list(inp)
         commands = self.parse_fmt(inp, fmt)
         return commands
@@ -225,7 +243,10 @@ class TextInput(object):
 # ==== Functions =======================================================
 
 def ujoin(iterable, sep=' ', tpl='%s'):
-    return sep.join( [tpl % unicode(x) for x in iterable] )
+    return sep.join( [tpl % str(x) for x in iterable] )
+
+def sjoin(iterable, sep=' ', tpl='%s'):
+    return sep.join( [tpl % str(x) for x in iterable] )
 
 def itersplit(it, check):
     """Split iterator `it` in two lists: first that passes `check` and second that does not."""
