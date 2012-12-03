@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- encoding: utf-8 -*-
 
 from __future__ import print_function, unicode_literals, division
 import sys
@@ -11,32 +12,34 @@ from utils import Loop, TextInput, enumerate1, range1, ujoin, first, nl, space
 from board import Board, Loc, BaseTile
 
 size        = 4
-players     = 'OX'
+# players     = 'ʘΔ'
+p1numbers   = "➀➁➂➃"
+p2numbers   = "➊➋➌➍"
+players     = p1numbers, p2numbers
 ai_players  = 'X'
 check_moves = 15
 padding     = 5, 3
 
 
-class Tile(BaseTile):
-    num = maxnum = player = None
+class Tile(object):
+    player = None
 
     def __repr__(self):
-        return "%s %s" % (self.player or space, self.num)
+        return players[self.player-1][self.num-1] if self.player else str(self.num)
+        # return "%s %s" % (self.player or space, self.num)
 
-    def add(self, player):
+    def increment(self, player):
         """ Increment tile number; if number wraps, increment neighbour tiles.
             `bblocks.counter` is used to avoid infinite recursion loops.
         """
-        bblocks.counter.next()
-        if bblocks.counter == check_moves:
-            bblocks.check_end(player)
+        if not bblocks.counter.next(): bblocks.check_end(player)
 
-        if self._add(player):
+        if self._increment(player):
             for tile in board.cross_neighbours(self):
-                tile.add(player)
+                tile.increment(player)
             board.draw()
 
-    def _add(self, player):
+    def _increment(self, player):
         self.player = player
         self.num.next()
         return bool(self.num == 1)
@@ -51,7 +54,7 @@ class BlocksBoard(Board):
             tile.maxnum = len( [self.valid(nbloc) for nbloc in neighbours(tile)] )
             tile.num    = Loop(range1(tile.maxnum))
 
-    def random_move(self, player):
+    def calculate_move(self, player):
         """Randomly choose between returning the move closest to completing a tile or a random move."""
         tiles = [t for t in self if self.valid_move(player, t.loc)]
 
@@ -59,13 +62,13 @@ class BlocksBoard(Board):
         tiles.sort(key=to_max)
         return rndchoice( [first(tiles), rndchoice(tiles)] )
 
-    def valid_move(self, player, loc):
-        return bool( self[loc].player in (None, player) )
+    def valid_move(self, player, tile):
+        return bool(tile.player is None or tile.player==player)
 
 
 class BlockyBlocks(object):
     winmsg  = "%s has won!"
-    counter = Loop(range1(check_moves))
+    counter = Loop(range(check_moves))
 
     def check_end(self, player):
         if all(tile.player==player for tile in board):
@@ -79,14 +82,14 @@ class Test(object):
 
         for p in cycle(players):
             board.draw()
-            tile = board.random_move(p) if p in ai_players else self.get_move(p)
-            tile.add(p)
+            tile = board.calculate_move(p) if p in ai_players else self.get_move(p)
+            tile.increment(p)
             bblocks.check_end(p)
 
     def get_move(self, player):
         while True:
             loc = self.textinput.getloc()
-            if board.valid_move(player, loc) : return board[loc]
+            if board.valid_move(player, board[loc]) : return board[loc]
             else                             : print(self.textinput.invalid_move)
 
 

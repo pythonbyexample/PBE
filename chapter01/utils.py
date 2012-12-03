@@ -35,6 +35,7 @@ class Loop(object):
             self.prev(abs(n))
         self.index = (self.index + n) % self.length
         self.update_attr()
+        return self.item
 
     def prev(self, n=1):
         # len=3, last=2, cur=1, prev(5) ; 02102 -4%3: cur+n%len  3 + -1
@@ -45,6 +46,7 @@ class Loop(object):
         print("self.index", self.index)
         # self.index = self.index-1 if self.index > 0 else self.lastind
         self.update_attr()
+        return self.item
 
     def n_items(self, n):
         """Return next `n` items, starting with current item."""
@@ -170,7 +172,7 @@ class TextInput(object):
             # return self.parse_input(formats)
             try:
                 return self.parse_input(formats)
-            except (IndexError, ValueError, TypeError, KeyError), e:
+            except (IndexError, ValueError, TypeError, KeyError):
                 print(self.invalid_inp)
 
     def matchfmt(self, fmt, inp):
@@ -294,3 +296,6 @@ def first(iterable):
 def getitem(iterable, index, default=None):
     try               : return iterable[index]
     except IndexError : return default
+
+def topitems(iterable):
+    return [x[-1] for x in iterable]

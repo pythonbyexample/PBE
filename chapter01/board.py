@@ -85,13 +85,13 @@ class BaseBoard(object):
         print(nl * self.screen_sep)
 
         if self.num_grid:
-            print(space*(self.xpad + 1), ujoin( range1(self.width), space, self.tiletpl ), nl * self.ypad)
+            print(space, space*(self.xpad + 1), ujoin( range1(self.width), space, self.tiletpl ), nl * self.ypad)
 
         for n, row in enumerate1(self.board):
             args = [self.tiletpl % n] if self.num_grid else []
             if self.stackable:
                 row = (tile[-1] for tile in row)
-            args = args + [ujoin(row, space, self.tiletpl), nl * self.ypad]
+            args = [space] + args + [ujoin(row, space, self.tiletpl), nl * self.ypad]
             print(*args)
 
         self.status()

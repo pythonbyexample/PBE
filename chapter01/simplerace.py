@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- encoding: utf-8 -*-
 
 from __future__ import print_function, unicode_literals, division
 
@@ -8,38 +9,31 @@ from random import shuffle
 from time import sleep
 from itertools import cycle
 
-from utils import Dice, TextInput, ujoin, nextval, lastind, first, enumerate1, getitem, nl, space
+from utils import Dice, TextInput, ujoin, lastind, first, enumerate1, getitem, nl, space
 
-size         = 20
+length       = 20
 num_pieces   = 3
 blank        = '.'
-pause_time   = 0.5     # in seconds
-player_chars = 'gb'
-ai_players   = 'b'
+pause_time   = 0.3     # in seconds
+player_chars = u'ʘΔ'
+ai_players   = u'ʘΔ'
 
 
-class Tile(object):
-    char = blank
-
-    def __repr__(self):
-        return self.char
-
-
-class Piece(Tile):
+class Piece(object):
     loc  = -1
     done = False
 
-    def __init__(self, char):
-        self.char = char
+    def __init__(self, char) : self.char = char
+    def __repr__(self)       : return self.char
 
     def move(self, loc):
         """Move to location `loc`, if moved past the end, set `done` property."""
-        track[self.loc] = Tile()
+        track[self.loc] = blank
 
         if loc > lastind(track):
             self.done = True
         else:
-            if track[loc].char is not blank:
+            if track[loc] is not blank:
                 track[loc].loc = -1     # bump enemy piece back to start
             track[loc] = self
 
@@ -47,22 +41,17 @@ class Piece(Tile):
 
 
 class SimpleRace(object):
-    winmsg = "\n'%s' wins the race!"
-
     def __init__(self):
-        """ Create pieces; create list of players with one or the other being the first to move;
-            create dice object.
-        """
         self.dice = Dice(num=1)     # one 6-sided dice
         shuffle(players)
 
     def draw(self):
-        """Display the racing track."""
         print(nl*5 + ujoin(track))
 
     def valid(self, piece, loc):
         """Valid move: any move that does not land on your other piece (beyond track is ok)."""
-        return bool(loc > lastind(track) or track[loc].char != piece.char)
+        if loc > lastind(track): return True
+        return bool(track[loc] == blank or track[loc].char != piece.char)
 
     def valid_moves(self, player, move):
         """ Valid moves for `player`: return tuples (piece, newloc) for each piece belonging to `player`.
@@ -77,32 +66,27 @@ class SimpleRace(object):
         moves = [(p.loc+move, p) for p in player if not p.done and self.valid(p, p.loc+move)]
         return sorted( dict(moves).items() )
 
-    def check_end(self, player):
-        """Check if `player` has won the game."""
-        if all(piece.done for piece in player):
-            self.game_won(player)
-
-    def game_won(self, player):
-        self.draw()
-        print(self.winmsg % player)
-        sys.exit()
-
 
 class Player(object):
+    winmsg = "\n'%s' wins the race!"
+
     def __init__(self, char):
         self.char   = char
         self.ai     = char in ai_players
         self.pieces = [Piece(char) for _ in range(num_pieces)]
 
-    def __repr__(self):
-        return self.char
+    def __repr__(self) : return self.char
+    def __iter__(self) : return iter(self.pieces)
 
-    def __iter__(self):
-        return iter(self.pieces)
+    def check_end(self):
+        """Check if the player has won the game."""
+        if all(piece.done for piece in self):
+            race.draw()
+            print(self.winmsg % self)
+            sys.exit()
 
 
 class Test(object):
-
     def run(self):
         """ Run main game loop.
 
@@ -121,17 +105,16 @@ class Test(object):
             race.draw()
             movedist    = race.dice.rollsum()
             valid_moves = race.valid_moves(player, movedist)
+            getmove     = self.get_move if offer_choice() else rndchoice
+            loc, piece  = getmove(valid_moves)
 
-            if valid_moves:
-                getmove = self.get_move if offer_choice() else rndchoice
-                loc, piece = getmove(valid_moves)
-                piece.move(loc)
-                race.check_end(player)
+            piece.move(loc)
+            player.check_end()
             sleep(pause_time)
 
     def get_move(self, valid_moves):
-        """Get player's choice of available moves."""
-        moves = [space] * (size + 6)
+        """Get player's choice of move."""
+        moves = [space] * (length + 6)
         for n, (loc, _) in enumerate1(valid_moves):
             moves[loc] = n
         print(ujoin(moves))
@@ -143,8 +126,9 @@ class Test(object):
 
 
 if __name__ == "__main__":
-    track   = [Tile() for _ in range(size)]
+    track   = [blank] * length
     players = [Player(c) for c in player_chars]
     race    = SimpleRace()
+
     try: Test().run()
     except KeyboardInterrupt: pass
