@@ -12,21 +12,18 @@ from utils import Loop, TextInput, enumerate1, range1, ujoin, first, nl, space
 from board import Board, Loc, BaseTile
 
 size        = 4
-# players     = 'ʘΔ'
-p1numbers   = "➀➁➂➃"
-p2numbers   = "➊➋➌➍"
-players     = p1numbers, p2numbers
-ai_players  = 'X'
+players     = {1: "➀➁➂➃", 2: "➊➋➌➍"}
+ai_players  = [1, ]
 check_moves = 15
-padding     = 5, 3
+padding     = 2, 1
 
 
-class Tile(object):
-    player = None
+class Tile(BaseTile):
+    num = maxnum = player = None
 
     def __repr__(self):
-        return players[self.player-1][self.num-1] if self.player else str(self.num)
-        # return "%s %s" % (self.player or space, self.num)
+        if self.player : return players[self.player][self.num-1]
+        else           : return str(self.num)
 
     def increment(self, player):
         """ Increment tile number; if number wraps, increment neighbour tiles.
@@ -56,7 +53,7 @@ class BlocksBoard(Board):
 
     def calculate_move(self, player):
         """Randomly choose between returning the move closest to completing a tile or a random move."""
-        tiles = [t for t in self if self.valid_move(player, t.loc)]
+        tiles = [t for t in self if self.valid_move(player, t)]
 
         def to_max(t): return t.maxnum - t.num
         tiles.sort(key=to_max)
@@ -67,7 +64,7 @@ class BlocksBoard(Board):
 
 
 class BlockyBlocks(object):
-    winmsg  = "%s has won!"
+    winmsg  = "player %s has won!"
     counter = Loop(range(check_moves))
 
     def check_end(self, player):
@@ -80,7 +77,7 @@ class Test(object):
     def run(self):
         self.textinput = TextInput(board=board)
 
-        for p in cycle(players):
+        for p in cycle(players.keys()):
             board.draw()
             tile = board.calculate_move(p) if p in ai_players else self.get_move(p)
             tile.increment(p)
@@ -94,7 +91,7 @@ class Test(object):
 
 
 if __name__ == "__main__":
-    board   = BlocksBoard(size, def_tile, num_grid=True, padding=padding)
+    board   = BlocksBoard(size, Tile, num_grid=True, padding=padding)
     bblocks = BlockyBlocks()
 
     try: Test().run()
