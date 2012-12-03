@@ -6,10 +6,10 @@ import sys
 from random import choice as rndchoice
 from time import sleep
 
-from utils import TextInput, ujoin, enumerate1, range1, first, envelope, space, nl
+from utils import TextInput, Loop, ujoin, enumerate1, range1, first, envelope, space, nl
 from board import Loc, StackableBoard, BaseTile
 
-pause_time = 0.5
+pause_time = 0.3
 blank      = '.'
 plchar     = '@'
 size       = 30, 20
@@ -72,6 +72,7 @@ class ScrollBoard(StackableBoard):
 
     def viswrap_draw(self):
         print(nl*5)
+        print("self.vtopleft.y", self.vtopleft.y)
         rows = Loop(self.board, "row", index=self.vtopleft.y)
 
         for _ in range(self.vheight):
@@ -124,7 +125,7 @@ class ScrollBoard(StackableBoard):
 class Test(object):
     def run(self):
         moves   = 'd'*2 + 'r'*18 + 'u'*11 + 'l'*17
-        moves   = 'd'*3 + 'u'*10
+        moves   = 'd'*3 + 'u'*4
 
         for move in moves:
             board.draw()
@@ -149,7 +150,9 @@ class Test(object):
 
 
 if __name__ == "__main__":
-    board  = ScrollBoard(size, vsize, Blank, scrolltype)
+    board  = ScrollBoard(size, vsize, Blank, scrolltype, viswrap=True)
     player = Player(Loc(3, 3))
-    for _ in range(num_rocks): Rock(board.rand_blank())
+    # for _ in range(num_rocks): Rock(board.rand_blank())
+    for x in range(size[0]): Rock(Loc(x, 0))
+
     Test().run()
