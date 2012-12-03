@@ -16,7 +16,7 @@ players = 'XO'
 
 class TictactoeBoard(Board):
     def filled(self):
-        return not any( self[loc] == blank for loc in self.locations() )
+        return not any(tile==blank for tile in self)
 
     def random_blank(self):
         return rndchoice( [loc for loc in self.locations() if self[loc] == blank] )

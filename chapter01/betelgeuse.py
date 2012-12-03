@@ -11,8 +11,8 @@ from board import Board, Loc, BaseTile
 
 size           = 8
 player_chars   = 'IX'
-ai_players     = 'IX'
 ai_players     = 'X'
+ai_players     = 'IX'
 
 neutral_char   = 'N'
 blank          = '.'
@@ -33,16 +33,13 @@ class PlayerBase(object):
     """Used as base for all player's stars and fleets as well as Player class itself, to allow for
        making equality checks between all of them.
     """
-    def __eq__(self, other) : return bool(self.char==other.char)
-    def __ne__(self, other) : return bool(self.char!=other.char)
-    def __repr__(self)      : return self.char or blank
+    def __eq__(self, other) : return bool(self.char == other.char)
+    def __ne__(self, other) : return bool(self.char != other.char)
+    def __repr__(self)      : return self.char
 
 
-class Tile(BaseTile, PlayerBase):
-    blank = False
-    char  = None
-
-class Blank(Tile): pass
+class Tile(BaseTile, PlayerBase) : blank = star = False
+class Blank(Tile)                : char = blank
 
 class Star(Blank):
     char  = neutral_char
@@ -57,7 +54,7 @@ class Star(Blank):
 
     def __repr__(self):
         data = [self.char, self.num]
-        if show_ships or self==betelgeuse.show_ships_player:
+        if show_ships or self == betelgeuse.show_ships_player:
             data.append("%s:%s" % (self.production, self.ships))
         return ujoin(data, space)
 
@@ -69,7 +66,7 @@ class Star(Blank):
 class BetelgeuseBoard(Board):
     stat = "turn: %d"
 
-    def random_blank(self) : return rndchoice( [t.loc for t in self if t.blank] )
+    def random_blank(self) : return rndchoice(self.locations("blank"))
     def status(self)       : print(self.stat % betelgeuse.turn)
 
 
@@ -128,7 +125,7 @@ class Player(PlayerBase):
             if move: self.send(*move)
 
     def random_move(self, star):
-        def dist(star2): return board.dist(star.loc, star2.loc)
+        def dist(star2): return board.dist(star, star2)
 
         if random() < send_chance and star.ships >= send_cutoff:
             targets = sorted( [s for s in stars if s != self], key=dist )
@@ -139,12 +136,13 @@ class Player(PlayerBase):
 
 
 class Betelgeuse(object):
-    winmsg            = "%s has won!"
+    winmsg            = "'%s' has won!"
     turn              = 1
     show_ships_player = None
 
     def check_end(self, player):
         pchars = set(sf.char for sf in stars+fleets if sf.char != neutral_char)
+
         if len(pchars) == 1:
             board.draw()
             print(nl, self.winmsg % first(pchars))

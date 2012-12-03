@@ -9,7 +9,7 @@ from time import sleep
 from itertools import cycle
 
 from utils import Loop, TextInput, enumerate1, range1, ujoin, first, nl, space
-from board import Board, Loc
+from board import Board, Loc, BaseTile
 
 size        = 4
 # players     = 'ʘΔ'
@@ -23,9 +23,6 @@ padding     = 5, 3
 
 class Tile(object):
     player = None
-
-    def __init__(self, loc):
-        self.loc = loc
 
     def __repr__(self):
         return players[self.player-1][self.num-1] if self.player else str(self.num)
@@ -52,8 +49,9 @@ class BlocksBoard(Board):
     def __init__(self, *args, **kwargs):
         super(BlocksBoard, self).__init__(*args, **kwargs)
         neighbours = self.neighbour_cross_locs
+
         for tile in self:
-            tile.maxnum = len( [self.valid(n) for n in neighbours(tile)] )
+            tile.maxnum = len( [self.valid(nbloc) for nbloc in neighbours(tile)] )
             tile.num    = Loop(range1(tile.maxnum))
 
     def calculate_move(self, player):
@@ -73,12 +71,9 @@ class BlockyBlocks(object):
     counter = Loop(range(check_moves))
 
     def check_end(self, player):
-        if all(t.player==player for t in board):
-            self.game_won(player)
-
-    def game_won(self, player):
-        print(nl, self.winmsg % player)
-        sys.exit()
+        if all(tile.player==player for tile in board):
+            print(nl, self.winmsg % player)
+            sys.exit()
 
 
 class Test(object):

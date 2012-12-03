@@ -20,7 +20,7 @@ class Test(object):
     def test(self):
         # allow entering of multiple (up to 10) locations
         pattern        = "%s? loc%s" % (mark_key, " loc?"*9)
-        self.textinput = TextInput(pattern, board)
+        self.textinput = TextInput(pattern, board, singlechar_cmds=True)
         while True:
             board.draw()
             self.ai_move() if ai_run else self.make_move()
@@ -37,7 +37,7 @@ class Test(object):
 
     def ai_move(self):
         """Very primitive `AI', does not mark mines & does not try to avoid them."""
-        loc = board.random_hidden().loc
+        loc = board.random_hidden()
 
         while loc.x:
             print(nl, "loc", loc.x+1, loc.y+1, nl)

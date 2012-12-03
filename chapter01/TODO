@@ -1,1 +1,7 @@
 - pychecker, pylint
+
+x apply 'accept tiles' changes
+x apply 'tiles(), not_tiles()' changes
+- handle string of commands input (robots, msweep?)
+- Pyglet
+- small gamification tut
