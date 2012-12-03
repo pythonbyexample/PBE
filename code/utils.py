@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-from __future__ import print_function, unicode_literals, division
+#!/usr/bin/env python3
 
 import sys
 import re
@@ -145,7 +143,7 @@ class TextInput(object):
 
     def __init__(self, formats=None, board=None, options=(), prompt="> ", quit_key='q', accept_blank=False, invalid_inp=None,
                  singlechar_cmds=False):
-        if isinstance(formats, basestring): formats = [formats]
+        if isinstance(formats, str): formats = [formats]
         self.board           = board
         self.formats         = formats
         self.options         = options
@@ -220,7 +218,7 @@ class TextInput(object):
         return commands
 
     def parse_input(self, formats):
-        inp = raw_input(self.prompt).strip()
+        inp = input(self.prompt).strip()
         if inp == self.quit_key: sys.exit()
         if self.accept_blank and not inp:
             return None
