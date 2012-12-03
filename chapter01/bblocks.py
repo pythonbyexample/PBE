@@ -1,7 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- encoding: utf-8 -*-
 
-from __future__ import print_function, unicode_literals, division
 import sys
 from random import choice as rndchoice
 from random import randint
@@ -12,20 +11,21 @@ from utils import Loop, TextInput, enumerate1, range1, ujoin, first, nl, space
 from board import Board, Loc, BaseTile
 
 size        = 4
-# players     = 'ʘΔ'
-p1numbers   = "➀➁➂➃"
-p2numbers   = "➊➋➌➍"
-players     = p1numbers, p2numbers
-ai_players  = 'X'
+players     = [1, 2]
+ai_players  = [1, 2]
+ai_players  = [1]
+pchars      = "➀➁➂➃", "➊➋➌➍"
 check_moves = 15
-padding     = 5, 3
+padding     = 2, 1
+pause_time  = 0.4
 
 
-class Tile(object):
+class Tile(BaseTile):
     player = None
 
     def __repr__(self):
-        return players[self.player-1][self.num-1] if self.player else str(self.num)
+        if self.player : return pchars[self.player-1][self.num-1]
+        else           : return str(self.num)
         # return "%s %s" % (self.player or space, self.num)
 
     def increment(self, player):
@@ -54,9 +54,9 @@ class BlocksBoard(Board):
             tile.maxnum = len( [self.valid(nbloc) for nbloc in neighbours(tile)] )
             tile.num    = Loop(range1(tile.maxnum))
 
-    def calculate_move(self, player):
+    def ai_move(self, player):
         """Randomly choose between returning the move closest to completing a tile or a random move."""
-        tiles = [t for t in self if self.valid_move(player, t.loc)]
+        tiles = [t for t in self if self.valid_move(player, t)]
 
         def to_max(t): return t.maxnum - t.num
         tiles.sort(key=to_max)
@@ -67,12 +67,13 @@ class BlocksBoard(Board):
 
 
 class BlockyBlocks(object):
-    winmsg  = "%s has won!"
+    winmsg  = "player %s (%s) has won!"
     counter = Loop(range(check_moves))
 
     def check_end(self, player):
         if all(tile.player==player for tile in board):
-            print(nl, self.winmsg % player)
+            board.draw()
+            print( nl, self.winmsg % (player, first(pchars[player-1])) )
             sys.exit()
 
 
@@ -82,7 +83,7 @@ class Test(object):
 
         for p in cycle(players):
             board.draw()
-            tile = board.calculate_move(p) if p in ai_players else self.get_move(p)
+            tile = board.ai_move(p) if p in ai_players else self.get_move(p)
             tile.increment(p)
             bblocks.check_end(p)
 
@@ -94,7 +95,7 @@ class Test(object):
 
 
 if __name__ == "__main__":
-    board   = BlocksBoard(size, def_tile, num_grid=True, padding=padding)
+    board   = BlocksBoard(size, Tile, num_grid=True, padding=padding, pause_time=pause_time)
     bblocks = BlockyBlocks()
 
     try: Test().run()

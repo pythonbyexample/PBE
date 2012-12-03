@@ -1,17 +1,19 @@
 Introduction
 ============
 
-This chapter will introduce you to some basics of programming in Python.
+This chapter will introduce you to some of the basics of programming in Python.
 
 Requirements
 ------------
 
 To use this guide, the minimal requirement is the `Python Interpreter
-<http://www.python.org/download/>`_ version 2.7 (3.3 should also work), but I'd recommend also
-getting a good programming editor that support auto-indenting and syntax highlighting for Python.
+<http://www.python.org/download/>`_ version 3.2+, but I'd also recommend getting a good programming
+editor that support auto-indenting and syntax highlighting for Python.
 
 If you're completely new to Python and programming, it might be best to
 quickly look through the `Official Python Tutorial <http://docs.python.org/tutorial>`_.
+
+My guide will mostly use short, simple games to teach Python and Programming in general.
 
 NOTE
 ----
@@ -22,8 +24,8 @@ below to view the entire code.
 Windows Note
 ------------
 
-In windows it's probably best to run scripts from inside IDLE which is installed with python by
-using F5 shortcut.
+On windows it's probably best to run scripts from inside IDLE which is installed with python by
+using the F5 shortcut.
 
 Where is the code?
 ------------------
@@ -38,10 +40,10 @@ Intro Part I
 ------------
 https://github.com/pythonbyexample/PBE/tree/master/code/intro1.py
 
-This little program will show how to use class inheritance. Four trees are created, two are Bamboo
-trees (bamboo is really a type of grass, but..), and the other two are Birches. Both types of
-trees grow fast, but Bamboo is by far the fastest; individual trees may have different rate of
-growth based on environment.
+This little program will show how to use class inheritance. Four trees are created, two of them
+are Bamboo trees (bamboo is really a type of grass, but..), and the other two are Birches. Both
+types of trees grow fast, but Bamboo is by far the fastest; individual trees may have different
+rate of growth based on environment factors.
 
 I'll start by defining the parent Tree class and two classes for the types of our trees:
 
@@ -74,8 +76,8 @@ A few things to note:
 - all trees have `grow()` method that grows the tree based on its rate and adds a small random
   variation
 
-In the `main()` function I will create four trees, print their information; grow each of them
-once; print information; grow each of them five times and finally do the printout again:
+In the `main()` function I will create four trees, grow each of them once, then grow each of them
+five times, displaying the trees after each change:
 
 .. sourcecode:: python
 
@@ -104,8 +106,8 @@ The output should be something like::
 
     (<Bamboo tree, 67.1 ft>, <Bamboo tree, 73.8 ft>, <Birch tree, 8.5 ft>, <Birch tree, 8.3 ft>)
 
-Bamboo trees have different heights, Birches also have slightly different heights, but both Birches
-are much shorter than either of the Bamboo.
+Both Bamboo trees are much taller than Birches, but there are some minor height differences inside
+the same type as well.
 
 
 Intro Part II
@@ -114,12 +116,12 @@ https://github.com/pythonbyexample/PBE/tree/master/code/intro2.py
 
 One of the simplest games you can make (and also one of the oldest games known) is a race game
 where each player races along the track (or a playing board) and tries to reach the end before the
-other player. I will not make the complete game in this part but I'll make two racing tracks and
-demonstrate how playing pieces can be added and moved around.
+other player. I will not make the complete game in this chapter; I'll simply make two racing
+tracks and demonstrate how playing pieces can be added and moved around.
 
-The general idea is that the racing track is a python list, each player is a different letter, and
-a blank space is shown as a dot. I'll need to have a function that prints out the `track` and one
-that moves a player to another spot:
+The general idea is that the racing track is a python list, the player is a represented by a the
+'@' character, and blank spaces are shown as dots. I'll need to have a function that prints out
+the `track` and one that moves the player to another spot:
 
 .. sourcecode:: python
 
@@ -143,10 +145,12 @@ that moves a player to another spot:
     def display():
         print(''.join(track), nl)
 
-In `move()` function I need to set current location to blank, calculate the new location and place
+In `move()` function I need to set the current location to blank, calculate the new location and place
 my character there. I'm using two functions from the `utils` module: `envelope()` forces location to
 be within valid range and `lastind()` returns last valid index for an iterable (e.g. 9 if iterable
 length is 10, 19 if 20, etc).
+
+The `envelope()` function accepts three arguments: the value itself, lower bound, and higher bound.
 
 .. sourcecode:: python
 
@@ -164,17 +168,17 @@ length is 10, 19 if 20, etc).
 Hopefully this is clear enough. We're moving forward by ten steps and then back by two::
 
     demo1
-    ............................................................................... 
+    ...............................................................................
 
-    @.............................................................................. 
+    @..............................................................................
 
-    ..........@.................................................................... 
+    ..........@....................................................................
 
-    ........@...................................................................... 
+    ........@......................................................................
 
 What if I want to put some sort of "things" on the path and let players move on top of them
-without erasing them? Simple! I'll just use a list of lists for my track and change the `move()` a
-bit:
+without erasing them? Simple! I'll just use a list of lists for my track and change the `move()`
+accordingly:
 
 .. sourcecode:: python
 
@@ -221,16 +225,16 @@ other items at these locations are not affected.
 
 To add some randomness, I will use the `Dice` object from `utils`: by default it creates two dice
 with 6 sides each, but it's possible to specify any number of dice and sides. `Dice` has two
-methods: `roll()` will return the list of rolls for each dice; sometimes you won't care about
-individual dice and just need to know the total; `rollsum()` will provide that::
+methods: `roll()` will return the list of rolls for each dice; in some cases you won't care about
+individual dice and just need to know the total; `rollsum()` will provide just that::
 
     demo2
-    ............................................................................... 
+    ...............................................................................
 
-    @.............................................................................. 
+    @..............................................................................
 
-    ........@...................................................................... 
+    ........@......................................................................
 
     [2, 2]
     x = 9
-    .................@............................................................. 
+    .................@.............................................................

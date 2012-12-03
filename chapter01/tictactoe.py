@@ -1,7 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- encoding: utf-8 -*-
-
-from __future__ import print_function, unicode_literals, division
 
 import sys
 from random import choice as rndchoice
@@ -43,11 +41,11 @@ class Tictactoe(object):
         return lines + [diag1, diag2]
 
     def check_end(self, player):
-        if board.filled(): self.game_won(None)
-
         for line in self.win_lines:
             if board.completed(line, player):
                 self.game_won(player)
+
+        if board.filled(): self.game_won(None)
 
     def game_won(self, player):
         print(self.winmsg % player if player else self.drawmsg)
