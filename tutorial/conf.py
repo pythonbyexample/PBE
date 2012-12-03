@@ -35,14 +35,14 @@ templates_path = ['.templates']
 source_suffix = '.rst'
 
 # The encoding of source files.
-#source_encoding = 'utf-8'
+source_encoding = 'utf-8'
 
 # The master toctree document.
 master_doc = 'index'
 
 # General information about the project.
-project = u'Python by Example'
-copyright = u'2009, AK'
+project = u'Lark\'s Tongue Guide to Python'
+copyright = u'2012, lightbird.net'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -98,7 +98,7 @@ html_style = 'default.css'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = "Python by Example"
+html_title = "Lark\'s Tongue Guide to Python"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #html_short_title = None
@@ -168,8 +168,8 @@ htmlhelp_basename = 'Testdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
-  ('index', 'Test.tex', ur'Python by Example',
-   ur'AK', 'manual'),
+  ('index', 'Test.tex', ur'Lark\'s Tongue Guide to Python',
+   ur'lightbird.net', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

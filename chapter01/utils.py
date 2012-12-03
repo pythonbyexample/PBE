@@ -31,10 +31,12 @@ class Loop(object):
     def next(self):
         self.index = self.index+1 if self.index < self.lastind else 0
         self.update_attr()
+        return self.item
 
     def prev(self):
         self.index = self.index-1 if self.index > 0 else self.lastind
         self.update_attr()
+        return self.item
 
     def update_attr(self):
         self.item = self.items[self.index]
@@ -152,7 +154,7 @@ class TextInput(object):
             # return self.parse_input(formats)
             try:
                 return self.parse_input(formats)
-            except (IndexError, ValueError, TypeError, KeyError), e:
+            except (IndexError, ValueError, TypeError, KeyError):
                 print(self.invalid_inp)
 
     def matchfmt(self, fmt, inp):
@@ -274,3 +276,6 @@ def first(iterable):
 def getitem(iterable, index, default=None):
     try               : return iterable[index]
     except IndexError : return default
+
+def topitems(iterable):
+    return [x[-1] for x in iterable]

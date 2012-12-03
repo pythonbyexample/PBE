@@ -5,15 +5,11 @@
 
 .. _contents:
 
-Welcome to Python by Example Tutorial!
-======================================
+Welcome to Lark's Tongue Guide to Python!
+=========================================
 
 
 .. toctree::
     :maxdepth: 2
 
     intro
-    m-chapter01
-    m-chapter02
-    m-chapter03
-    m-chapter04
