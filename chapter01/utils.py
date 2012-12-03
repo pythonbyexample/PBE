@@ -26,6 +26,7 @@ class Loop(object):
         self.name    = name
         self.length  = len(self.items)
         self.lastind = len(self.items) - 1
+        self.index   = 0
         self.next(index)
 
     def next(self, n=1):
@@ -35,9 +36,13 @@ class Loop(object):
         self.index = (self.index + n) % self.length
         self.update_attr()
 
-    def prev(self, n):
+    def prev(self, n=1):
         # len=3, last=2, cur=1, prev(5) ; 02102 -4%3: cur+n%len  3 + -1
+        print("n", n)
+        print("self.length", self.length)
+        print( abs((self.index - n) % self.length) )
         self.index = self.length - abs((self.index - n) % self.length)
+        print("self.index", self.index)
         # self.index = self.index-1 if self.index > 0 else self.lastind
         self.update_attr()
 
