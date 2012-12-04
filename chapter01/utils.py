@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-from __future__ import print_function, unicode_literals, division
+#!/usr/bin/env python3
 
 import sys
 import re
@@ -150,7 +148,11 @@ class TextInput(object):
 
     def __init__(self, formats=None, board=None, options=(), prompt="> ", quit_key='q', accept_blank=False, invalid_inp=None,
                  singlechar_cmds=False):
-        if isinstance(formats, basestring): formats = [formats]
+        try              : is_str = isinstance(formats, basestring)
+        except NameError : is_str = isinstance(formats, str)
+
+        if is_str: formats = [formats]
+
         self.board           = board
         self.formats         = formats
         self.options         = options
@@ -225,7 +227,7 @@ class TextInput(object):
         return commands
 
     def parse_input(self, formats):
-        inp = raw_input(self.prompt).strip()
+        inp = input(self.prompt).strip()
         if inp == self.quit_key: sys.exit()
         if self.accept_blank and not inp:
             return None
@@ -248,7 +250,10 @@ class TextInput(object):
 # ==== Functions =======================================================
 
 def ujoin(iterable, sep=' ', tpl='%s'):
-    return sep.join( [tpl % unicode(x) for x in iterable] )
+    return sep.join( [tpl % str(x) for x in iterable] )
+
+def sjoin(iterable, sep=' ', tpl='%s'):
+    return sep.join( [tpl % str(x) for x in iterable] )
 
 def itersplit(it, check):
     """Split iterator `it` in two lists: first that passes `check` and second that does not."""

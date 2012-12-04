@@ -1,7 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- encoding: utf-8 -*-
 
-from __future__ import print_function, unicode_literals, division
 import sys
 from random import choice as rndchoice
 from random import randint
@@ -12,8 +11,9 @@ from utils import Loop, TextInput, enumerate1, range1, ujoin, first, nl, space
 from board import Board, Loc, BaseTile
 
 size        = 4
+pause_time  = 0.4
 players     = {1: "➀➁➂➃", 2: "➊➋➌➍"}
-ai_players  = [1, ]
+ai_players  = [1, 2]
 check_moves = 15
 padding     = 2, 1
 
@@ -51,7 +51,7 @@ class BlocksBoard(Board):
             tile.maxnum = len( [self.valid(nbloc) for nbloc in neighbours(tile)] )
             tile.num    = Loop(range1(tile.maxnum))
 
-    def calculate_move(self, player):
+    def ai_move(self, player):
         """Randomly choose between returning the move closest to completing a tile or a random move."""
         tiles = [t for t in self if self.valid_move(player, t)]
 
@@ -69,6 +69,7 @@ class BlockyBlocks(object):
 
     def check_end(self, player):
         if all(tile.player==player for tile in board):
+            board.draw()
             print(nl, self.winmsg % player)
             sys.exit()
 
@@ -79,7 +80,7 @@ class Test(object):
 
         for p in cycle(players.keys()):
             board.draw()
-            tile = board.calculate_move(p) if p in ai_players else self.get_move(p)
+            tile = board.ai_move(p) if p in ai_players else self.get_move(p)
             tile.increment(p)
             bblocks.check_end(p)
 
@@ -91,7 +92,7 @@ class Test(object):
 
 
 if __name__ == "__main__":
-    board   = BlocksBoard(size, Tile, num_grid=True, padding=padding)
+    board   = BlocksBoard(size, Tile, num_grid=True, padding=padding, pause_time=pause_time)
     bblocks = BlockyBlocks()
 
     try: Test().run()

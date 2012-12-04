@@ -13,17 +13,20 @@ To run tictactoe, you will also need to download 'board.py' and 'utils.py':
 
 https://github.com/pythonbyexample/PBE/tree/master/code/
 
+Tictactoe class
+---------------
+
 The only slightly difficult bit about this game is that I need to check if a player completed a
-full line, thereby winning the game. To do that, I will first generate a list of all possible
-lines that can win the game: horizontal, vertical and diagonal. This will be handled by the main
-`Tictactoe` class, which will have the following methods:
+full line, thereby winning the game. To accomplish that, I will first generate a list of all
+possible lines that can win the game: horizontal, vertical and diagonal. This will be handled by
+the main `Tictactoe` class, which will have the methods that will take care of:
 
-- generate list of win lines
-- check if the game came to a draw or if one player has won
-- print out winning or draw message
-- run the game: for each player, make a random move, draw the board and check for end of game
+- generating the list of win lines
+- checking if the game came to a draw or if one player has won
+- printing out the winning or draw message
+- running the game: for each player, make a random move, draw the board and check for end of game
 
-The most complicated method is the one that generates the win lines:
+The largest method is the one that generates the win lines:
 
 .. sourcecode:: python
 
@@ -43,31 +46,33 @@ The most complicated method is the one that generates the win lines:
 The `Loc` class is imported from `board` and is a simple board location wrapper with x and y
 attributes; `size` is an integer that specifies board size which is usually `3` in TicTacToe games.
 
-I'm creating the vertical line first, then horizontal - in each loop; a single location is also added
-to each diagonal line in the same loop. It may be a bit confusing that the same loop is making
-whole lines at a time and also adding single locations to diagonal lines; you can split it into
-two loops for clarity.
+In each loop, I'm creating the vertical line first, then horizontal; a single location is also
+added to each of the two diagonal lines in the same loop. It may be a bit confusing that the same
+loop is making whole lines at a time and also adding single locations to diagonal lines; you can
+split it into two loops for clarity if that helps.
 
-The next two methods check if the board is filled up; check if any of the win lines completed for
-that player; if the game is done, win or draw message is printed:
+The next method will check if the player has won the game by completing a line and then check if
+the game came to a draw (board is filled up and no more moves are possible).
+
+The `game_won()` method prints out the win / draw message and quits the game.
+
+The `winmsg` and `drawmsg` are defined at the top of `Tictactoe` as class variables.
 
 .. sourcecode:: python
 
     def check_end(self, player):
-        if board.filled(): self.game_won(None)
-
         for line in self.win_lines:
             if board.completed(line, player):
                 self.game_won(player)
+
+        if board.filled(): self.game_won(None)
 
     def game_won(self, player):
         print(self.winmsg % player if player else self.drawmsg)
         sys.exit()
 
 
-The `winmsg` and `drawmsg` are defined at the top of `Tictactoe` as class variables.
-
-In `run()`, I need to cycle over the players and let each one make a random move, draw the board
+In `run()`, I'll need to cycle over the players and let each one make a random move, draw the board
 and check if game is done.
 
 .. sourcecode:: python
@@ -80,14 +85,20 @@ and check if game is done.
             board.draw()
             self.check_end(player)
 
-I'm using `cycle()` function which is a part of `itertools` module -- it will iterate over items
-in a sequence continuously until interrupted from inside the loop.
+(The `cycle()` function is a part of `itertools` module -- it will iterate over items in a sequence
+continuously until interrupted from inside the loop.)
 
-The playing board will use a primitive `board.Board` class that provides some simple playing board
-functionality. I will cover board.py in one of the later tutorials.
+TictactoeBoard
+--------------
 
-The board will need to do three simple things: 1. return a random blank location 2. check if a
-winning line is completed by the same player and 3. check if the board is completely filled up:
+The playing board will inherit from the `board.Board` class which provides some primitive playing
+board functionality. I'll cover board.py in one of the later tutorials.
+
+The board will need to do three simple things:
+
+1. return a random blank location
+2. check if a winning line is completed by the player
+3. check if the board is completely filled up
 
 .. sourcecode:: python
 
@@ -101,16 +112,16 @@ winning line is completed by the same player and 3. check if the board is comple
         def completed(self, line, item):
             return all(self[loc] == item for loc in line)
 
-The method `self.locations()` simply returns the list of all locations in the board; `blank` is a
+The method `self.locations()` returns the list of all locations in the board; `blank` is a
 character constant '.' used to show blank locations; `rndchoice()` is aliased from python's
 `random.choice()`.
 
-The built-ins `all()` and `any()` are extremely useful, especially when used with list
-comprehensions or generators. The first of these returns true if all items in the list are True;
-second returns True if at least a single item in the list is True. For an empty list, `any()`
+The built-ins `all()` and `any()` are both extremely useful, especially when used with list
+comprehensions or generators. The first of these returns True if all items in the list are True;
+the second returns True if at least a single item in the list is True. For an empty list, `any()`
 returns False, `all()` returns True.
 
-Here's the sample run, with some of the padding removed::
+Here's the 'screenshot' of a sample run, with some of the padding removed::
 
     . . .
     . X .

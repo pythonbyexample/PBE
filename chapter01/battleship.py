@@ -46,9 +46,6 @@ class Ship(Tile)  : char = shipchar
 
 
 class BattleshipBoard(Board):
-    # def all_unhit(self)    : return self.not_tiles("is_hit")
-    # def ships(self)        : return self.tiles("ship")
-
     def random_blank(self) : return rndchoice(self.tiles_not("ship"))
     def random_unhit(self) : return rndchoice(self.tiles_not("is_hit"))
 
