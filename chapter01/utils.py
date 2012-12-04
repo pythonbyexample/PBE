@@ -295,3 +295,6 @@ def getitem(iterable, index, default=None):
 
 def topitems(iterable):
     return [x[-1] for x in iterable]
+
+def iround(value):
+    return int(round(value))

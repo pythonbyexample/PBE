@@ -7,21 +7,27 @@ from random import choice as rndchoice
 from time import sleep
 
 from utils import TextInput, Loop, ujoin, enumerate1, range1, first, envelope, space, nl
+from utils import iround, sjoin
 from board import Loc, StackableBoard, BaseTile
 
 pause_time = 0.3
 blank      = '.'
 plchar     = '@'
 size       = 30, 20
-vsize      = 15, 10
+vsize      = 12, 10
 num_rocks  = 30
 rockchar   = '#'
-scrolltype = 2
+scrolltype = 1
 wrap       = True
+out        = open("out", 'w')
 
 
 def topitems(iterable):
     return [x[-1] for x in iterable]
+
+def writeln(*args):
+    out.write(sjoin(args) + nl)
+
 
 class Tile(BaseTile):
     blank = rock = player = False
@@ -50,12 +56,13 @@ class Player(Tile):
 
 
 class ScrollBoard(StackableBoard):
-    def __init__(self, size, vsize, def_tile, scrolltype, viswrap=False):
+    def __init__(self, size, vsize, def_tile, scrolltype, viswrap=False, bufsize=0):
         super(ScrollBoard, self).__init__(size, def_tile)
         self.vwidth, self.vheight = vsize
 
         self.scrolltype = scrolltype
         self.viswrap    = viswrap
+        self.bufsize    = bufsize
         self.vtopleft   = Loc(0,0)
         self.maxv_x     = self.width - self.vwidth
         self.maxv_y     = self.height - self.vheight
@@ -72,7 +79,7 @@ class ScrollBoard(StackableBoard):
 
     def viswrap_draw(self):
         print(nl*5)
-        print("self.vtopleft.y", self.vtopleft.y)
+        # print("self.vtopleft.y", self.vtopleft.y)
         rows = Loop(self.board, "row", index=self.vtopleft.y)
 
         for _ in range(self.vheight):
@@ -86,15 +93,22 @@ class ScrollBoard(StackableBoard):
         return rndchoice(self.tiles("blank"))
 
     def center_on(self, item_loc):
-        loc           = self.ploc(item_loc)
-        halfwidth     = iround(self.vwidth / 2)
-        halfheight    = self.vheight / 2
-        x             = loc.x - halfwidth
-        y             = loc.y - halfheight
+        loc        = self.ploc(item_loc)
+        halfwidth  = iround(self.vwidth / 2)
+        halfheight = iround(self.vheight / 2)
 
-        if not self.viswrap:
+        if self.viswrap:
+            x = Loop(range(self.width), index=loc.x)
+            y = Loop(range(self.height), index=loc.y)
+            x = x.prev(halfwidth)
+            y = y.prev(halfheight)
+        else:
+            x, y = loc.x - self.halfwidth, loc.y - self.halfheight
             x, y = max(0, x), max(0, y)
+
+        writeln(self.vtopleft, loc)
         self.vtopleft = Loc(x, y)
+        writeln(self.vtopleft); writeln()
 
     def move(self, item, newloc):
         scroll = getattr(self, "scroll%d" % self.scrolltype)
@@ -102,21 +116,26 @@ class ScrollBoard(StackableBoard):
         super(ScrollBoard, self).move(item, newloc)
 
     def scroll1(self, loc, newloc):
-        x, y = self.vtopleft
+        x, y    = self.vtopleft
+        bufsize = self.bufsize
 
-        if newloc.x < x:
-            x = max(x - self.vwidth, 0)
+        maxx = x + self.vwidth - bufsize
 
-        elif newloc.x >= x + self.vwidth:
-            x = min(x + self.vwidth, self.width - self.vwidth)
+        if newloc.x < x + bufsize:
+            x = max(newloc.x - self.vwidth + bufsize, 0)
 
-        if newloc.y < y:
-            y = max(y - self.vheight, 0)
+        # 30 35, vsize=10
+        elif newloc.x >= maxx:
+            x = min(newloc.x - bufsize, self.width - self.vwidth)
+
+        if newloc.y < y + bufsize:
+            y = max(y - self.vheight + bufsize, 0)
 
         elif newloc.y >= y + self.vheight:
-            y = min(y + self.vheight, self.height - self.vheight)
+            y = min(y + self.vheight - bufsize, self.height - self.vheight)
 
         self.vtopleft = Loc(x, y)
+        writeln(maxx, self.vtopleft); writeln()
 
     def scroll2(self, loc, newloc):
         self.center_on(newloc)
@@ -125,7 +144,8 @@ class ScrollBoard(StackableBoard):
 class Test(object):
     def run(self):
         moves   = 'd'*2 + 'r'*18 + 'u'*11 + 'l'*17
-        moves   = 'd'*3 + 'u'*8
+        moves   = 'r'*9 + 'l'*8
+        moves   = 'r'*30 + 'l'*30
 
         for move in moves:
             board.draw()
@@ -150,10 +170,11 @@ class Test(object):
 
 
 if __name__ == "__main__":
-    board  = ScrollBoard(size, vsize, Blank, scrolltype, viswrap=True)
+    board  = ScrollBoard(size, vsize, Blank, scrolltype, viswrap=True, bufsize=3)
     player = Player(Loc(3, 3))
-    board.center_on(player)
-    # for _ in range(num_rocks): Rock(board.rand_blank())
+    # board.center_on(player)
+    for _ in range(num_rocks): Rock(board.rand_blank())
     for x in range(size[0]): Rock(Loc(x, 0))
+    for y in range(size[1]): Rock(Loc(0, y))
 
     Test().run()
