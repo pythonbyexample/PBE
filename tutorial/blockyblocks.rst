@@ -160,9 +160,9 @@ game go faster or slower.
 Screenshots
 -----------
 
-The following screenshots demonstrate chain reaction wrap-arounds: I'm playing the side in
-lower right corner, my move is at 4,4 which wraps around tile at 4,3 which then increments all
-three neighbours of that tile. In the third screen, my enemy makes a move at 2,1::
+The following screenshots demonstrate the chain reaction wrap-arounds: I'm playing the side in the
+lower right corner; my move is at 4,4 which wraps around the tile at 4,3 which then increments all
+three of its neighbours. In the third screen, my enemy makes a move at 2,1::
 
         1   2   3   4
 
@@ -198,3 +198,5 @@ three neighbours of that tile. In the third screen, my enemy makes a move at 2,1
     3   ➁   1   ➋   ➊
 
     4   1   1   ➌   ➋
+
+(The alignment is slightly off in HTML shown here but works fine in the terminal.)
