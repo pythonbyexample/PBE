@@ -13,7 +13,7 @@ from board import Board, Loc, BaseTile
 size        = 4
 pause_time  = 0.4
 players     = {1: "➀➁➂➃", 2: "➊➋➌➍"}
-ai_players  = [1, ]
+ai_players  = [1, 2]
 check_moves = 15
 padding     = 2, 1
 
@@ -64,13 +64,13 @@ class BlocksBoard(Board):
 
 
 class BlockyBlocks(object):
-    winmsg  = "player %s (%s) has won!"
+    winmsg  = "player %s has won!"
     counter = Loop(range(check_moves))
 
     def check_end(self, player):
         if all(tile.player==player for tile in board):
             board.draw()
-            print( nl, self.winmsg % (player, players[player][0]) )
+            print(nl, self.winmsg % player)
             sys.exit()
 
 

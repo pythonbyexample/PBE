@@ -14,3 +14,4 @@ Welcome to Lark's Tongue Guide to Python!
 
     intro
     tictactoe
+    blockyblocks
