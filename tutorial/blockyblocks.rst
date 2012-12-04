@@ -1,7 +1,7 @@
 Blocky Blocks
 =============
 
-Blocky Blocks is a clone of the game "Jumpy Blocks"; you can view or download the code here:
+Blocky Blocks is a clone of the game "Jumping Squares"; you can view or download the code here:
 
 https://github.com/pythonbyexample/PBE/tree/master/code/bblocks.py
 
@@ -134,8 +134,8 @@ their moves.
                 if board.valid_move(player, board[loc]) : return board[loc]
                 else                             : print(self.textinput.invalid_move)
 
-Setup
------
+Configuration
+-------------
 
 At the top, you can change a few settings:
 
@@ -156,3 +156,45 @@ play against it.
 
 When you let two AIs battle it out, you can set `pause_time` to make the
 game go faster or slower.
+
+Screenshots
+-----------
+
+The following screenshots demonstrate chain reaction wrap-arounds: I'm playing the side in
+lower right corner, my move is at 4,4 which wraps around tile at 4,3 which then increments all
+three neighbours of that tile. In the third screen, my enemy makes a move at 2,1::
+
+        1   2   3   4
+
+    1   ➀   ➂   1   1
+
+    2   ➂   1   1   1
+
+    3   ➁   1   1   ➌
+
+    4   1   1   ➋   ➋
+
+    > 44
+
+
+        1   2   3   4
+
+    1   ➀   ➂   1   1
+
+    2   ➂   1   1   ➋
+
+    3   ➁   1   ➋   ➊
+
+    4   1   1   ➌   ➋
+
+
+
+        1   2   3   4
+
+    1   ➁   ➀   ➁   1
+
+    2   ➂   ➁   1   ➋
+
+    3   ➁   1   ➋   ➊
+
+    4   1   1   ➌   ➋
