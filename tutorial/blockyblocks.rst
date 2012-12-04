@@ -63,7 +63,7 @@ end; `range1()` is a 1-indexed version of the Python built-in `range()`.
 The `ai_move()` will need to create a list of valid moves, sort them by how
 close they are to wrapping around and either use the closest or random move --
 in order to make it less predictable (admittedly this is a very weak, basic
-AI).
+AI):
 
 .. sourcecode:: python
 
@@ -93,8 +93,8 @@ BlockyBlocks
 The main class will only have one method which checks if the game is finished.
 I've added the counter Loop to avoid infinite recursion in the flood fill
 algorithm which happens at the end of game when tiles start incrementing each
-other in circles. The check above triggers when the counter wraps around to
-zero.
+other in circles. The check in `Tile.increment()` triggers when the counter
+wraps around to zero:
 
 .. sourcecode:: python
 
@@ -151,8 +151,8 @@ At the top, you can change a few settings:
 Note that the game is implemented in a fairly flexible way which makes it
 possible to change things like the size and each player easily: you can set
 `ai_players` to be an empty list to let two human players play against each
-other, you can set both players to be AI, or you can set one player to be AI to
+other, you can set both players to be AI, or you can set one player as AI to
 play against it.
 
-When you let two AIs battle it out, you can modify the `pause_time` to make the
+When you let two AIs battle it out, you can set `pause_time` to make the
 game go faster or slower.

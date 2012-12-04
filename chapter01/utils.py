@@ -37,11 +37,11 @@ class Loop(object):
 
     def prev(self, n=1):
         # len=3, last=2, cur=1, prev(5) ; 02102 -4%3: cur+n%len  3 + -1
-        print("n", n)
-        print("self.length", self.length)
-        print( abs((self.index - n) % self.length) )
+        # print("n", n)
+        # print("self.length", self.length)
+        # print( abs((self.index - n) % self.length) )
         self.index = self.length - abs((self.index - n) % self.length)
-        print("self.index", self.index)
+        # print("self.index", self.index)
         # self.index = self.index-1 if self.index > 0 else self.lastind
         self.update_attr()
         return self.item
