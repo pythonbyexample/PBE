@@ -11,22 +11,19 @@ from utils import Loop, TextInput, enumerate1, range1, ujoin, first, nl, space
 from board import Board, Loc, BaseTile
 
 size        = 4
-players     = [1, 2]
-ai_players  = [1, 2]
-ai_players  = [1]
-pchars      = "➀➁➂➃", "➊➋➌➍"
+pause_time  = 0.4
+players     = {1: "➀➁➂➃", 2: "➊➋➌➍"}
+ai_players  = [1, ]
 check_moves = 15
 padding     = 2, 1
-pause_time  = 0.4
 
 
 class Tile(BaseTile):
-    player = None
+    num = maxnum = player = None
 
     def __repr__(self):
-        if self.player : return pchars[self.player-1][self.num-1]
+        if self.player : return players[self.player][self.num-1]
         else           : return str(self.num)
-        # return "%s %s" % (self.player or space, self.num)
 
     def increment(self, player):
         """ Increment tile number; if number wraps, increment neighbour tiles.
@@ -73,7 +70,7 @@ class BlockyBlocks(object):
     def check_end(self, player):
         if all(tile.player==player for tile in board):
             board.draw()
-            print( nl, self.winmsg % (player, first(pchars[player-1])) )
+            print( nl, self.winmsg % (player, players[player][0]) )
             sys.exit()
 
 
@@ -81,7 +78,7 @@ class Test(object):
     def run(self):
         self.textinput = TextInput(board=board)
 
-        for p in cycle(players):
+        for p in cycle(players.keys()):
             board.draw()
             tile = board.ai_move(p) if p in ai_players else self.get_move(p)
             tile.increment(p)

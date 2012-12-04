@@ -18,7 +18,7 @@ rng3    = range(3)
 rng9    = range(9)
 offsets = (0, 3, 6)
 
-# in format produced by QQwing program; just one puzzle for testing
+# in the format produced by QQwing program; just one puzzle for testing
 puzzles    = [".13.....22.....48....7...19...9..8..7......2....3.......263.9..4.9.7.6....149...8"]
 
 
