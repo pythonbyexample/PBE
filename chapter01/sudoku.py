@@ -24,7 +24,8 @@ puzzles    = [".13.....22.....48....7...19...9..8..7......2....3.......263.9..4.
 
 class Tile(BaseTile):
     initial = blank = False
-    num     = char = None
+    num     = None
+    char    = None
 
     def __repr__(self)      : return self.char or str(self.num)
     def __eq__(self, other) : return bool(self.num == other)
@@ -93,6 +94,7 @@ class Sudoku(object):
 class Test(object):
     def run(self):
         self.textinput = TextInput("loc %d", board)
+
         while True:
             board.draw()
             loc, val   = self.get_move()

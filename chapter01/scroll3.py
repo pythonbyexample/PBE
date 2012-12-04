@@ -87,8 +87,8 @@ class ScrollBoard(StackableBoard):
 
     def center_on(self, item_loc):
         loc           = self.ploc(item_loc)
-        halfwidth     = self.vwidth // 2
-        halfheight    = self.vheight // 2
+        halfwidth     = iround(self.vwidth / 2)
+        halfheight    = self.vheight / 2
         x             = loc.x - halfwidth
         y             = loc.y - halfheight
 
@@ -125,7 +125,7 @@ class ScrollBoard(StackableBoard):
 class Test(object):
     def run(self):
         moves   = 'd'*2 + 'r'*18 + 'u'*11 + 'l'*17
-        moves   = 'd'*3 + 'u'*4
+        moves   = 'd'*3 + 'u'*8
 
         for move in moves:
             board.draw()
@@ -152,6 +152,7 @@ class Test(object):
 if __name__ == "__main__":
     board  = ScrollBoard(size, vsize, Blank, scrolltype, viswrap=True)
     player = Player(Loc(3, 3))
+    board.center_on(player)
     # for _ in range(num_rocks): Rock(board.rand_blank())
     for x in range(size[0]): Rock(Loc(x, 0))
 

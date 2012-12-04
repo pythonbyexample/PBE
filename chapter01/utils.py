@@ -39,11 +39,12 @@ class Loop(object):
 
     def prev(self, n=1):
         # len=3, last=2, cur=1, prev(5) ; 02102 -4%3: cur+n%len  3 + -1
-        print("n", n)
-        print("self.length", self.length)
-        print( abs((self.index - n) % self.length) )
-        self.index = self.length - abs((self.index - n) % self.length)
-        print("self.index", self.index)
+        # print("n", n)
+        # print("self.length", self.length)
+        # print( abs((self.index - n) % self.length) )
+        self.index = abs((self.index - n) % self.length)
+        # self.index = self.length - abs((self.index - n) % self.length)
+        # print("self.index", self.index)
         # self.index = self.index-1 if self.index > 0 else self.lastind
         self.update_attr()
         return self.item
@@ -268,18 +269,8 @@ def envelope(value, minval, maxval):
 def flatten(iterable):
     return [item for sublist in iterable for item in sublist]
 
-def human_readable(val):
-    return val + 1
-
-def py_readable(val):
-    return val - 1
-
 def timefmt(sec):
     return "%d:%02d" % (sec/60, sec%60)
-
-def parse_hnuminput(iterable):
-    """Convert a list of 'human input' 1-indexed string values to 0-indexed integers."""
-    return [int(val)-1 for val in iterable]
 
 def lastind(iterable):
     return len(iterable) - 1
