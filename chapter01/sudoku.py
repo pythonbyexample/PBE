@@ -1,19 +1,14 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function, unicode_literals, division
 import sys
 from random import choice as rndchoice
-from random import randint
-from time import sleep
 
-from utils import enumerate1, range1, ujoin, TextInput, space, nl
+from utils import enumerate1, sjoin, TextInput, space, nl
 from board import Board, Loc, BaseTile
 
 size    = 9
 blank   = '.'
 tiletpl = '%2s'
-divider = '-' * (27 + 9)
-
 rng3    = range(3)
 rng9    = range(9)
 offsets = (0, 3, 6)
@@ -25,11 +20,9 @@ puzzles    = [".13.....22.....48....7...19...9..8..7......2....3.......263.9..4.
 class Tile(BaseTile):
     initial = blank = False
     num     = None
-    char    = None
 
-    def __repr__(self)      : return self.char or str(self.num)
+    def __repr__(self)      : return str(self.num) if self.num else blank
     def __eq__(self, other) : return bool(self.num == other)
-    def __ne__(self, other) : return bool(self.num != other)
 
 
 class Number(Tile):
@@ -37,7 +30,7 @@ class Number(Tile):
         super(Number, self).__init__()
         self.num = int(num)
 
-class Blank(Tile)     : char = blank
+class Blank(Tile)     : pass
 class Initial(Number) : pass
 
 
@@ -45,9 +38,9 @@ class SudokuBoard(Board):
     def __init__(self, size, def_tile, puzzle):
         super(SudokuBoard, self).__init__(size, def_tile)
 
-        for loc, val in zip(self.locations(), puzzle):
+        for tile, val in zip(self, puzzle):
             if val != blank:
-                self[loc] = Initial(val)
+                self[tile] = Initial(val)
 
         self.regions = [self.make_region(xo, yo) for xo in offsets for yo in offsets]
 
@@ -62,7 +55,7 @@ class SudokuBoard(Board):
 
     def draw(self):
         print(nl*5)
-        def ljoin(L): return ujoin(L, space, tiletpl)
+        def ljoin(L): return sjoin(L, space, tiletpl)
 
         print( space*4, ljoin((1,2,3)), space, ljoin((4,5,6)), space, ljoin((7,8,9)), nl )
 
@@ -71,7 +64,6 @@ class SudokuBoard(Board):
                   ljoin(row[:3]), space, ljoin(row[3:6]), space, ljoin(row[6:9]),
                   nl)
             if n in (3,6): print()
-        print(divider)
 
 
 class Sudoku(object):
@@ -91,7 +83,7 @@ class Sudoku(object):
             sys.exit()
 
 
-class Test(object):
+class BasicInterface(object):
     def run(self):
         self.textinput = TextInput("loc %d", board)
 
@@ -112,5 +104,5 @@ if __name__ == "__main__":
     board  = SudokuBoard(size, Blank, rndchoice(puzzles))
     sudoku = Sudoku()
 
-    try: Test().run()
+    try: BasicInterface().run()
     except KeyboardInterrupt: sys.exit()
