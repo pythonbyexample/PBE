@@ -125,8 +125,8 @@ parses 'x' as 34, which is out of range for this game:
                 else                       : print(self.textinput.invalid_move)
 
 
-Configuration
--------------
+Constants
+---------
 
 At the top, I've defined a few constants I use to generate regions and lines:
 
