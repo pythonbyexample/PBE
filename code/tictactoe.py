@@ -41,6 +41,7 @@ class Tictactoe(object):
         return lines + [diag1, diag2]
 
     def check_end(self, player):
+        """Check if `player` has won the game; check for a draw."""
         for line in self.win_lines:
             if board.completed(line, player):
                 self.game_won(player)
@@ -52,6 +53,7 @@ class Tictactoe(object):
         sys.exit()
 
     def run(self):
+        """Main loop."""
         self.win_lines = self.make_win_lines()
 
         for player in cycle(players):
