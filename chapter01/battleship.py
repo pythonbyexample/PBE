@@ -10,12 +10,12 @@ from board import Board, Loc, BaseTile
 
 size       = 5, 5
 num_ships  = 3
-pause_time = 0.1
+pause_time = 0.3
 
-blank      = '.'
-shipchar   = '#'
-sunkship   = '%'
-hitchar    = '*'
+blank      = '𝀈'
+shipchar   = '▢'
+sunkship   = '☀'
+hitchar    = '♈'
 padding    = 2, 1
 
 players    = [1, 2]
@@ -41,7 +41,9 @@ class Tile(BaseTile, AttrToggles):
 
 
 class Blank(Tile) : char = blank
-class Ship(Tile)  : char = shipchar
+
+class Ship(Tile):
+    char = shipchar
 
 
 class BattleshipBoard(Board):
