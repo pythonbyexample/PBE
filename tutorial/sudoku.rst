@@ -17,7 +17,7 @@ A tile can have the preset, or initial numbers which cannot be changed by the pl
 tiles will be blank at first. Once the player sets the number, it can be changed at any time as
 long as the value is valid.
 
-I'll be using three types of tiles: Initial (can't change), Blank and Number (set by user).
+I'll be using three types of tiles: `Initial` (can't change), `Blank` and `Number` (set by user).
 
 Tiles won't have any methods except for `__eq__` to compare the number to other tiles present in
 the region / line:
@@ -44,7 +44,7 @@ the region / line:
 SudokuBoard
 -----------
 
-In the __init__ method, all we need to do is load the puzzle from its string and generate regions
+In the `__init__` method, all we need to do is load the puzzle from its string and generate regions
 and lines. The lines are in fact vvery similar to the TicTacToe tutorial, but the effect is
 reversed: instead of winning lines, we have lines that are not allowed to have repeated numbers.
 
@@ -53,7 +53,7 @@ the right starts at the location offset by 3 horizontally; region below is offse
 so on.
 
 The draw method is a bit tricky -- if it's unclear, try adding a few print() lines for intermediate
-values; note how I'm using ljoin() to simplify the display logic.
+values; note how I'm using `ljoin()` to simplify the display logic.
 
 
 .. sourcecode:: python
@@ -94,17 +94,17 @@ values; note how I'm using ljoin() to simplify the display logic.
 Sudoku
 ------
 
-The main class is extremely simple: check_end() checks if there are no blank tiles left and ends
+The main class is extremely simple: `check_end()` checks if there are no blank tiles left and ends
 the game; valid_move disallows changing initial tiles and also checks that the value is not
 already present in the line/region.
 
-In the BasicInterface class, I get valid input from the user in get_move(); in run() the main loop
+In the `BasicInterface` class, I get valid input from the user in `get_move()`; in `run()` the main loop
 draws the board, gets user's move, sets the tile and finally checks if the game is finished.
 
-TextInput accepts two arguments: the first is the board location in xy format, %d is an integer:
+`TextInput` accepts two arguments: the first is the board location in xy format, %d is an integer:
 346 sets the tile at location 3,4 to value '6'; if spaces are present in the input, it's assumed
 that they are used to separate commands, so '3 4 6' is valid, but '34 6' is not valid because it
-parses 'x' as 34, which is out of range for this game.
+parses 'x' as 34, which is out of range for this game:
 
 .. sourcecode:: python
 
