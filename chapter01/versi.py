@@ -1,18 +1,16 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function, unicode_literals, division
 import sys
 from random import choice as rndchoice
-from random import randint, shuffle
-from time import sleep
+from random import shuffle
 
-from utils import TextInput, ujoin, nextval, enumerate1, range1, space, nl, first
+from utils import TextInput, nextval, nl, first, cmp
 from board import Board, Loc, BaseTile
 
 size         = 8
-player_chars = 'XO'
-ai_players   = 'O'
-ai_players   = 'XO'
+player_chars = '⎔▇'
+# ai_players   = '⎔▇'
+ai_players   = '⎔'
 blank        = '.'
 padding      = 4, 2
 pause_time   = 0.3
@@ -43,7 +41,7 @@ class Piece(Tile):
 
 
 class VersiBoard(Board):
-    scores_msg = "%s score: %3s    %s score: %3s"
+    scores_msg = "%s  score: %3s    %s  score: %3s"
 
     def get_valid_moves(self, player):
         return [loc for loc in self.locations() if self.valid_move(player, loc)]
@@ -108,7 +106,7 @@ class Player(CompareChar):
 
 
 class Versi(object):
-    winmsg     = "%s has won!"
+    winmsg     = "%s wins!"
     tiemsg     = "The game was a tie!"
 
     def __init__(self):
@@ -127,7 +125,7 @@ class Versi(object):
         else          : print(nl, self.winmsg % (player1 if winner>0 else player2))
         sys.exit()
 
-class Test(object):
+class BasicInterface(object):
     def run(self):
         """Display board, start the game, process moves; return True to start a new game, False to exit."""
         moves          = board.get_valid_moves
@@ -156,5 +154,5 @@ if __name__ == "__main__":
     player1, player2 = players
     versi            = Versi()
 
-    try: Test().run()
+    try: BasicInterface().run()
     except KeyboardInterrupt: sys.exit()

@@ -1,11 +1,9 @@
-#!/usr/bin/env python
-
-from __future__ import print_function, unicode_literals, division
+#!/usr/bin/env python3
 
 import sys
 from random import choice as rndchoice
 
-from utils import TextInput, ujoin, enumerate1, range1, first, space, nl
+from utils import TextInput, sjoin, enumerate1, range1, first, space, nl
 
 
 num_words      = 5
@@ -18,7 +16,6 @@ random_reveals = num_words // 2     # allow player to reveal x random letters
 
 wordsfn        = "words"
 
-
 guesses_divby  = 3      # calc allowed wrong guesses by dividing total # of letters by this number
 
 
@@ -30,7 +27,7 @@ class Word(object):
 
     def __str__(self):
         word = ( (hidden_char if n in self.hidden else l) for n, l in enumerate(self.word) )
-        return ujoin(word, space * self.spacing(), lettertpl)
+        return sjoin(word, space * self.spacing(), lettertpl)
 
     def __len__(self)    : return len(self.word)
     def spacing(self)    : return 2 if len(self) > 9 else 1
@@ -78,7 +75,7 @@ class Words(object):
 
         while len(self.words) < num_words:
             word = Word( rndchoice(wordlist).rstrip() )
-            if limit9 and len(word)>9:
+            if (limit9 and len(word)>9) or len(word) < 3:
                 continue
             self.words.add(word)
 
@@ -93,7 +90,7 @@ class Words(object):
 
         for n, word in enumerate1(self.words):
             print(lettertpl % n, space, word, nl)
-            lnumbers = ujoin(range1(len(word)), space * word.spacing(), lettertpl)
+            lnumbers = sjoin(range1(len(word)), space * word.spacing(), lettertpl)
             print(space*4, lnumbers, nl*2)
 
         print(self.stattpl % (self.random_reveals, self.guesses), nl)

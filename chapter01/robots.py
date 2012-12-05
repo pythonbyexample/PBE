@@ -1,13 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function, unicode_literals, division
 import sys
 from random import choice as rndchoice
 from random import randint
-from time import sleep
 
-from utils import Loop, TextInput, enumerate1, range1, ujoin, flatten, nl, space
-from board import Board, Loc, BaseTile
+from utils import Loop, TextInput, sjoin, nl
+from board import Board, BaseTile
 
 
 size          = 15, 10
@@ -23,6 +21,7 @@ max_cmds      = 15
 chars         = dict(Player='@', Missile='*', Rock='#', Goal='!', Blank='.')
 health_dict   = dict(Player=5, Robot=5, Missile=1, Rock=10, Goal=99)
 commands      = dict(m="move", t="turn_cw", T="turn_ccw", f="fire", w="wait", r="random")
+fullcmds      = list(commands.values())
 
 
 class Tile(BaseTile):
@@ -67,7 +66,7 @@ class Mobile(Tile):
     def wait(self)     : pass
 
     def random(self):
-        method = getattr( self, rndchoice(commands.values()) )
+        method = getattr(self, rndchoice(fullcmds))
         method()
 
     def fire(self):
@@ -84,7 +83,7 @@ class Mobile(Tile):
         else                   : self.program = []
 
     def create_program(self):
-        return [ rndchoice(commands.values()) ] * randint(1, 6)
+        return [rndchoice(fullcmds)] * randint(1, 6)
 
 
 class Robot(Mobile):
@@ -178,7 +177,7 @@ class Test(object):
 
     def run(self):
         cmdpat  = "%d?"
-        cmdpat  = cmdpat + " (%s)" % ujoin(commands.keys(), '|')
+        cmdpat  = cmdpat + " (%s)" % sjoin(commands.keys(), '|')
         pattern = cmdpat + (" %s?" % cmdpat) * (max_cmds - 1)
 
         self.textinput = TextInput(pattern, board, accept_blank=True, singlechar_cmds=True)

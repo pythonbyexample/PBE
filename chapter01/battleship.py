@@ -1,6 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function, unicode_literals, division
 import sys
 from random import choice as rndchoice
 from time import sleep
@@ -84,7 +83,7 @@ class Player(object):
 
 
 class Battleship(object):
-    losemsg = "All ships are sunk! Player %s loses the game!"
+    winmsg = "Player %s wins!"
 
     def draw(self):
         p1, p2 = players
@@ -97,11 +96,11 @@ class Battleship(object):
     def check_end(self, player):
         if all(ship.is_hit for ship in player.board.tiles("ship")):
             self.draw()
-            print(self.losemsg % player.num)
+            print(self.winmsg % player.enemy().num)
             sys.exit()
 
 
-class Test(object):
+class BasicInterface(object):
     def run(self):
         # board is only used to check if location is within range (using board.valid())
         self.textinput = TextInput( board=first(players).board )
@@ -125,5 +124,5 @@ if __name__ == "__main__":
     players = [Player(p) for p in players]
     bship   = Battleship()
 
-    try: Test().run()
+    try: BasicInterface().run()
     except KeyboardInterrupt: sys.exit()

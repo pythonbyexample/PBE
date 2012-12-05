@@ -1,18 +1,16 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function, unicode_literals, division
 import sys
 from random import choice as rndchoice
 from random import randint, random
-import math
 
-from utils import range1, TextInput, ujoin, first, space, nl
-from board import Board, Loc, BaseTile
+from utils import range1, TextInput, sjoin, first, space, nl
+from board import Board, BaseTile
 
 size           = 8
-player_chars   = 'IX'
-ai_players     = 'X'
-ai_players     = 'IX'
+player_chars   = '⎔▇'
+# ai_players     = '⎔'
+ai_players     = '⎔▇'
 
 neutral_char   = 'N'
 blank          = '.'
@@ -56,7 +54,7 @@ class Star(Blank):
         data = [self.char, self.num]
         if show_ships or self == betelgeuse.show_ships_player:
             data.append("%s:%s" % (self.production, self.ships))
-        return ujoin(data, space)
+        return sjoin(data, space)
 
     def go(self):
         if betelgeuse.turn % star_turns == 0:
@@ -136,7 +134,7 @@ class Player(PlayerBase):
 
 
 class Betelgeuse(object):
-    winmsg            = "'%s' has won!"
+    winmsg            = "Player %s wins!"
     turn              = 1
     show_ships_player = None
 
@@ -149,7 +147,7 @@ class Betelgeuse(object):
             sys.exit()
 
 
-class Test(object):
+class BasicInterface(object):
     def run(self):
         self.textinput = TextInput("%hd %hd %d", board, accept_blank=True)
 
@@ -197,5 +195,5 @@ if __name__ == "__main__":
     for n, player in enumerate(players):
         stars[n].char = player.char
 
-    try: Test().run()
+    try: BasicInterface().run()
     except KeyboardInterrupt: sys.exit()

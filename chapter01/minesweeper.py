@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-from __future__ import print_function, unicode_literals, division
+#!/usr/bin/env python3
 
 import sys
 from random import randint
@@ -16,7 +14,7 @@ ai_run     = 0
 padding    = 2, 1
 
 
-class Test(object):
+class BasicInterface(object):
     def test(self):
         # allow entering of multiple (up to 10) locations
         pattern        = "%s? loc%s" % (mark_key, " loc?"*9)
@@ -52,5 +50,5 @@ class Test(object):
 if __name__ == "__main__":
     board = MinesweeperBoard(size, Tile, num_mines=num_mines, num_grid=True, padding=padding)
     msweep = Minesweeper(board)
-    try: Test().test()
+    try: BasicInterface().test()
     except KeyboardInterrupt: pass

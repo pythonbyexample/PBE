@@ -1,7 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- encoding: utf-8 -*-
-
-from __future__ import print_function, unicode_literals, division
 
 import sys
 from random import choice as rndchoice
@@ -9,14 +7,14 @@ from random import shuffle
 from time import sleep
 from itertools import cycle
 
-from utils import Dice, TextInput, ujoin, lastind, first, enumerate1, getitem, nl, space
+from utils import Dice, TextInput, sjoin, lastind, first, enumerate1, getitem, nl, space
 
 length       = 20
 num_pieces   = 3
 blank        = '.'
 pause_time   = 0.3     # in seconds
-player_chars = u'ʘΔ'
-ai_players   = u'ʘΔ'
+player_chars = 'ʘΔ'
+ai_players   = 'ʘΔ'
 
 
 class Piece(object):
@@ -46,7 +44,7 @@ class SimpleRace(object):
         shuffle(players)
 
     def draw(self):
-        print(nl*5 + ujoin(track))
+        print(nl*5 + sjoin(track))
 
     def valid(self, piece, loc):
         """Valid move: any move that does not land on your other piece (beyond track is ok)."""
@@ -86,7 +84,7 @@ class Player(object):
             sys.exit()
 
 
-class Test(object):
+class BasicInterface(object):
     def run(self):
         """ Run main game loop.
 
@@ -117,7 +115,7 @@ class Test(object):
         moves = [space] * (length + 6)
         for n, (loc, _) in enumerate1(valid_moves):
             moves[loc] = n
-        print(ujoin(moves))
+        print(sjoin(moves))
 
         while True:
             move = getitem(valid_moves, self.textinput.getval())
@@ -130,5 +128,5 @@ if __name__ == "__main__":
     players = [Player(c) for c in player_chars]
     race    = SimpleRace()
 
-    try: Test().run()
+    try: BasicInterface().run()
     except KeyboardInterrupt: pass

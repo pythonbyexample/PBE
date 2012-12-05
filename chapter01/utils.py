@@ -310,3 +310,7 @@ def topitems(iterable):
 
 def iround(value):
     return int(round(value))
+
+def cmp(val1, val2):
+    if val1 == val2 : return 0
+    else            : return 1 if val1 > val2 else -1

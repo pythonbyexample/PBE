@@ -18,8 +18,12 @@ vsize      = 12, 10
 num_rocks  = 30
 rockchar   = '#'
 scrolltype = 1
+
 wrap       = True
+viswrap    = True
 out        = open("out", 'w')
+bufsize    = 3
+startloc   = 3, 3
 
 
 def topitems(iterable):
@@ -170,8 +174,8 @@ class Test(object):
 
 
 if __name__ == "__main__":
-    board  = ScrollBoard(size, vsize, Blank, scrolltype, viswrap=True, bufsize=3)
-    player = Player(Loc(3, 3))
+    board  = ScrollBoard(size, vsize, Blank, scrolltype, viswrap=viswrap, bufsize=bufsize)
+    player = Player(Loc(*startloc))
     # board.center_on(player)
     for _ in range(num_rocks): Rock(board.rand_blank())
     for x in range(size[0]): Rock(Loc(x, 0))
