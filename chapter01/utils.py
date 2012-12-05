@@ -83,7 +83,9 @@ class Loop(object):
 
 
 class AttrToggles(object):
-    """Inverse-toggle two boolean attributes when one of a pair is toggled; `attribute_toggles` is a list of tuples."""
+    """ Inverse-toggle two boolean attributes when one of a pair is toggled; `attribute_toggles`
+        is a list of tuples.
+    """
     attribute_toggles = []
 
     def __setattr__(self, attr, val):
@@ -250,9 +252,11 @@ class TextInput(object):
 # ==== Functions =======================================================
 
 def ujoin(iterable, sep=' ', tpl='%s'):
+    """Deprecated."""
     return sep.join( [tpl % str(x) for x in iterable] )
 
 def sjoin(iterable, sep=' ', tpl='%s'):
+    """Cast each item to a string using `tpl` template, then join into a single string."""
     return sep.join( [tpl % str(x) for x in iterable] )
 
 def itersplit(it, check):
@@ -265,6 +269,7 @@ def enumerate1(it):
     return ((n+1, x) for n, x in enumerate(it))
 
 def range1(x):
+    """1-index based range."""
     return range(1, x+1)
 
 def envelope(value, minval, maxval):
@@ -272,16 +277,19 @@ def envelope(value, minval, maxval):
     return min(max(value, minval), maxval)
 
 def flatten(iterable):
+    """One-level flattening."""
     return [item for sublist in iterable for item in sublist]
 
 def timefmt(sec):
+    """Format time to min:sec format."""
     return "%d:%02d" % (sec/60, sec%60)
 
 def lastind(iterable):
+    """Last (highest) valid index of `iterable`."""
     return len(iterable) - 1
 
 def nextval(iterable, value):
-    """Next value of `iterable` after `value`, wrapping around at the end."""
+    """Next value of `iterable` after `value`, wrapping around at the end; useful to toggle values."""
     i = iterable.index(value)
     i = 0 if i >= lastind(iterable) else i+1
     return iterable[i]
@@ -290,10 +298,14 @@ def first(iterable):
     return next(iter(iterable))
 
 def getitem(iterable, index, default=None):
+    """Get item from an `iterable` at `index`, return default if index out of range."""
     try               : return iterable[index]
     except IndexError : return default
 
 def topitems(iterable):
+    """ Last (top) items from a list of lists, useful to get 'top' items from a list of stacks e.g.
+        from a list of locations on a stackable game board.
+    """
     return [x[-1] for x in iterable]
 
 def iround(value):
