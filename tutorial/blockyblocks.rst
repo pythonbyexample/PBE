@@ -85,7 +85,7 @@ AI):
             return rndchoice( [first(tiles), rndchoice(tiles)] )
 
         def valid_move(self, player, tile):
-            return bool(tile.player is None or tile.player==player)
+            return bool(tile.player==player or not tile.player)
 
 BlockyBlocks
 ------------

@@ -3,15 +3,13 @@
 
 import sys
 from random import choice as rndchoice
-from random import randint
-from time import sleep
 from itertools import cycle
 
-from utils import Loop, TextInput, enumerate1, range1, ujoin, first, nl, space
-from board import Board, Loc, BaseTile
+from utils import Loop, TextInput, range1, first, nl
+from board import Board, BaseTile
 
-size        = 4
-pause_time  = 0.4
+size        = 5
+pause_time  = 0.2
 players     = {1: "➀➁➂➃", 2: "➊➋➌➍"}
 ai_players  = [1, 2]
 check_moves = 15
@@ -60,14 +58,15 @@ class BlocksBoard(Board):
         return rndchoice( [first(tiles), rndchoice(tiles)] )
 
     def valid_move(self, player, tile):
-        return bool(tile.player is None or tile.player==player)
+        return bool(tile.player==player or not tile.player)
 
 
 class BlockyBlocks(object):
-    winmsg  = "player %s has won!"
+    winmsg  = "player %s wins!"
     counter = Loop(range(check_moves))
 
     def check_end(self, player):
+        """Check if game is finished."""
         if all(tile.player==player for tile in board):
             board.draw()
             print(nl, self.winmsg % player)
