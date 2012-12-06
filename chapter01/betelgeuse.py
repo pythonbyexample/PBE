@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- encoding: utf-8 -*-
 
 import sys
 from random import choice as rndchoice
@@ -138,7 +139,7 @@ class Betelgeuse(object):
     turn              = 1
     show_ships_player = None
 
-    def check_end(self, player):
+    def check_end(self):
         pchars = set(sf.char for sf in stars+fleets if sf.char != neutral_char)
 
         if len(pchars) == 1:
@@ -156,7 +157,7 @@ class BasicInterface(object):
                 betelgeuse.show_ships_player = None if player.ai else player
                 board.draw()
                 player.make_random_moves() if player.ai else self.make_moves(player)
-                betelgeuse.check_end(player)
+                betelgeuse.check_end()
 
             for sf in stars + fleets: sf.go()
             betelgeuse.turn += 1

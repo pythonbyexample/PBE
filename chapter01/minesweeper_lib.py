@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- encoding: utf-8 -*-
 
 from __future__ import print_function, unicode_literals, division
 
@@ -11,22 +12,22 @@ from board import Loc, Board, BaseTile
 
 blank      = ' '
 hiddenchar = '.'
-minechar   = '*'
+minechar   = '✇'
+flag       = '⚑'
 
 
 class Tile(BaseTile, AttrToggles):
+    revealed = mine = marked = False
     hidden   = True
-    revealed = False
-    mine     = False
-    marked   = False
     number   = None
 
     attribute_toggles = [("hidden", "revealed")]
 
     def __repr__(self):
-        if   self.hidden              : return hiddenchar
-        elif self.marked or self.mine : return minechar
-        else                          : return str(self.number or blank)
+        if   self.hidden : return hiddenchar
+        elif self.marked : return flag
+        elif self.mine   : return minechar
+        else             : return str(self.number or blank)
 
     def toggle_mark(self):
         self.marked = not self.marked

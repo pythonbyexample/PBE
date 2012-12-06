@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- encoding: utf-8 -*-
 
 import sys
 from random import choice as rndchoice
@@ -18,7 +19,7 @@ missile_pause = 0.03
 max_turns     = 25
 max_cmds      = 15
 
-chars         = dict(Player='@', Missile='*', Rock='#', Goal='!', Blank='.')
+chars         = dict(Player='☺', Missile='*', Rock='☗', Goal='⚑', Blank='.', Robot='♉')
 health_dict   = dict(Player=5, Robot=5, Missile=1, Rock=10, Goal=99)
 commands      = dict(m="move", t="turn_cw", T="turn_ccw", f="fire", w="wait", r="random")
 fullcmds      = list(commands.values())
@@ -87,8 +88,7 @@ class Mobile(Tile):
 
 
 class Robot(Mobile):
-    def __repr__(self):
-        return str(self.health)
+    # def __repr__(self): return str(self.health)
 
     def destroy(self):
         del board[self]
