@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from random import random, randint
 from utils import Dice, envelope, lastind, nl
 
 blank   = '.'
@@ -11,6 +10,8 @@ forward = 1
 back    = -1
 track   = [blank] * length
 
+
+# Part 1
 
 def move(dir, n):
     """Move `n` times in `dir` direction."""
