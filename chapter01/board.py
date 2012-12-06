@@ -9,12 +9,18 @@ space = ' '
 
 
 class BaseTile(object):
+    """ Base tile that sets a convenience attribute according to the name of the class, e.g. Blank
+        will have tile.blank=True set automatically.
+    """
     def __init__(self, loc=None):
         self.loc = loc
         setattr(self, self.__class__.__name__.lower(), True)
 
 
 class Loc(object):
+    """ Location on game board; note that we should not modify the location in place to avoid many
+        hard to track errors; `moved()` creates and returns a new instance.
+    """
     def __init__(self, x, y):
         self.loc = x, y
         self.x, self.y = x, y
@@ -43,6 +49,10 @@ class Loc(object):
 Dir = Loc   # Directions (e.g. 0,1=right) work the same way but should have a different name for clarity
 
 class BaseBoard(object):
+    """ Base Board for regular and stackable boards.
+
+        TODO: add various scrolling and visual area options.
+    """
     stackable         = False
     board_initialized = False
 

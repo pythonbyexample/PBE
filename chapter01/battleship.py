@@ -6,8 +6,8 @@ from random import choice as rndchoice
 from time import sleep
 from itertools import cycle
 
-from utils import TextInput, AttrToggles, enumerate1, range1, ujoin, flatten, nextval, first, space, nl
-from board import Board, Loc, BaseTile
+from utils import TextInput, AttrToggles, range1, nextval, first, nl
+from board import Board, BaseTile
 
 size       = 5, 5
 num_ships  = 3
@@ -26,10 +26,8 @@ divider    = '-' * (size[0] * 4 + 6)
 
 class Tile(BaseTile, AttrToggles):
     """Tile that may be a ship or blank space (water)."""
-    ship              = False
-    is_hit            = False
+    ship              = blank = is_hit = revealed = False
     hidden            = True
-    revealed          = False
     attribute_toggles = [("hidden", "revealed")]
 
     def __repr__(self):
@@ -42,13 +40,11 @@ class Tile(BaseTile, AttrToggles):
 
 
 class Blank(Tile) : char = blank
-
-class Ship(Tile):
-    char = shipchar
+class Ship(Tile)  : char = shipchar
 
 
 class BattleshipBoard(Board):
-    def random_blank(self) : return rndchoice(self.tiles_not("ship"))
+    def random_blank(self) : return rndchoice(self.tiles("blank"))
     def random_unhit(self) : return rndchoice(self.tiles_not("is_hit"))
 
     def next_validloc(self, start, dir, n):
@@ -72,8 +68,8 @@ class Player(object):
         """Create player's board and randomly place `num_ships` ships on it."""
         self.num   = num
         self.ai    = bool(num in ai_players)
-        B          = BattleshipBoard(size, Blank, num_grid=True, padding=padding, pause_time=0, screen_sep=0)
-        self.board = B
+        self.board = BattleshipBoard(size, Blank, num_grid=True, padding=padding, pause_time=0, screen_sep=0)
+        B          = self.board
 
         for ship in range1(num_ships):
             for loc in B.random_placement(ship):

@@ -98,6 +98,24 @@ The main class is extremely simple: `check_end()` checks if there are no blank t
 the game; valid_move disallows changing initial tiles and also checks that the value is not
 already present in the line/region.
 
+.. sourcecode:: python
+
+    class Sudoku(object):
+        winmsg = "Solved!"
+
+        def valid_move(self, loc, val):
+            if board[loc].initial: return False
+
+            for reg_line in board.lines + board.regions:
+                if loc in reg_line and val in (board[loc] for loc in reg_line):
+                    return False
+            return True
+
+        def check_end(self):
+            if not any(t.blank for t in board):
+                print(nl, self.winmsg)
+                sys.exit()
+
 In the `BasicInterface` class, I get valid input from the user in `get_move()`; in `run()` the main loop
 draws the board, gets user's move, sets the tile and finally checks if the game is finished.
 

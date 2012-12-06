@@ -16,3 +16,4 @@ Welcome to Lark's Tongue Guide to Python!
     tictactoe
     blockyblocks
     sudoku
+    battleship
