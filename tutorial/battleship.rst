@@ -128,7 +128,9 @@ were hit, prints out win message and ends the game.
                 sys.exit()
 
 
-The `run()` method is very simple: draw, make the move, check if the enemy is defeated:
+The `run()` method is very simple: draw, make the move, check if the enemy is defeated.
+
+You can quit the game by using the 'q' command which is built-in into the `TextInput`.
 
 .. sourcecode:: python
 
@@ -182,6 +184,8 @@ Human vs. Human play is not very interesting because both boards will be fully r
 Screenshots
 -----------
 
+(The alignment is slightly off in HTML shown here but works fine in the terminal).
+
 The board on top is the AI's, the other one is mine and it shows my ships and an AI's missed attack:
 
 
@@ -197,7 +201,7 @@ The board on top is the AI's, the other one is mine and it shows my ships and an
 
 5   𝀈   𝀈   𝀈   𝀈   𝀈
 
---------------------------
+--
 
     1   2   3   4   5
 
@@ -214,6 +218,7 @@ The board on top is the AI's, the other one is mine and it shows my ships and an
 
 In the middle of the game, I've sunk one of AI's ships:
 
+
     1   2   3   4   5
 
 1   𝀈   𝀈   𝀈   𝀈   𝀈
@@ -226,7 +231,7 @@ In the middle of the game, I've sunk one of AI's ships:
 
 5   𝀈   𝀈   𝀈   𝀈   𝀈
 
---------------------------
+--
 
     1   2   3   4   5
 

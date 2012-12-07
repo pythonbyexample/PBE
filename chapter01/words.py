@@ -30,6 +30,7 @@ class Word(object):
         return sjoin(word, space * self.spacing(), lettertpl)
 
     def __len__(self)    : return len(self.word)
+
     def spacing(self)    : return 2 if len(self) > 9 else 1
     def randreveal(self) : self.reveal( self.word[rndchoice(self.hidden)] )
 
@@ -57,11 +58,12 @@ class Word(object):
 
     def gen_hidden(self, hidden):
         """Hide letters according to `hidden`, e.g. if 0.7, hide 70%."""
-        length      = len(self.word)
-        num_to_hide = round(length * hidden)
+        length       = len(self.word)
+        num_to_hide  = round(length * hidden)
+        letter_range = range(length)
 
         while len(self.hidden) < num_to_hide:
-            self.hide( rndchoice(range(length)) )
+            self.hide(rndchoice(letter_range))
 
 
 class Words(object):
@@ -117,7 +119,7 @@ class Words(object):
         sys.exit()
 
 
-class Test(object):
+class BasicInterface(object):
     def run(self):
         self.textinput = TextInput(("%hd %hd %s", randcmd))
 
@@ -126,7 +128,7 @@ class Test(object):
             cmd = self.textinput.getinput()
 
             if first(cmd) == randcmd : words.randreveal()
-            else                     : self.reveal_letter( *cmd )
+            else                     : self.reveal_letter(*cmd)
             words.check_end()
 
     def reveal_letter(self, *cmd):
@@ -135,5 +137,5 @@ class Test(object):
 
 
 if __name__ == "__main__":
-    words = Words( open(wordsfn).readlines() )
-    Test().run()
+    words = Words(open(wordsfn).readlines())
+    BasicInterface().run()

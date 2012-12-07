@@ -17,3 +17,4 @@ Welcome to Lark's Tongue Guide to Python!
     blockyblocks
     sudoku
     battleship
+    words

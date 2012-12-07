@@ -116,6 +116,8 @@ in the future.
 `get_move()`); the run() loop draws the board, goes over each player and makes
 their moves.
 
+You can quit the game by using the 'q' command which is built-in into the `TextInput`.
+
 .. sourcecode:: python
 
     class Test(object):
