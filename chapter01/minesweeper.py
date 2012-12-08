@@ -8,7 +8,7 @@ from time import sleep
 from utils import TextInput, nl, first
 from minesweeper_lib import MinesweeperBoard, Minesweeper, Tile
 
-size       = 6
+size       = 12
 num_mines  = randint(4, 8)
 mark_key   = 'm'
 padding    = 2, 1

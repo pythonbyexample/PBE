@@ -1,14 +1,11 @@
-#!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-
-from __future__ import print_function, unicode_literals, division
 
 import sys
 from random import choice as rndchoice
 from time import time
 
-from utils import AttrToggles, ujoin, range1, enumerate1, timefmt, space, nl
-from board import Loc, Board, BaseTile
+from utils import AttrToggles, timefmt
+from board import Board, BaseTile
 
 blank      = ' '
 hiddenchar = '.'
