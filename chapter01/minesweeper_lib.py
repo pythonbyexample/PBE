@@ -55,12 +55,6 @@ class MinesweeperBoard(Board):
     def random_empty(self)             : return rndchoice(self.tiles_not("mine"))
 
     def reveal(self, tile):
-        if not tile.number:
-            self.reveal_blank_neighbours(tile)
-        tile.revealed = True
-        return tile
-
-    def reveal_blank_neighbours(self, tile):
         """ Reveal all empty (number=0) tiles adjacent to starting tile `loc` and subsequent unhidden tiles.
             Uses floodfill algorithm.
         """
@@ -68,8 +62,7 @@ class MinesweeperBoard(Board):
         if tile.revealed : return
 
         tile.revealed = True
-        for nbtile in self.neighbours(tile):
-            self.reveal_blank_neighbours(nbtile)
+        for nbtile in self.neighbours(tile): self.reveal(nbtile)
 
 
 class Minesweeper(object):
