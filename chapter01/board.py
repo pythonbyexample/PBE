@@ -187,6 +187,17 @@ class BaseBoard(object):
         l1, l2 = self.ploc(tile_loc1), self.ploc(tile_loc2)
         return math.sqrt( abs(l2.x - l1.x)**2 + abs(l2.y - l1.y)**2  )
 
+    def ray(self, tile, dir, n=0):
+        """ Generate a 'ray' of tiles from `tile` start in `dir` direction for `n` tiles; if n is
+            0, to the end of board, excluding `start`.
+        """
+        while True:
+            tile = self.next_tile(tile, dir)
+            if tile   : yield tile
+            else      : break
+            if n == 1 : break
+            if n: n -= 1
+
 
 class Board(BaseBoard):
     def __init__(self, size, def_tile, **kwargs):

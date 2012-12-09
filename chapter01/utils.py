@@ -299,8 +299,16 @@ def first(iterable):
 
 def getitem(iterable, index, default=None):
     """Get item from an `iterable` at `index`, return default if index out of range."""
+    # print("iterable", iterable)
+    # print("index", index)
     try               : return iterable[index]
     except IndexError : return default
+
+def nextitem(iterable, default=None):
+    try:
+        return next(iterable)
+    except StopIteration:
+        return default
 
 def topitems(iterable):
     """ Last (top) items from a list of lists, useful to get 'top' items from a list of stacks e.g.

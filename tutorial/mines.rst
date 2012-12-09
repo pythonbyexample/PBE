@@ -139,7 +139,7 @@ et cetera. The second type of commands is exactly the same, but with an 'm' key 
 beginning to mark mine locations, for example 'm 34 36' to mark these tiles.
 
 The `singlechar_cmds` argument is needed to allow the player to group multiple commands using
-spaces, without this argument each coordicate would have to be separated: 'm 3 4 3 6'. The
+spaces, without this argument each coordinate would have to be separated: 'm 3 4 3 6'. The
 trade-off is that this option does not allow you to play on a board larger than 9x9, because it
 interprets a '11 5' coordinate as 1,1 ; but I think a 9x9 board should be enough for most people.
 

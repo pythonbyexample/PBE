@@ -4,25 +4,26 @@
 import sys
 from random import choice as rndchoice
 from random import shuffle
+from itertools import takewhile
 
-from utils import TextInput, nextval, nl, first, cmp
+from utils import TextInput, nextval, nl, first, cmp, iround, nextitem, getitem
 from board import Board, Loc, BaseTile
 
-size         = 8
-player_chars = '⎔▇'
-# ai_players   = '⎔▇'
+size         = 5, 5
+player_chars = '⎔▣'
+ai_players   = '⎔▣'
 ai_players   = '⎔'
 blank        = '.'
 padding      = 4, 2
-pause_time   = 0.3
+pause_time   = 0.1
 
 
-class CompareChar(object):
-    def __eq__(self, other): return bool(self.char == other.char)
-    def __ne__(self, other): return bool(self.char != other.char)
+class PlayerBase(object):
+    def __eq__(self, other): return bool(self.char == getattr(other, "char", None))
+    def __ne__(self, other): return bool(self.char != getattr(other, "char", None))
 
 
-class Tile(BaseTile, CompareChar):
+class Tile(BaseTile, PlayerBase):
     blank = piece = False
 
     def __repr__(self): return self.char
@@ -56,22 +57,21 @@ class VersiBoard(Board):
         if not self[start_loc].blank:
             return []
 
-        # check each of the eight directions
         for dir in self.dirlist2:
-            templist = []
-            tile     = self.next_tile(start_loc, dir)
-
-            # keep adding locations as long as it's an enemy piece
-            while tile and tile == player.enemy():
-                templist.append(tile)
-                tile = self.next_tile(tile, dir)
-
-            # if reached end of board or next tile is not our piece, skip to next direction
-            if not tile or player != tile:
-                continue
-            captured.extend(templist)
-
+            captured.extend( self.capture_direction(player, start_loc, dir) )
         return captured
+
+    def capture_direction(self, player, start, dir):
+        """Return the list of enemy tiles to capture in the `dir` direction from `start` location."""
+        tiles       = self.ray(start, dir)
+        enemy_tiles = takewhile(lambda tile: tile==player.enemy(), tiles)
+        enemy_tiles = list(enemy_tiles)
+        last        = getitem(enemy_tiles, -1)
+
+        if last and self.next_tile(last, dir) == player:
+            return enemy_tiles
+        else:
+            return []
 
     def is_corner(self, loc):
         return loc.x in (0, self.width-1) and loc.y in (0, self.height-1)
@@ -79,8 +79,11 @@ class VersiBoard(Board):
     def status(self):
         print(self.scores_msg % (player1, player1.score(), player2, player2.score()))
 
+    def middle(self):
+        return iround(self.width/2) - 1, iround(self.height/2) - 1
 
-class Player(CompareChar):
+
+class Player(PlayerBase):
     def __init__(self, char):
         self.char = char
         self.ai   = char in ai_players
@@ -89,7 +92,6 @@ class Player(CompareChar):
 
     def score(self)    : return sum(tile==self for tile in board)
     def enemy(self)    : return nextval(players, self)
-
 
     def make_move(self, loc):
         for tile in board.get_captured(self, loc):
@@ -111,13 +113,11 @@ class Versi(object):
     tiemsg     = "The game was a tie!"
 
     def __init__(self):
-        Piece(Loc(3,3), player1.char)
-        Piece(Loc(4,4), player1.char)
-        Piece(Loc(3,4), player2.char)
-        Piece(Loc(4,3), player2.char)
-
-    def check_end(self):
-        if all(t.piece for t in board): self.game_end()
+        x, y = board.middle()
+        Piece(Loc(x,y), player1.char)
+        Piece(Loc(x+1, y+1), player1.char)
+        Piece(Loc(x+1, y), player2.char)
+        Piece(Loc(x, y+1), player2.char)
 
     def game_end(self):
         board.draw()
@@ -140,7 +140,7 @@ class BasicInterface(object):
 
             # give next turn to enemy OR end game if no turns left, FALLTHRU: current player keeps the turn
             if moves(player.enemy()) : player = player.enemy()
-            else                     : versi.check_end()
+            elif not moves(player)   : versi.game_end()
 
     def get_move(self, player):
         while True:
