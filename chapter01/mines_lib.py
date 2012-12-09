@@ -11,6 +11,7 @@ blank      = ' '
 hiddenchar = '.'
 minechar   = '✇'
 flag       = '⚑'
+numbers    = "①②③④⑤⑥⑦⑧"
 
 
 class Tile(BaseTile, AttrToggles):
@@ -24,18 +25,21 @@ class Tile(BaseTile, AttrToggles):
         if   self.hidden : return hiddenchar
         elif self.marked : return flag
         elif self.mine   : return minechar
-        else             : return str(self.number or blank)
+        else             : return self.num()
+
+    def num(self):
+        return numbers[self.number-1] if self.number else blank
 
     def toggle_mark(self):
         self.marked = not self.marked
         self.hidden = not self.hidden
 
 
-class MinesweeperBoard(Board):
+class MinesBoard(Board):
     def __init__(self, *args, **kwargs):
         num_mines = kwargs.pop("num_mines")
 
-        super(MinesweeperBoard, self).__init__(*args, **kwargs)
+        super(MinesBoard, self).__init__(*args, **kwargs)
         self.divider = '-' * (self.width * 4 + 4)
 
         for _ in range(num_mines):
@@ -62,7 +66,7 @@ class MinesweeperBoard(Board):
         for nbtile in self.neighbours(tile): self.reveal(nbtile)
 
 
-class Minesweeper(object):
+class Mines(object):
     start    = time()
     win_msg  = "\n All mines cleared! (%s)"
     lose_msg = "\n KABOOM. END."

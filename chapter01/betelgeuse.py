@@ -8,24 +8,24 @@ from random import randint, random
 from utils import range1, TextInput, sjoin, first, space, nl
 from board import Board, BaseTile
 
-size           = 8
-player_chars   = '⎔▇'
+size           = 8, 6
+player_chars   = '⎔▣'
 # ai_players     = '⎔'
-ai_players     = '⎔▇'
+ai_players     = '⎔▣'
 
-neutral_char   = 'N'
+neutral_char   = '⊛'
 blank          = '.'
 padding        = 13, 4
 
 pause_time     = 0.3
 num_stars      = 6
-show_ships     = True
+show_ships     = True   # show production and # of ships for all stars
 
-star_turns     = 5
-star_defence   = 0.4
-production_rng = 8, 12
-send_chance    = 0.4
-send_cutoff    = 25
+star_turns     = 5      # star production cycle
+star_defence   = 0.6    # star defense rating: degree of advantage for defenders, must be less than 1.0
+production_rng = 8, 12  # range of star production, ships per cycle
+send_chance    = 0.4    # chance of sending a fleet, used by AI
+send_cutoff    = 25     # only send a fleet if have >=N, used by AI
 
 
 class PlayerBase(object):
@@ -43,7 +43,6 @@ class Blank(Tile)                : char = blank
 class Star(Blank):
     char  = neutral_char
     ships = 0
-    sep   = ':'
 
     def __init__(self, loc, num):
         super(Star, self).__init__(loc)
@@ -112,8 +111,8 @@ class Player(PlayerBase):
         self.char = char
         self.ai   = bool(char in ai_players)
 
-    def stars(self):
-        return [star for star in stars if star==self]
+    def stars(self)       : return [s for s in stars if s==self]
+    def other_stars(self) : return [s for s in stars if s!=self]
 
     def send(self, *args):
         fleets.append( Fleet(self.char, *args) )
@@ -127,7 +126,7 @@ class Player(PlayerBase):
         def dist(star2): return board.dist(star, star2)
 
         if random() < send_chance and star.ships >= send_cutoff:
-            targets = sorted( [s for s in stars if s != self], key=dist )
+            targets = sorted(self.other_stars(), key=dist)
             if not targets: return None
 
             ships = randint(star.ships // 2, star.ships)

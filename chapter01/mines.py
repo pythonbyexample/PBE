@@ -6,9 +6,9 @@ from random import randint
 from time import sleep
 
 from utils import TextInput, nl, first
-from minesweeper_lib import MinesweeperBoard, Minesweeper, Tile
+from mines_lib import MinesBoard, Mines, Tile
 
-size       = 12
+size       = 6, 6
 num_mines  = randint(4, 8)
 mark_key   = 'm'
 padding    = 2, 1
@@ -31,11 +31,11 @@ class BasicInterface(object):
         for loc in cmd:
             tile = board[loc]
             tile.toggle_mark() if mark else board.reveal(tile)
-            msweep.check_end(tile)
+            mines.check_end(tile)
 
 
 if __name__ == "__main__":
-    board = MinesweeperBoard(size, Tile, num_mines=num_mines, num_grid=True, padding=padding)
-    msweep = Minesweeper(board)
+    board = MinesBoard(size, Tile, num_mines=num_mines, num_grid=True, padding=padding)
+    mines = Mines(board)
     try: BasicInterface().run()
     except KeyboardInterrupt: pass
