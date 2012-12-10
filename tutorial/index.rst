@@ -13,6 +13,7 @@ Welcome to Lark's Tongue Guide to Python!
     :maxdepth: 2
 
     intro
+    topic-guide
     tictactoe
     blockyblocks
     sudoku
