@@ -4,15 +4,15 @@
 import sys
 from random import choice as rndchoice
 from random import shuffle
-from itertools import takewhile
+from itertools import takewhile, groupby
 
-from utils import TextInput, nextval, nl, first, cmp, iround, nextitem, getitem
+from utils import TextInput, nextval, nl, first, cmp, iround, nextitem, getitem, nextgroup, flatten
 from board import Board, Loc, BaseTile
 
 size         = 5, 5
 player_chars = '⎔▣'
-ai_players   = '⎔▣'
 ai_players   = '⎔'
+ai_players   = '⎔▣'
 blank        = '.'
 padding      = 4, 2
 pause_time   = 0.1
@@ -53,23 +53,18 @@ class VersiBoard(Board):
 
     def get_captured(self, player, start_loc):
         """If `start_loc` is a valid move, returns a list of locations of captured pieces."""
-        captured = []
         if not self[start_loc].blank:
             return []
 
-        for dir in self.dirlist2:
-            captured.extend( self.capture_direction(player, start_loc, dir) )
-        return captured
+        getdir = self.capture_direction
+        return flatten( [getdir(player, start_loc, dir) for dir in self.dirlist2] )
 
     def capture_direction(self, player, start, dir):
         """Return the list of enemy tiles to capture in the `dir` direction from `start` location."""
-        tiles       = self.ray(start, dir)
-        enemy_tiles = takewhile(lambda tile: tile==player.enemy(), tiles)
-        enemy_tiles = list(enemy_tiles)
-        last        = getitem(enemy_tiles, -1)
-
-        if last and self.next_tile(last, dir) == player:
-            return enemy_tiles
+        groups = groupby(self.ray(start, dir))
+        group1, group2 = nextgroup(groups), nextgroup(groups)
+        if group1 and group2 and (group1.key == player.enemy() and group2.key == player):
+            return group1.group
         else:
             return []
 
@@ -131,6 +126,7 @@ class BasicInterface(object):
         """Display board, start the game, process moves; return True to start a new game, False to exit."""
         moves          = board.get_valid_moves
         player         = rndchoice(players)
+        player         = players[1]
         self.textinput = TextInput(board=board)
 
         while True:

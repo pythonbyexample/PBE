@@ -87,7 +87,7 @@ class Test(object):
         while True:
             loc = self.textinput.getloc()
             if board.valid_move(player, board[loc]) : return board[loc]
-            else                             : print(self.textinput.invalid_move)
+            else                                    : print(self.textinput.invalid_move)
 
 
 if __name__ == "__main__":

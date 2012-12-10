@@ -247,6 +247,9 @@ class TextInput(object):
         return commands
         # return commands if len(commands)>1 else first(commands)
 
+class Container:
+    def __init__(self, **kwds):
+        self.__dict__.update(kwds)
 
 
 # ==== Functions =======================================================
@@ -299,10 +302,16 @@ def first(iterable):
 
 def getitem(iterable, index, default=None):
     """Get item from an `iterable` at `index`, return default if index out of range."""
-    # print("iterable", iterable)
-    # print("index", index)
     try               : return iterable[index]
     except IndexError : return default
+
+def nextgroup(groupy_iterator, default=None):
+    group = nextitem(groupy_iterator)
+    if group:
+        return Container(key=group[0], group=list(group[1]))
+    else:
+        return default
+
 
 def nextitem(iterable, default=None):
     try:

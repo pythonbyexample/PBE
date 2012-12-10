@@ -134,7 +134,7 @@ You can quit the game by using the 'q' command which is built-in into the `TextI
             while True:
                 loc = self.textinput.getloc()
                 if board.valid_move(player, board[loc]) : return board[loc]
-                else                             : print(self.textinput.invalid_move)
+                else                                    : print(self.textinput.invalid_move)
 
 Configuration
 -------------

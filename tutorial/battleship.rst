@@ -216,6 +216,7 @@ The board on top is the AI's, the other one is mine and it shows my ships and an
 5   ▢   𝀈   𝀈   𝀈   𝀈
 
 
+
 In the middle of the game, I've sunk one of AI's ships:
 
 

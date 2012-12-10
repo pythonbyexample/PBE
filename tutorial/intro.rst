@@ -95,8 +95,8 @@ five times, displaying the trees after each change:
     main()
 
 
-Note that `nl` is a newline character I imported from the utils module, it adds a blank line when
-given to `print()` function.
+Note that `nl` is a newline character I've imported from the utils module, it adds a blank line
+when given to `print()` function.
 
 The output should be something like::
 
@@ -139,18 +139,21 @@ the `track` and one that moves the player to another spot:
         global loc
         track[loc] = blank
 
-        loc = envelope(loc + dir*n, 0, lastind(track))
+        loc = loc + dir*n
+        loc = envelope(loc, 0, lastind(track))
         track[loc] = char
 
     def display():
         print(''.join(track), nl)
 
 In `move()` function I need to set the current location to blank, calculate the new location and place
-my character there. I'm using two functions from the `utils` module: `envelope()` forces location to
-be within valid range and `lastind()` returns last valid index for an iterable (e.g. 9 if iterable
-length is 10, 19 if 20, etc).
+my character there.
 
-The `envelope()` function accepts three arguments: the value itself, lower bound, and higher bound.
+The `envelope()` function (imported from the `utils` module) forces location to be within valid
+range and accepts three arguments: the value itself, lower bound, and higher bound.
+
+I'm using one more function from the `utils` module: `lastind()` returns last valid index for an
+iterable (e.g. 9 if iterable length is 10, 19 if 20, etc).
 
 .. sourcecode:: python
 
@@ -189,7 +192,8 @@ accordingly:
         global loc2
         track2[loc2].remove(char)
 
-        loc2 = envelope(loc2 + dir*n, 0, lastind(track2))
+        loc2 = loc2 + dir*n
+        loc2 = envelope(loc2, 0, lastind(track2))
         track2[loc2].append(char)
 
     def display2():
@@ -223,10 +227,10 @@ other items at these locations are not affected.
         move2(forward, x)
         display2()
 
-To add some randomness, I will use the `Dice` object from `utils`: by default it creates two dice
+To add some randomness, I'm using the `Dice` object from `utils`: by default it creates two dice
 with 6 sides each, but it's possible to specify any number of dice and sides. `Dice` has two
-methods: `roll()` will return the list of rolls for each dice; in some cases you won't care about
-individual dice and just need to know the total; `rollsum()` will provide just that::
+methods: `roll()` will return the list of rolls for each dice; sometimes you won't care about the
+individual dice -- `rollsum()` will provide the total of all rolls in these cases.
 
     demo2
     ...............................................................................

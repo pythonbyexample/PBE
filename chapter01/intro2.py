@@ -18,7 +18,8 @@ def move(dir, n):
     global loc
     track[loc] = blank
 
-    loc = envelope(loc + dir*n, 0, lastind(track))
+    loc = loc + dir*n
+    loc = envelope(loc, 0, lastind(track))
     track[loc] = char
 
 def display():
@@ -44,7 +45,8 @@ def move2(dir, n):
     global loc2
     track2[loc2].remove(char)
 
-    loc2 = envelope(loc2 + dir*n, 0, lastind(track2))
+    loc2 = loc2 + dir*n
+    loc2 = envelope(loc2, 0, lastind(track2))
     track2[loc2].append(char)
 
 def display2():

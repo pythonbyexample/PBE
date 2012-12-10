@@ -58,6 +58,10 @@ values; note how I'm using `ljoin()` to simplify the display logic.
 
 .. sourcecode:: python
 
+    rng3    = range(3)
+    rng9    = range(9)
+    offsets = (0, 3, 6)
+
     class SudokuBoard(Board):
         def __init__(self, size, def_tile, puzzle):
             super(SudokuBoard, self).__init__(size, def_tile)
@@ -141,18 +145,6 @@ parses 'x' as 34, which is out of range for this game:
                 cmd = self.textinput.getinput()
                 if sudoku.valid_move(*cmd) : return cmd
                 else                       : print(self.textinput.invalid_move)
-
-
-Constants
----------
-
-At the top, I've defined a few constants I use to generate regions and lines:
-
-.. sourcecode:: python
-
-    rng3    = range(3)
-    rng9    = range(9)
-    offsets = (0, 3, 6)
 
 
 Screenshots

@@ -32,6 +32,11 @@ complicated and that `initial_hide` setting is not applied precisely.
 
 .. sourcecode:: python
 
+    def __init__(self, word):
+        self.hidden = []
+        self.word   = word.rstrip()
+        self.gen_hidden(initial_hide)
+
     def hide(self, index):
         """Hide all letters matching letter at `index`."""
         if index not in self.hidden:
@@ -97,6 +102,14 @@ Words class has the following functionality:
     - let the user guess a letter
     - check if the game is finished and print win/lose message
 
+The class has a few text template variables defined:
+
+.. sourcecode:: python
+
+    class Words(object):
+        winmsg  = "Congratulations! You've revealed all words! (score: %d)"
+        losemsg = "You've run out of guesses.."
+        stattpl = "random reveals: %d | attempts: %d"
 
 In the `__init__()`, I need to add random words to my list until I get the required number; I'm
 excluding words of one and two chars because they are not interesting to guess.
