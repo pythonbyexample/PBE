@@ -4,6 +4,7 @@ import sys
 import re
 from copy import copy
 from random import randint
+from itertools import zip_longest
 
 sentinel = object()
 space    = ' '
@@ -297,8 +298,11 @@ def nextval(iterable, value):
     i = 0 if i >= lastind(iterable) else i+1
     return iterable[i]
 
-def first(iterable):
-    return next(iter(iterable))
+def first(iterable, default=None):
+    try:
+        return next(iter(iterable))
+    except StopIteration:
+        return default
 
 def getitem(iterable, index, default=None):
     """Get item from an `iterable` at `index`, return default if index out of range."""
@@ -331,3 +335,9 @@ def iround(value):
 def cmp(val1, val2):
     if val1 == val2 : return 0
     else            : return 1 if val1 > val2 else -1
+
+def grouper(n, iterable, fillvalue=None):
+    """From itertools recipes: collect data into fixed-length chunks or blocks."""
+    # grouper(3, 'ABCDEFG', 'x') --> ABC DEF Gxx
+    args = [iter(iterable)] * n
+    return zip_longest(fillvalue=fillvalue, *args)

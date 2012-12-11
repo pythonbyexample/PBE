@@ -7,14 +7,16 @@ from random import shuffle
 from time import sleep
 from itertools import cycle
 
-from utils import Dice, TextInput, sjoin, lastind, first, enumerate1, getitem, nl, space
+from utils import Dice, TextInput, sjoin, lastind, first, enumerate1, getitem, nl, space, grouper
 
-length       = 20
+length       = 35
+width        = 35
 num_pieces   = 3
 blank        = '.'
-pause_time   = 0.3     # in seconds
+pause_time   = 0.1     # in seconds
 player_chars = 'ʘΔ'
 ai_players   = 'ʘΔ'
+ai_players   = 'Δ'
 
 
 class Piece(object):
@@ -39,12 +41,11 @@ class Piece(object):
 
 
 class SimpleRace(object):
-    def __init__(self):
-        self.dice = Dice(num=1)     # one 6-sided dice
-        shuffle(players)
-
     def draw(self):
-        print(nl*5 + sjoin(track))
+        print(nl*5)
+        for section in grouper(width, track, fillvalue=space):
+            print(sjoin(section))
+        sleep(pause_time)
 
     def valid(self, piece, loc):
         """Valid move: any move that does not land on your other piece (beyond track is ok)."""
@@ -61,12 +62,17 @@ class SimpleRace(object):
             We also need to sort `moves` by location because looks better to the user when moves
             are sorted in order from left to right.
         """
-        moves = [(p.loc+move, p) for p in player if not p.done and self.valid(p, p.loc+move)]
-        return sorted( dict(moves).items() )
+        moves = [(p.loc+move, p) for p in player if not p.done]
+
+        moves = { move: piece for (move, piece) in moves if self.valid(piece, move)}
+        return sorted(moves.items())
+
+    def move(self, loc, piece):
+        piece.move(loc)
 
 
 class Player(object):
-    winmsg = "\n'%s' wins the race!"
+    winmsg = "\n%s wins the race!"
 
     def __init__(self, char):
         self.char   = char
@@ -77,7 +83,6 @@ class Player(object):
     def __iter__(self) : return iter(self.pieces)
 
     def check_end(self):
-        """Check if the player has won the game."""
         if all(piece.done for piece in self):
             race.draw()
             print(self.winmsg % self)
@@ -94,21 +99,17 @@ class BasicInterface(object):
         def offer_choice(): return bool(not player.ai and len(valid_moves) > 1)
 
         self.textinput = TextInput('%hd')
-        player = first(players)
-
-        if ai_players and player.char not in ai_players:
-            print("You are playing:", player)
+        pchar          = first(p for p in player_chars if p not in ai_players)
+        if pchar: print("You are playing:", pchar)
 
         for player in cycle(players):
             race.draw()
-            movedist    = race.dice.rollsum()
+            movedist    = dice.rollsum()
             valid_moves = race.valid_moves(player, movedist)
             getmove     = self.get_move if offer_choice() else rndchoice
-            loc, piece  = getmove(valid_moves)
 
-            piece.move(loc)
+            race.move(*getmove(valid_moves))
             player.check_end()
-            sleep(pause_time)
 
     def get_move(self, valid_moves):
         """Get player's choice of move."""
@@ -118,15 +119,18 @@ class BasicInterface(object):
         print(sjoin(moves))
 
         while True:
-            move = getitem(valid_moves, self.textinput.getval())
-            if move is None : print(self.textinput.invalid_move)
-            else            : return move
+            try:
+                return valid_moves[ self.textinput.getval() ]
+            except IndexError:
+                print(self.textinput.invalid_move)
 
 
 if __name__ == "__main__":
     track   = [blank] * length
     players = [Player(c) for c in player_chars]
     race    = SimpleRace()
+    dice    = Dice(num=1)     # one 6-sided dice
+    shuffle(players)
 
     try: BasicInterface().run()
     except KeyboardInterrupt: pass
