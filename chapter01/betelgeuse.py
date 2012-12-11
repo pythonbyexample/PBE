@@ -10,8 +10,8 @@ from board import Board, BaseTile
 
 size           = 8, 6
 player_chars   = '⎔▣'
-# ai_players     = '⎔'
 ai_players     = '⎔▣'
+ai_players     = '⎔'
 
 neutral_char   = '⊛'
 blank          = '.'

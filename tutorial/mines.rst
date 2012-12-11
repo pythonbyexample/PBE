@@ -105,12 +105,17 @@ tile left.
 
 .. sourcecode:: python
 
-    def check_end(self, tile):
-        """Check if game is lost (stepped on a mine), or won (all mines found)."""
-        if tile.mine and not tile.marked:
-            self.game_lost()
-        elif self.board.cleared():
-            self.game_won()
+    class Mines(object):
+        start    = time()
+        win_msg  = "\n All mines cleared! (%s)"
+        lose_msg = "\n KABOOM. END."
+
+        def check_end(self, tile):
+            """Check if game is lost (stepped on a mine), or won (all mines found)."""
+            if tile.mine and not tile.marked:
+                self.game_lost()
+            elif self.board.cleared():
+                self.game_won()
 
 In `game_lost()` I want to show the mine locations when the player loses, as a consolation, and I
 want to show how long the game took when the player wins:
