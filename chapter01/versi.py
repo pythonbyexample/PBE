@@ -9,18 +9,21 @@ from itertools import takewhile, groupby
 from utils import TextInput, nextval, nl, first, cmp, iround, nextitem, getitem, nextgroup, flatten
 from board import Board, Loc, BaseTile
 
-size         = 5, 5
-player_chars = '⎔▣'
+size         = 6, 6
+player_chars = '▣⎔'
+ai_players   = '▣⎔'
 ai_players   = '⎔'
-ai_players   = '⎔▣'
 blank        = '.'
 padding      = 4, 2
-pause_time   = 0.1
+pause_time   = 0.2
 
 
 class PlayerBase(object):
-    def __eq__(self, other): return bool(self.char == getattr(other, "char", None))
-    def __ne__(self, other): return bool(self.char != getattr(other, "char", None))
+    def __eq__(self, other):
+        return bool(self.char == getattr(other, "char", None))
+
+    def __ne__(self, other):
+        return not self==other
 
 
 class Tile(BaseTile, PlayerBase):
@@ -96,11 +99,11 @@ class Player(PlayerBase):
     def get_random_move(self):
         """Return location of best move."""
         def by_corner_score(loc):
-            return ( not board.is_corner(loc), len(board.get_captured(self, loc)) )
+            return board.is_corner(loc), -len(board.get_captured(self, loc))
 
         moves = board.get_valid_moves(self)
         shuffle(moves)
-        return first( sorted(moves, key=by_corner_score, reverse=True) )
+        return first(sorted(moves, key=by_corner_score))
 
 
 class Versi(object):
@@ -123,10 +126,9 @@ class Versi(object):
 
 class BasicInterface(object):
     def run(self):
-        """Display board, start the game, process moves; return True to start a new game, False to exit."""
         moves          = board.get_valid_moves
         player         = rndchoice(players)
-        player         = players[1]
+        player         = first(players)
         self.textinput = TextInput(board=board)
 
         while True:

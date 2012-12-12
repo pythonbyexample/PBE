@@ -10,10 +10,9 @@ from itertools import cycle
 from utils import Dice, TextInput, sjoin, lastind, first, enumerate1, getitem, nl, space, grouper
 
 length       = 35
-width        = 35
 num_pieces   = 3
 blank        = '.'
-pause_time   = 0.1     # in seconds
+pause_time   = 0.3     # in seconds
 player_chars = 'ʘΔ'
 ai_players   = 'ʘΔ'
 ai_players   = 'Δ'
@@ -42,9 +41,7 @@ class Piece(object):
 
 class SimpleRace(object):
     def draw(self):
-        print(nl*5)
-        for section in grouper(width, track, fillvalue=space):
-            print(sjoin(section))
+        print(nl*5 + sjoin(track))
         sleep(pause_time)
 
     def valid(self, piece, loc):
@@ -72,7 +69,7 @@ class SimpleRace(object):
 
 
 class Player(object):
-    winmsg = "\n%s wins the race!"
+    winmsg = "\n %s wins the race!"
 
     def __init__(self, char):
         self.char   = char
