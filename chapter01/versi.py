@@ -20,7 +20,7 @@ pause_time   = 0.2
 
 class PlayerBase(object):
     def __eq__(self, other):
-        return bool(self.char == getattr(other, "char", None))
+        return self.char == getattr(other, "char", None)
 
     def __ne__(self, other):
         return not self==other

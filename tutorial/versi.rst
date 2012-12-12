@@ -22,7 +22,7 @@ In order to compare Tiles and Player instances, I'll need a class that handles t
 
     class PlayerBase(object):
         def __eq__(self, other):
-            return bool(self.char == getattr(other, "char", None))
+            return self.char == getattr(other, "char", None)
 
         def __ne__(self, other):
             return not self==other
@@ -279,5 +279,3 @@ see, our scores changed accordingly::
 
     ▣  score:   3    ⎔  score:   3
     >
-
-
