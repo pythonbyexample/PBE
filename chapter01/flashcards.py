@@ -1,100 +1,77 @@
 #!/usr/bin/env python3
 
-"""flashcards
-
-Notes: flashcard file entries need to be separated by dashes, or, if dashes are present in a key,
-       by double dashes.
-
-Usage: ./flashcards.py [-n show_num] <cards_file>
-
-Written by AK <ak@lightbird.net>
+""" flashcards
+    Note: flashcard file entries need to be separated by double dashes.
 """
 
 import os
 import sys
-from optparse import OptionParser
-from os.path import join as pjoin
-from string import join, center
-from avkutil import Term
+from os.path import exists
 from random import shuffle
+from utils import TextInput, getitem, nl, space
 
 
-__version__ = "0.1"
-
-
-dash      = '-'
-dash2     = '--'
-nl        = '\n'
-space     = ' '
+sep       = '--'
 hashchar  = '#'
 tpl       = hashchar + '%s' + hashchar
 width     = 78
 screensep = 45
+cards_fn  = "cards.txt"
+
 
 class Flashcards(object):
     question = "Did you get it right (Y/n)? "
-    donemsg  = "Done, %s right out of %s (%d%%)"
+    status   = "%s right out of %s (%d%%)"
 
-    def main(self, options, args):
-        num        = int(options.num)
-        self.cards = dict()
+    def __init__(self, fname):
+        self.cards     = dict()
+        self.textinput = TextInput(accept_blank=True)
 
-        with open(args[0]) as fp:
+        with open(fname) as fp:
             for line in fp:
                 if line:
-                    k, v = line.split(dash2, 1)
+                    k, v = line.split(sep, 1)
                     self.cards[k.strip()] = v.strip()
 
-        rkeys = d.keys()
-        shuffle(rkeys)
+    def run(self):
+        right = keys = total = 0
 
-        t      = Term()
-        right  = 0
-        length = num or len(rkeys)
+        while True:
+            keys = keys or self.get_keys()
+            right += int( self.draw_card(keys.pop()) )
+            total += 1
+            print(self.status % (right, total, right/total*100.0))
 
-        for n, key in enumerate(rkeys):
-            right += int(self.draw_card(n, key))
-            if n + 1 == length:
-                break
+    def get_keys(self):
+        keys = list(self.cards.keys())
+        shuffle(keys)
+        return keys
 
-        print nl*2 + dash*width
-        print(self.donemsg % (right, length, right/length*100.0))
-
-    def draw_card(self, n, key):
+    def draw_card(self, key):
         print(nl*screensep)
-        print("%s / %s" % (n+1, length))
-        box(self.cards[key])
-        c = t.getch()
-        print(nl*2)
         self.box(key)
-        print(self.question)
-        sys.stdout.flush()
-        c = t.getch()
+        self.textinput.getinput()
+        self.box(self.cards[key])
 
-        if c in 'y\n':
-            return 1
+        return self.textinput.yesno(default='y', prompt=self.question)
 
     def box(self, txt):
         """Box and center in screen."""
         line     = hashchar*width
         in_width = width - 2
 
-        print(line, nl, line)
-        print(tpl % space*in_width)
-        print(tpl % center(txt, in_width))
-        print(tpl % space*in_width)
-        print(line, nl, line)
+        print(line)
+        print(tpl % (space*in_width))
+        print(tpl % txt.center(in_width))
+        print(tpl % (space*in_width))
+        print(line)
 
 
 if __name__ == "__main__":
-    parser = OptionParser()
-    parser.add_option("-n", "--num", dest="num", help="Number of cards to show.",
-      default=0)
-    options, args = parser.parse_args()
-    if not args:
-        print "Need one arg."; sys.exit()
-
-    try:
-        Flashcards().main(options, args)
-    except KeyboardInterrupt:
+    fname = getitem(sys.argv, 1, default=cards_fn)
+    if not exists(fname):
+        print("Error: %s could not be found" % fname)
         sys.exit()
+
+    try                      : Flashcards(fname).run()
+    except KeyboardInterrupt : sys.exit()

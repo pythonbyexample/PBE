@@ -168,6 +168,20 @@ class TextInput(object):
     def getloc(self):
         return first( self.getinput(formats=["loc"]) )
 
+    def yesno(self, default=None, prompt=None):
+        old_prompt = self.prompt
+
+        assert default in ('y', 'n', None)
+        if   default == 'y' : p = "[Y/n] "
+        elif default == 'n' : p = "[y/N] "
+        else                : p = "[y/n] "
+
+        self.prompt = prompt or p
+        inp = first( self.getinput( formats=["(y|Y|n|N)"] ) )
+
+        self.prompt = old_prompt
+        return bool(inp.lower() == 'y')
+
     def getval(self):
         return first(self.getinput())
 
@@ -247,6 +261,7 @@ class TextInput(object):
         commands = self.parse_fmt(inp, fmt)
         return commands
         # return commands if len(commands)>1 else first(commands)
+
 
 class Container:
     def __init__(self, **kwds):
