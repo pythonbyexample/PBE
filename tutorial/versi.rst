@@ -31,7 +31,7 @@ Tiles
 -----
 
 The two kinds of tiles I'll use are blank tiles and player pieces which will have the `flip()`
-method to let the piece be captured by the enemy.
+method to let the piece be captured by the enemy:
 
 .. sourcecode:: python
 
@@ -82,8 +82,10 @@ a corner, `status()` prints the score of each player:
 
 The logic of the `get_captured()` method is as follows: starting from the newly placed tile, go in
 each of eight directions and check if any pieces can be captured; return the list of captures
-(which may be empty). Note that `dirlist2` is a list of eight major directions while `dirlist` is
-a list of four directions.
+(which may be empty).
+
+Note that `dirlist2` is a list of eight major directions while `dirlist` is a list of four
+directions.
 
 .. sourcecode:: python
 
@@ -108,8 +110,8 @@ a list of four directions.
 Player
 ------
 
-There are a couple of tiny methods in `Player` class: `score()` calculates the player's score by
-adding up all of his tiles; `enemy()` returns Player's enemy.
+There are a couple of tiny methods in the `Player` class: `score()` calculates the player's score
+by adding up all of his tiles, `enemy()` returns Player's enemy.
 
 .. sourcecode:: python
 
@@ -122,20 +124,21 @@ adding up all of his tiles; `enemy()` returns Player's enemy.
     def score(self)    : return sum(tile==self for tile in board)
     def enemy(self)    : return nextval(players, self)
 
-
-The `get_random_move()` method is used by the AI and is a little tricky in the way it uses sorting:
-we need to sort all moves so that corner locations are preferred, because they are protected from
-capture, but in the absence of corner moves, we need to get the move that captures the most
-pieces. When Python sorting is done, `True` values come first and numeric values are sorted in
-ascending order, so I need to negate the number of captured pieces, to have best moves sorted near
-the top.
-
-.. sourcecode:: python
-
     def make_move(self, loc):
         for tile in board.get_captured(self, loc):
             tile.flip()
         Piece(loc, self.char)
+
+
+The `get_random_move()` method is used by the AI and is a little tricky in the way it uses sorting:
+we need to sort all moves so that corner locations are preferred, because they are protected from
+capture, but in the absence of corner moves, we need to get the move that captures the most
+pieces.
+
+In the default Python sorting, `True` values come first and numeric values are sorted in ascending
+order, so I need to negate the number of captured pieces to have the best moves sorted near the top:
+
+.. sourcecode:: python
 
     def get_random_move(self):
         """Return location of best move."""
@@ -150,7 +153,7 @@ Versi
 -----
 
 The Versi class is quite simple: I'm initializing a few pieces that go in the middle of the board,
-check if the game is finished and print win/lose/draw messages.
+checking if the game is finished and printing win/lose/draw messages.
 
 .. sourcecode:: python
 
@@ -176,9 +179,9 @@ BasicInterface
 --------------
 
 Player's input is simply the location of the new piece; the logic of the main loop is complicated
-a bit by the fact that a player may have no valid moves available in which case the other player
-continues to make moves until the first player can move again or the game ends, so the transfer of
-turns needs to be handled explicitly.
+a bit by the fact that a player may have no valid moves available, in which case the other player
+continues to make moves until the first player can either move again or the game ends; for this
+reason, the transfer of turns needs to be handled explicitly.
 
 The Player can always quit the game by entering the 'q' command.
 
@@ -221,7 +224,8 @@ Screenshots
 -----------
 
 
-I'm playing square pieces, this is the initial layout::
+I'm playing square pieces, here is the initial layout::
+
 
           1     2     3     4     5     6
 
@@ -248,7 +252,8 @@ I'm playing square pieces, this is the initial layout::
     >
 
 
-Here is the board after two moves: my move to 5,3 and the AI move to 5,2::
+This screenshot shows the board after two moves: my move to 5,3 and the AI move to 5,2; as you can
+see, our scores changed accordingly::
 
 
           1     2     3     4     5     6
