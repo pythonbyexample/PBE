@@ -4,6 +4,7 @@ import sys
 import re
 from copy import copy
 from random import randint
+from itertools import zip_longest
 
 sentinel = object()
 space    = ' '
@@ -16,8 +17,8 @@ class InvalidCode(Exception):
 
 
 class Loop(object):
-    """ Loop over a list of items in forward / backward direction, keeping track of current item,
-        which is available as `item` attribute by default, or under a custom `name` provided to init.
+    """ Loop over a sequence of items in forward / backward direction, keeping track of current item,
+        which is available as `item` attribute by default, and under a custom `name` provided to init.
     """
     def __init__(self, items, name="item", index=0):
         self.items   = items
@@ -167,6 +168,19 @@ class TextInput(object):
     def getloc(self):
         return first( self.getinput(formats=["loc"]) )
 
+    def yesno(self, default=None):
+        self.accept_blank = bool(default)
+
+        assert default in ('y', 'n', None)
+        if   default == 'y' : p = "[Y/n] "
+        elif default == 'n' : p = "[y/N] "
+        else                : p = "[y/n] "
+
+        inp = self.getinput( formats=["(y|Y|n|N)"] )
+        inp = first(inp) if inp else default
+
+        return bool(inp.lower() == 'y')
+
     def getval(self):
         return first(self.getinput())
 
@@ -245,8 +259,21 @@ class TextInput(object):
         inp      = inp.split() if space in inp else list(inp)
         commands = self.parse_fmt(inp, fmt)
         return commands
-        # return commands if len(commands)>1 else first(commands)
 
+
+class Container:
+    def __init__(self, **kwargs)   : self.__dict__.update(kwargs)
+    def __setitem__(self, k, v)    : self.__dict__[k] = v
+    def __delitem__(self, k)       : del self.__dict__[k]
+    def __getitem__(self, k)       : return self.__dict__[k]
+    def __iter__(self)             : return iter(self.__dict__)
+    def __nonzero__(self)          : return bool(self.__dict__)
+    def pop(self, *args, **kwargs) : return self.__dict__.pop(*args, **kwargs)
+    def get(self, *args, **kwargs) : return self.__dict__.get(*args, **kwargs)
+    def update(self, arg)          : return self.__dict__.update(arg)
+    def items(self)                : return self.__dict__.items()
+    def keys(self)                 : return self.__dict__.keys()
+    def values(self)               : return self.__dict__.values()
 
 
 # ==== Functions =======================================================
@@ -285,7 +312,9 @@ def timefmt(sec):
     return "%d:%02d" % (sec/60, sec%60)
 
 def lastind(iterable):
-    """Last (highest) valid index of `iterable`."""
+    """Last (highest) valid index of `iterable`; also accepts length as an int."""
+    if isinstance(iterable, int):
+        return iterable - 1
     return len(iterable) - 1
 
 def nextval(iterable, value):
@@ -294,13 +323,30 @@ def nextval(iterable, value):
     i = 0 if i >= lastind(iterable) else i+1
     return iterable[i]
 
-def first(iterable):
-    return next(iter(iterable))
+def first(iterable, default=None):
+    try:
+        return next(iter(iterable))
+    except StopIteration:
+        return default
 
 def getitem(iterable, index, default=None):
     """Get item from an `iterable` at `index`, return default if index out of range."""
     try               : return iterable[index]
     except IndexError : return default
+
+def nextgroup(groupy_iterator, default=None):
+    group = nextitem(groupy_iterator)
+    if group:
+        return Container(key=group[0], group=list(group[1]))
+    else:
+        return default
+
+
+def nextitem(iterable, default=None):
+    try:
+        return next(iterable)
+    except StopIteration:
+        return default
 
 def topitems(iterable):
     """ Last (top) items from a list of lists, useful to get 'top' items from a list of stacks e.g.
@@ -310,3 +356,13 @@ def topitems(iterable):
 
 def iround(value):
     return int(round(value))
+
+def cmp(val1, val2):
+    if val1 == val2 : return 0
+    else            : return 1 if val1 > val2 else -1
+
+def grouper(n, iterable, fillvalue=None):
+    """From itertools recipes: collect data into fixed-length chunks or blocks."""
+    # grouper(3, 'ABCDEFG', 'x') --> ABC DEF Gxx
+    args = [iter(iterable)] * n
+    return zip_longest(fillvalue=fillvalue, *args)
