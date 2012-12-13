@@ -8,24 +8,31 @@ import os
 import sys
 from os.path import exists
 from random import shuffle
-from utils import TextInput, getitem, nl, space
+from textwrap import wrap
+from time import sleep
+
+from utils import TextInput, Container, getitem, nl, space
 
 
 sep       = '--'
 hashchar  = '#'
-tpl       = hashchar + '%s' + hashchar
+chars     = Container(tl='╭', tr='╮', bl='╰', br='╯', horiz='─', vert='│')
+tpl       = chars.vert + '%s' + chars.vert
 width     = 78
 screensep = 45
 cards_fn  = "cards.txt"
 
 
+
 class Flashcards(object):
-    question = "Did you get it right (Y/n)? "
-    status   = "%s right out of %s (%d%%)"
+    question = " Did you get it right (Y/n)? "
+    status   = "\n %s right out of %s (%d%%)\n"
+    prompt   = "> "
 
     def __init__(self, fname):
         self.cards     = dict()
-        self.textinput = TextInput(accept_blank=True)
+        self.textinput = TextInput(accept_blank=True, prompt=self.question)
+        self.pauseinp  = TextInput(accept_blank=True)
 
         with open(fname) as fp:
             for line in fp:
@@ -38,33 +45,33 @@ class Flashcards(object):
 
         while True:
             keys = keys or self.get_keys()
-            right += int( self.draw_card(keys.pop()) )
+            stat = self.status % (right, total, (right/total*100.0) if total else 0)
+            right += int( self.draw_card(keys.pop(), stat) )
             total += 1
-            print(self.status % (right, total, right/total*100.0))
 
     def get_keys(self):
         keys = list(self.cards.keys())
         shuffle(keys)
         return keys
 
-    def draw_card(self, key):
+    def draw_card(self, key, status_msg):
         print(nl*screensep)
         self.box(key)
-        self.textinput.getinput()
+        self.pauseinp.getinput()        # instead of input() to handle quit key
         self.box(self.cards[key])
-
-        return self.textinput.yesno(default='y', prompt=self.question)
+        print(status_msg)
+        return self.textinput.yesno(default='y')
 
     def box(self, txt):
         """Box and center in screen."""
-        line     = hashchar*width
         in_width = width - 2
+        topline  = space + chars.tl + chars.horiz*in_width + chars.tr
+        btmline  = space + chars.bl + chars.horiz*in_width + chars.br
+        padline  = space + tpl % (space * in_width)
+        wrapped  = [space + tpl % wline.center(in_width) for wline in wrap(txt, width - 10)]
+        lines    = [topline, padline] + wrapped + [padline, btmline]
 
-        print(line)
-        print(tpl % (space*in_width))
-        print(tpl % txt.center(in_width))
-        print(tpl % (space*in_width))
-        print(line)
+        print(nl.join(lines))
 
 
 if __name__ == "__main__":
