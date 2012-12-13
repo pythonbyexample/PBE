@@ -29,10 +29,11 @@ textinput = Container(question = TextInput(accept_blank=True, prompt=question),
 
 
 class Card(object):
-    def __init__(self, cards, front, back):
+    def __init__(self, cards, card):
+        front, back = card.split(sep, 1)
+        self.front  = front.strip()
+        self.back   = back.strip()
         cards.append(self)
-        self.front = front.strip()
-        self.back  = back.strip()
 
     def draw(self, status_msg):
         print(nl*screensep)
@@ -66,7 +67,7 @@ class Flashcards(object):
         with open(fname) as fp:
             for line in fp:
                 if line.strip():
-                    Card(self.cards, *line.split(sep, 1))
+                    Card(self.cards, line)
 
     def run(self):
         right = cards = total = 0

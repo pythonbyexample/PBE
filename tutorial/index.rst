@@ -14,6 +14,7 @@ Welcome to Lark's Tongue Guide to Python!
 
     intro
     topic-guide
+    flashcards
     tictactoe
     blockyblocks
     sudoku
