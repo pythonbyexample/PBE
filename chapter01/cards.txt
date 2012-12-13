@@ -1,0 +1,4 @@
+random.shuffle  -- randomizes a sequence
+rndchoice       -- returns a random item from sequence (aliased from random.choice)
+utils.TextInput -- allows user to input text which is checked against provided valid pattern(s)
+utils.getitem   -- gets an item at given index from a sequence, returns a default value on failure (normally None)
