@@ -17,8 +17,8 @@ class InvalidCode(Exception):
 
 
 class Loop(object):
-    """ Loop over a list of items in forward / backward direction, keeping track of current item,
-        which is available as `item` attribute by default, or under a custom `name` provided to init.
+    """ Loop over a sequence of items in forward / backward direction, keeping track of current item,
+        which is available as `item` attribute by default, and under a custom `name` provided to init.
     """
     def __init__(self, items, name="item", index=0):
         self.items   = items
@@ -259,12 +259,21 @@ class TextInput(object):
         inp      = inp.split() if space in inp else list(inp)
         commands = self.parse_fmt(inp, fmt)
         return commands
-        # return commands if len(commands)>1 else first(commands)
 
 
 class Container:
-    def __init__(self, **kwds):
-        self.__dict__.update(kwds)
+    def __init__(self, **kwargs)   : self.__dict__.update(kwargs)
+    def __setitem__(self, k, v)    : self.__dict__[k] = v
+    def __delitem__(self, k)       : del self.__dict__[k]
+    def __getitem__(self, k)       : return self.__dict__[k]
+    def __iter__(self)             : return iter(self.__dict__)
+    def __nonzero__(self)          : return bool(self.__dict__)
+    def pop(self, *args, **kwargs) : return self.__dict__.pop(*args, **kwargs)
+    def get(self, *args, **kwargs) : return self.__dict__.get(*args, **kwargs)
+    def update(self, arg)          : return self.__dict__.update(arg)
+    def items(self)                : return self.__dict__.items()
+    def keys(self)                 : return self.__dict__.keys()
+    def values(self)               : return self.__dict__.values()
 
 
 # ==== Functions =======================================================
@@ -303,7 +312,9 @@ def timefmt(sec):
     return "%d:%02d" % (sec/60, sec%60)
 
 def lastind(iterable):
-    """Last (highest) valid index of `iterable`."""
+    """Last (highest) valid index of `iterable`; also accepts length as an int."""
+    if isinstance(iterable, int):
+        return iterable - 1
     return len(iterable) - 1
 
 def nextval(iterable, value):

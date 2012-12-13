@@ -1,4 +1,27 @@
-random.shuffle  -- randomizes a sequence
-rndchoice       -- returns a random item from sequence (aliased from random.choice)
-utils.TextInput -- allows user to input text which is checked against provided valid pattern(s)
-utils.getitem   -- gets an item at given index from a sequence, returns a default value on failure (normally None)
+random.shuffle    -- randomizes a sequence
+rndchoice         -- returns a random item from sequence (aliased from random.choice)
+time.sleep        -- pause the program for a period of time e.g. 0.5 - half a second
+dict.pop          -- remove and return the last item of a sequence (index can be given as an optional argument)
+bool              -- convert value to a true/false boolean value
+IndexError        -- Python exception meaning you tried to access a sequence item at an out-of-range index
+ValueError        -- Python exception meaning you tried to cast an invalid value to a type, e.g. "abc" to an integer
+KeyError          -- Python exception meaning you tried to access a non-existant key in a dictionary
+TypeError         -- Python exception meaning you tried to perform an invalid operation on types, e.g. 1 + 'a'
+
+utils.TextInput   -- allows user to input text which is checked against provided valid pattern(s)
+utils.getitem     -- gets an item at given index from a sequence, returns a default value on failure (normally None)
+utils.Container   -- a dict-like collection of data with values that can be accessed as attributes (e.g. obj.attr)
+utils.Loop        -- a list-like collection of items which wraps around and allows you to go forward and backward using .next() and .prev() methods
+utils.AttrToggles -- a class Mixin that allows you to have a pair of boolean attributes that automatically reverse-toggle when any of them is changed
+utils.Dice        -- represents a number of dices that can be rolled to get either total or value of each dice
+utils.sjoin       -- convert each item to a string and then join them into a final string
+utils.range1      -- same as python's range but 1-indexed
+utils.enumerate1  -- same as python's enumerate but 1-indexed
+utils.envelope    -- force value to fall within provided min/max range
+utils.flatten     -- flatten a list of lists into a shallow list
+utils.lastind     -- returns last valid index of a sequence, e.g. 9 for a sequence len=10, 5 for sequence len=6, etc
+utils.nextval     -- returns next value of a sequence after given value, useful for toggling between two or more setting values
+utils.first       -- returns first item of a sequence, or a default value for empty sequences (None if not specified)
+utils.nextgroup   -- returns the next group of a itertools.groupby sequence, wrapped in a convenient object with .key and .group attributes
+utils.iround      -- same as int(round(value))
+utils.cmp         -- same as 2.x cmp, return 0 if values are equal, 1 if first value is greater, -1 otherwise
