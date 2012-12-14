@@ -329,6 +329,12 @@ def first(iterable, default=None):
     except StopIteration:
         return default
 
+def last(seq, default=None):
+    try:
+        return seq[-1]
+    except IndexError:
+        return default
+
 def getitem(iterable, index, default=None):
     """Get item from an `iterable` at `index`, return default if index out of range."""
     try               : return iterable[index]
