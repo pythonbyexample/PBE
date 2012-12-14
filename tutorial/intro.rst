@@ -230,7 +230,7 @@ other items at these locations are not affected.
 To add some randomness, I'm using the `Dice` object from `utils`: by default it creates two dice
 with 6 sides each, but it's possible to specify any number of dice and sides. `Dice` has two
 methods: `roll()` will return the list of rolls for each dice; sometimes you won't care about the
-individual dice -- `rollsum()` will provide the total of all rolls in these cases.
+individual dice -- `rollsum()` will provide the total of all rolls in these cases::
 
     demo2
     ...............................................................................
