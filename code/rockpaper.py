@@ -2,47 +2,37 @@
 # -*- encoding: utf-8 -*-
 
 import sys
-from random import choice as rndchoice
+from random import choice as randchoice
 from time import sleep
+
+from utils import TextInput
 
 players    = 'XY'
 ai_players = 'Y'
 moves      = "rps"
 wins       = ("rp", "sr", "ps")   # choice on the right side wins
-quit_key   = 'q'
+status     = "%5s %3d %5s %3d     moves: %s %s"
 pause_time = 0.3
 
 
 class RockPaperScissors(object):
-    prompt   = "> "
-    inv_move = "Invalid move"
-    status   = "%5s %3d %5s %3d"
-
     def run(self):
-        scores = [0, 0]
+        self.textinput = TextInput("(r|p|s)")
+        scores         = [0, 0]
 
         while True:
-            choice1, choice2 = (self.get_move(player) for player in players)
+            choice1, choice2 = (self.get_move(p) for p in players)
 
             if choice1 != choice2:
-                winplayer = 1 if choice1+choice2 in wins else 0
+                winplayer = 1 if (choice1+choice2 in wins) else 0
                 scores[winplayer] += 1
 
-            print(self.status % (players[0], scores[0], players[1], scores[1]))
+            print(status % (players[0], scores[0], players[1], scores[1], choice1, choice2))
             sleep(pause_time)
 
     def get_move(self, player):
-        return self.ai_move() if player in ai_players else self.player_move()
-
-    def ai_move(self):
-        return rndchoice(moves)
-
-    def player_move(self):
-        while True:
-            inp = input(self.prompt)
-            if inp == quit_key : sys.exit()
-            elif inp in moves  : return inp
-            else               : print(self.inv_move)
+        if player in ai_players : return randchoice(moves)
+        else                    : return self.textinput.getval()
 
 
 if __name__ == "__main__":
