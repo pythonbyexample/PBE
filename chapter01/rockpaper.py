@@ -16,7 +16,6 @@ pause_time = 0.3
 
 
 class RockPaperScissors(object):
-
     def run(self):
         self.textinput = TextInput("(r|p|s)")
         scores         = [0, 0]
