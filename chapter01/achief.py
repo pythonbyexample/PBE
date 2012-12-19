@@ -1,28 +1,27 @@
 #!/usr/bin/env python3
 
-""" achief - simple and quick gamification
+""" achief - simple and quick way to gamify tasks and activities
 """
 
-import sys
-from time import sleep
 import os.path
 import shelve
-from optparse import OptionParser
+from argparse import ArgumentParser
 
-from utils import Container, getitem, lastind, nl, space
+from utils import first, getitem, nl, space
 
-savefn        = "~/.achief.dat"
-ranks         = "Page Squire Knight-Errant Knight Minister Chancellor".split()
+savefn         = "~/.achief.dat"
+ranks          = "Page Squire Knight-Errant Knight Minister Chancellor Imperator".split()
 
-badges        = '𝅪𝅫𝅬❖'
-fullbadge     = badges[-1]
-adv_badges    = ('✬', 'ਠ', 'હ', 'ತ')
-last_task_key = "ACHIEF_LAST_TASK"
+badges         = '𝅪𝅫𝅬❖'
+fullbadge      = badges[-1]
+adv_badges     = ('✬', 'ਠ', 'હ', 'ತ')
+badge_modifier = 1                      # set higher to get badges quicker
+lev_per_rank   = 200
 
 
 class Task(object):
     points = level = 0
-    tpl    = "%d points | level %d | rank %s"
+    tpl    = "[%d] level %d | %s\n"
 
     def __init__(self, name):
         self.name = name
@@ -32,11 +31,12 @@ class Task(object):
         self.level  = self.points // 10
 
     def display(self):
-        rank  = getitem(ranks, self.level // 10, default=ranks[-1])
+        rank  = getitem(ranks, self.level // lev_per_rank, default=ranks[-1])
         print(self.tpl % (self.points, self.level, rank))
         print(self.get_badges(self.level))
 
     def get_badges(self, level):
+        level *= badge_modifier
         lines = self.advanced_badges(level) + [ self.basic_badges(level) ]
         lines = [space.join(line) for line in lines]
 
@@ -52,11 +52,9 @@ class Task(object):
         return fullbadge * num_full + last_badge
 
     def advanced_badges(self, level):
-        """Pyramid is filled out at level=1339."""
-        # adv_blvl represents number of advanced badges at each level, e.g. [3,1,2,0] means 3 of
-        # lowest-level advanced badges, 1 adv. badge at 2nd level, etc.
+        """Complete pyramid is filled out at level=1339."""
         num_levels = len(adv_badges)
-        blevels    = [0] * num_levels
+        blevels    = [0] * num_levels   # number of adv. badges at each level
         blevels[0] = level // 12
 
         for n, levels in enumerate(blevels[:-1]):
@@ -68,15 +66,17 @@ class Task(object):
 
 
 class Tasks(object):
-    tpl = "%15s %5d %5d"
+    tpl = "%-15s %5s %5s"
 
     def __init__(self):
-        self.tasks = shelve.open(os.path.expanduser(savefn))
-        self.last  = self.tasks.get(last_task_key)
+        self.data  = shelve.open(os.path.expanduser(savefn))
+        self.tasks = self.data.get("tasks", dict())
+        self.last  = self.data.get("last", None)
 
     def close(self):
-        self.tasks.close()
-        self.tasks[last_task_key] = self.last
+        self.data["tasks"] = self.tasks
+        self.data["last"] = self.last
+        self.data.close()
 
     def new(self, name):
         self.tasks[name] = Task(name)
@@ -84,14 +84,24 @@ class Tasks(object):
     def delete(self, name):
         if name in self.tasks:
             del self.tasks[name]
+            print("'%s' deleted" % name)
+            self.close()
+
+    def show(self, name):
+        if name in self.tasks:
+            self.tasks[name].display()
 
     def add(self, name, n=1):
+        """Add `n` points to `name` task."""
         if name not in self.tasks:
             self.new(name)
         self.tasks[name].add(n)
         self.last = name
+        self.show(name)
+        self.close()
 
     def list(self):
+        print(self.tpl % ("task", "points", "level"))
         for task in self.tasks.values():
             print(self.tpl % (task.name, task.points, task.level))
 
@@ -104,19 +114,18 @@ def test():
 
 
 if __name__ == "__main__":
-    tasks = Tasks()
-    arg1  = getitem(sys.argv, 1, default=tasks.last)
-    arg2  = getitem(sys.argv, 2, default='1')
+    tasks  = Tasks()
 
-    parser = OptionParser()
-    parser.add_option("-n", "--num", dest="num", help="Number of cards to show.",
-      default=0)
-    options, args = parser.parse_args()
-    if not args:
-        print "Need one arg."; sys.exit()
+    parser = ArgumentParser()
+    parser.add_argument("task", metavar="TASK", default=None, nargs='?')
+    parser.add_argument("points", metavar="N", type=int, default=1, nargs='?')
+    parser.add_argument('-d', "--delete", metavar="TASK", dest="del_task", help="Delete task #", default=None)
+    parser.add_argument("-s", "--show", metavar="TASK", dest="show", help="Show task rank and badges", default=False)
+    parser.add_argument("-l", "--list", dest="list", help="List tasks", action="store_const", const=True, default=False)
+    args = parser.parse_args()
 
-    if arg1 == '-d':
-        tasks.delete(arg2)
-    else:
-        try               : tasks.add(arg1, int(arg2))
-        except ValueError : print "Invalid argument"
+    if   args.del_task : tasks.delete(args.del_task)
+    elif args.show     : tasks.show(args.show)
+    elif args.list     : tasks.list()
+    # else: print(sys.argv)
+    elif args.task     : tasks.add(args.task, args.points)
