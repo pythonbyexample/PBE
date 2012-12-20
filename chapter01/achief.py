@@ -13,11 +13,11 @@ from utils import iround, getitem, nl, space
 savefn          = "~/.achief.dat"
 ranks           = "Page Squire Knight-Errant Knight Minister Chancellor Imperator".split()
 
-div             = '-' * 45
+div             = '-' * 60
 badges          = '𝅪𝅫𝅬❖'
 fullbadge       = badges[-1]
 adv_badges      = ('✬', 'ਠ', 'હ', 'ತ')
-badge_modifier  = 1.5                    # set higher to get badges quicker
+badge_modifier  = 1                      # set higher to get badges quicker
 levels_per_rank = 200
 
 
@@ -65,7 +65,7 @@ class Task(object):
 
 
 class Tasks(object):
-    tpl = " %-15s %7s %7s %7s"
+    tpl = " %-15s %7s %7s %20s"
 
     def __init__(self):
         data  = shelve.open(os.path.expanduser(savefn), writeback=True)
@@ -107,12 +107,12 @@ if __name__ == "__main__":
     tasks  = Tasks()
     parser = ArgumentParser()
 
-    parser.add_argument("task", metavar="TASK", default=None, nargs='?')
+    parser.add_argument("task", default=None, nargs='?')
     parser.add_argument("points", type=int, default=1, nargs='?')
 
-    parser.add_argument('-d', "--delete", metavar="TASK", default=None)
+    parser.add_argument("-l", "--list", action="store_true")
     parser.add_argument("-s", "--show", metavar="TASK", default=False)
-    parser.add_argument("-l", "--list", dest="list", action="store_true")
+    parser.add_argument('-d', "--delete", metavar="TASK", default=False)
     args = parser.parse_args()
 
     if   args.delete   : tasks.delete(args.delete)

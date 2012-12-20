@@ -17,6 +17,7 @@ Welcome to Lark's Tongue Guide to Python!
     rockpaper
     flashcards
     tictactoe
+    achief
     blockyblocks
     sudoku
     battleship
