@@ -6,8 +6,9 @@
 import os.path
 import shelve
 from argparse import ArgumentParser
+from collections import defaultdict
 
-from utils import getitem, nl, space
+from utils import iround, getitem, nl, space
 
 savefn          = "~/.achief.dat"
 ranks           = "Page Squire Knight-Errant Knight Minister Chancellor Imperator".split()
@@ -16,16 +17,13 @@ div             = '-' * 45
 badges          = '𝅪𝅫𝅬❖'
 fullbadge       = badges[-1]
 adv_badges      = ('✬', 'ਠ', 'હ', 'ತ')
-badge_modifier  = 1                      # set higher to get badges quicker
+badge_modifier  = 1.5                    # set higher to get badges quicker
 levels_per_rank = 200
 
 
 class Task(object):
     points = 0
     tpl    = "[%d] level %d | %s\n"
-
-    def __init__(self, name):
-        self.name = name
 
     def add(self, n=1):
         self.points = max(0, self.points + n)
@@ -37,7 +35,7 @@ class Task(object):
         print(self.get_badges(self.level), nl)
 
     def get_badges(self, level):
-        level *= badge_modifier
+        level = iround(level*badge_modifier)
         lines = self.advanced_badges(level) + [ self.basic_badges(level) ]
         lines = [space.join(line) for line in lines]
 
@@ -72,18 +70,15 @@ class Tasks(object):
     def __init__(self):
         data  = shelve.open(os.path.expanduser(savefn), writeback=True)
         if "tasks" not in data:
-            data["tasks"] = dict()
+            data["tasks"] = defaultdict(Task)
+
         self.tasks = data.get("tasks")
         self.data  = data
-
-    def new(self, name):
-        self.tasks[name] = Task(name)
 
     def delete(self, name):
         if name in self.tasks:
             del self.tasks[name]
             print("'%s' deleted" % name)
-            self.data.close()
 
     def show(self, name):
         if name in self.tasks:
@@ -91,17 +86,17 @@ class Tasks(object):
 
     def add(self, name, n=1):
         """Add `n` points to `name` task."""
-        if name not in self.tasks:
-            self.new(name)
         self.tasks[name].add(n)
-        self.last = name
         self.show(name)
-        self.data.close()
 
     def list(self):
-        print(self.tpl % ("task", "points", "level", "rank"), nl, div)
-        for task in self.tasks.values():
-            print(self.tpl % (task.name, task.points, task.level, task.rank))
+        print(self.tpl % ("task", "points", "level", "rank"), nl + div)
+        for name, task in sorted(self.tasks.items()):
+            print(self.tpl % (name, task.points, task.level, task.rank))
+
+    def close(self):
+        self.data.close()
+
 
 def test():
     for x in range(0, 1500, 10):
@@ -124,3 +119,4 @@ if __name__ == "__main__":
     elif args.show     : tasks.show(args.show)
     elif args.list     : tasks.list()
     elif args.task     : tasks.add(args.task, args.points)
+    tasks.close()
