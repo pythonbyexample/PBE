@@ -21,7 +21,7 @@ class Loop(object):
         which is available as `item` attribute by default, and under a custom `name` provided to init.
     """
     def __init__(self, items, name="item", index=0):
-        self.items   = items
+        self.items   = list(items)
         self.name    = name
         self.length  = len(self.items)
         self.lastind = len(self.items) - 1

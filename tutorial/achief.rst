@@ -184,8 +184,11 @@ you change the # of advanced badges, you should also adjust this setting.
 Screenshots
 -----------
 
+Tip: you can create aliases in your command shell to make it easier to add points to multiple tasks.
+
 Just as an example, if I want to track learning of Python, I can add a single point for every 15
-minutes, or 3 points for 15 minutes, if I want badges to add up faster::
+minutes, or 3 points for 15 minutes (which would be equal to 4 and 12 points per hour,
+respectively), if I want badges to add up faster::
 
     $ achief.py python
     [1] level 1 | Page
@@ -239,7 +242,7 @@ minutes, or 3 points for 15 minutes, if I want badges to add up faster::
            ਠ
          ❖ ❖ 𝅬
 
-I can also provide negative number to adjust the total; and use -l argument to list::
+I can also provide a negative number to adjust the total; and use -l argument to list::
 
     achief.py python -20
     [3180] level 319 | Squire
