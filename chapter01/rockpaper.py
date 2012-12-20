@@ -7,8 +7,8 @@ from time import sleep
 
 from utils import TextInput
 
-players    = 'XY'
-ai_players = 'Y'
+players    = "XY"
+ai_players = "Y"
 moves      = "rps"
 wins       = ("rp", "sr", "ps")   # choice on the right side wins
 status     = "%5s %3d %5s %3d     moves: %s %s"

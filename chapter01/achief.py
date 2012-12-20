@@ -1,26 +1,27 @@
 #!/usr/bin/env python3
 
-""" achief - simple and quick way to gamify tasks and activities
+""" achief - simple and quick way to gamify tasks and activities.
 """
 
 import os.path
 import shelve
 from argparse import ArgumentParser
 
-from utils import first, getitem, nl, space
+from utils import getitem, nl, space
 
-savefn         = "~/.achief.dat"
-ranks          = "Page Squire Knight-Errant Knight Minister Chancellor Imperator".split()
+savefn          = "~/.achief.dat"
+ranks           = "Page Squire Knight-Errant Knight Minister Chancellor Imperator".split()
 
-badges         = '𝅪𝅫𝅬❖'
-fullbadge      = badges[-1]
-adv_badges     = ('✬', 'ਠ', 'હ', 'ತ')
-badge_modifier = 1                      # set higher to get badges quicker
-lev_per_rank   = 200
+div             = '-' * 45
+badges          = '𝅪𝅫𝅬❖'
+fullbadge       = badges[-1]
+adv_badges      = ('✬', 'ਠ', 'હ', 'ತ')
+badge_modifier  = 1                      # set higher to get badges quicker
+levels_per_rank = 200
 
 
 class Task(object):
-    points = level = 0
+    points = 0
     tpl    = "[%d] level %d | %s\n"
 
     def __init__(self, name):
@@ -28,12 +29,12 @@ class Task(object):
 
     def add(self, n=1):
         self.points = max(0, self.points + n)
-        self.level  = self.points // 10
+        self.level  = 1 + self.points // 10
+        self.rank   = getitem(ranks, self.level // levels_per_rank, default=ranks[-1])
 
     def display(self):
-        rank  = getitem(ranks, self.level // lev_per_rank, default=ranks[-1])
-        print(self.tpl % (self.points, self.level, rank))
-        print(self.get_badges(self.level))
+        print(self.tpl % (self.points, self.level, self.rank))
+        print(self.get_badges(self.level), nl)
 
     def get_badges(self, level):
         level *= badge_modifier
@@ -45,7 +46,7 @@ class Task(object):
     def basic_badges(self, level):
         blvl = level % 12
 
-        # number of full basic badges, type of last basic badge (may be 1,2,3 notches or full)
+        # number of full basic badges, level of last basic badge (may be 1,2,3 notches)
         num_full, last_badge = blvl//4, blvl%4
 
         last_badge = badges[last_badge-1] if last_badge else ''
@@ -66,17 +67,14 @@ class Task(object):
 
 
 class Tasks(object):
-    tpl = "%-15s %5s %5s"
+    tpl = " %-15s %7s %7s %7s"
 
     def __init__(self):
-        self.data  = shelve.open(os.path.expanduser(savefn))
-        self.tasks = self.data.get("tasks", dict())
-        self.last  = self.data.get("last", None)
-
-    def close(self):
-        self.data["tasks"] = self.tasks
-        self.data["last"] = self.last
-        self.data.close()
+        data  = shelve.open(os.path.expanduser(savefn), writeback=True)
+        if "tasks" not in data:
+            data["tasks"] = dict()
+        self.tasks = data.get("tasks")
+        self.data  = data
 
     def new(self, name):
         self.tasks[name] = Task(name)
@@ -85,7 +83,7 @@ class Tasks(object):
         if name in self.tasks:
             del self.tasks[name]
             print("'%s' deleted" % name)
-            self.close()
+            self.data.close()
 
     def show(self, name):
         if name in self.tasks:
@@ -98,34 +96,31 @@ class Tasks(object):
         self.tasks[name].add(n)
         self.last = name
         self.show(name)
-        self.close()
+        self.data.close()
 
     def list(self):
-        print(self.tpl % ("task", "points", "level"))
+        print(self.tpl % ("task", "points", "level", "rank"), nl, div)
         for task in self.tasks.values():
-            print(self.tpl % (task.name, task.points, task.level))
+            print(self.tpl % (task.name, task.points, task.level, task.rank))
 
 def test():
-    print(Task('x').get_badges(1439), nl*5)
-
-    for x in range(0, 5000, 10):
-        print(x)
-        print(Task('x').get_badges(x), nl*5)
+    for x in range(0, 1500, 10):
+        print(x, Task('x').get_badges(x), nl*5)
 
 
 if __name__ == "__main__":
     tasks  = Tasks()
-
     parser = ArgumentParser()
+
     parser.add_argument("task", metavar="TASK", default=None, nargs='?')
-    parser.add_argument("points", metavar="N", type=int, default=1, nargs='?')
-    parser.add_argument('-d', "--delete", metavar="TASK", dest="del_task", help="Delete task #", default=None)
-    parser.add_argument("-s", "--show", metavar="TASK", dest="show", help="Show task rank and badges", default=False)
-    parser.add_argument("-l", "--list", dest="list", help="List tasks", action="store_const", const=True, default=False)
+    parser.add_argument("points", type=int, default=1, nargs='?')
+
+    parser.add_argument('-d', "--delete", metavar="TASK", default=None)
+    parser.add_argument("-s", "--show", metavar="TASK", default=False)
+    parser.add_argument("-l", "--list", dest="list", action="store_true")
     args = parser.parse_args()
 
-    if   args.del_task : tasks.delete(args.del_task)
+    if   args.delete   : tasks.delete(args.delete)
     elif args.show     : tasks.show(args.show)
     elif args.list     : tasks.list()
-    # else: print(sys.argv)
     elif args.task     : tasks.add(args.task, args.points)

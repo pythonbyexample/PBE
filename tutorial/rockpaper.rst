@@ -66,8 +66,8 @@ You can run the game in AI vs. AI mode, play against the AI, or play against hum
 
 .. sourcecode:: python
 
-    players    = 'XY'
-    ai_players = 'Y'
+    players    = "XY"
+    ai_players = "Y"
 
 
 Screenshots
