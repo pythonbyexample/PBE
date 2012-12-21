@@ -1,9 +1,8 @@
-Slot Machine
+Python Lists
 ============
 
-This small game is a simulation of a slot machine.
-
-You can view or download the code here:
+A list is one of the most important data structures in Python. In this small tutorial I will go
+over the methods, tricks, and examples of using lists in your programs.
 
 https://github.com/pythonbyexample/PBE/tree/master/code/slotmachine.py
 
@@ -14,7 +13,7 @@ https://github.com/pythonbyexample/PBE/tree/master/code/utils.py
 Reel
 ----
 
-The Reel class represents a single reel, or 'drum', inside the machine, which
+The `Reel` class represents a single reel, or 'drum', inside the machine, which
 rotates independently from other reels when the machine is running. It would be easy to make a
 random display of symbols while the reels are spinning and make a final random selection when
 it stops, but I think it's more interesting to make a more realistic simulation and have the
@@ -22,11 +21,11 @@ reels that are actually rotating in the same sequence. To make sure changing sym
 different reels are not synchronized, I'll have them rotating at randomized, different speeds.
 
 As in a real slot machine, I'll stop the reels in a delayed order from left to right, using
-randomly generated max_cycle variable to let them know when to stop.
+randomly generated `max_cycle` variable to let them know when to stop.
 
-I'll use the utils.Loop class to store the list of symbols and cycle through them using
-Loop.next() method. The symbol() method will rotate the reel if it did not reach max_cycle yet
-and return current symbol:
+I'll use the `utils.Loop` class to store the list of symbols and cycle through them using
+`Loop.next()` method. The `symbol()` method will rotate the reel if it did not reach `max_cycle` yet
+and return the current symbol:
 
 .. sourcecode:: python
 
@@ -46,9 +45,9 @@ and return current symbol:
 SlotMachine
 -----------
 
-The run() method sets up the machine and runs it until all reels come to a stop.
+The `run()` method sets up the machine and runs it until all reels come to a stop.
 
-I'll need to create a rotation and max_cycle values for each of the reels and then create the
+I'll need to create a `rotation` and `max_cycle` values for each of the reels and then create the
 reel objects themselves.
 
 In the main loop itself I need to join all symbols into a line, display it and pause.
@@ -78,20 +77,19 @@ In the main loop itself I need to join all symbols into a line, display it and p
             return self.done(reels, display, line)
 
 
-In the done() method, I have to check if all of the reels aligned with the same symbol by
+In the `done()` method, I have to check if all of the reels aligned with the same symbol by
 turning the line into a set (therefore eliminating duplicates) and checking if its length is 1:
 
 .. sourcecode:: python
 
     def done(self, reels, display, line):
-        L = [r.symbol() for r in reels]
+        S      = [r.symbol() for r in reels]
+        won    = bool(len(set(S)) == 1)
+        amount = symbols[first(S)] if won else 0
 
-        if len(set(L)) == 1:
-            if display:
-                print(winmsg % symbols[first(L)])
-            return line, symbols[first(L)]
-
-        return line, 0
+        if won and display:
+            print(winmsg % symbols[first(S)])
+        return line, amount
 
 test()
 ------
@@ -142,7 +140,7 @@ in the comments below:
 Screenshots
 -----------
 
-The winning rate is about 3%; here is the tail end of test() run::
+The winning rate is about 3%; here is the tail end of `test()` run::
 
     ❄ ❄ ❄    100
 
@@ -163,7 +161,7 @@ The winning rate is about 3%; here is the tail end of test() run::
     wins 10
     total 8300
 
-Here is the test run with showall=False::
+Here is the test run with `showall=False`::
 
     ✿ ✿ ✿    500
 
@@ -179,4 +177,3 @@ Here is the test run with showall=False::
 
     wins 6
     total 3900
-
