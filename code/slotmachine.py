@@ -54,14 +54,13 @@ class SlotMachine(object):
         return self.done(reels, display, line)
 
     def done(self, reels, display, line):
-        L = [r.symbol() for r in reels]
+        S      = [r.symbol() for r in reels]
+        won    = bool(len(set(S)) == 1)
+        amount = symbols[first(S)] if won else 0
 
-        if len(set(L)) == 1:
-            if display:
-                print(winmsg % symbols[first(L)])
-            return line, symbols[first(L)]
-
-        return line, 0
+        if won and display:
+            print(winmsg % symbols[first(S)])
+        return line, amount
 
 
 def test():
