@@ -8,7 +8,6 @@ from time import sleep
 from utils import Loop, range1, first, sjoin, nl
 
 num_reels  = 3
-pause_time = 0
 pause_time = 0.05
 first_stop = 30     # stop first reel
 reel_delay = 25     # range of delay to stop each reel
@@ -55,29 +54,29 @@ class SlotMachine(object):
         return self.done(reels, display, line)
 
     def done(self, reels, display, line):
-        L = (r.symbol() for r in reels)
+        S      = [r.symbol() for r in reels]
+        won    = bool(len(set(S)) == 1)
+        amount = symbols[first(S)] if won else 0
 
-        if len(set(L)) == 1:
-            symbol = first(reels).symbol()
-            if display:
-                print(winmsg % symbols[symbol])
-            return line, symbols[symbol]
-
-        return line, 0
+        if won and display:
+            print(winmsg % symbols[first(S)])
+        return line, amount
 
 
 def test():
-    slots = SlotMachine()
-    runs = [slots.run(0, False) for _ in range(300)]
-    wins = len([run for run in runs if run[1]])
-    totals = sum(run[1] for run in runs)
+    slots   = SlotMachine()
+    runs    = [slots.run(0, False) for _ in range(300)]
+    wins    = len([r for r in runs if r[1]])
+    total   = sum(r[1] for r in runs)
+    showall = False
 
     for run in runs:
-        if run[1]: print("%8s %6s" % run, nl)
+        if showall or run[1]:
+            print("%8s %6s" % run, nl)
     print(" wins", wins)
-    print(" total", totals)
+    print(" total", total)
 
 
 if __name__ == "__main__":
-    # SlotMachine().run(pause_time)
-    test()
+    SlotMachine().run(pause_time)
+    # test()

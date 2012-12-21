@@ -15,6 +15,7 @@ Welcome to Lark's Tongue Guide to Python!
     intro
     topic-guide
     rockpaper
+    slots
     flashcards
     tictactoe
     achief
