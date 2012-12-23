@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- encoding: utf-8 -*-
 
 """ a text adventure game
 """
@@ -16,6 +17,7 @@ from board import StackableBoard, Loc, BaseTile
 roomchance = Container(door=0.6, shaky_floor=0.01)
 itemchance = Container(Gem=0.1, Key=0.05, Gold=0.25, Anvil=0.01)
 size       = 2000, 2000
+doorchar = '⌺'
 
 
 class Item(BaseTile):
@@ -23,6 +25,9 @@ class Item(BaseTile):
 
     def __eq__(self, other):
         return self.__class__ == other.__class__
+
+    def __str__(self):
+        if self.gold: return "piece of gold"
 
 
 class Gem(Item)   : pass
@@ -59,7 +64,6 @@ class Room(object):
         self.shaky_floor = bool(random() < roomchance.shaky_floor)
 
 
-
 class Player(object):
     dir    = DirLoop(range(3), name=dir)
     items  = defaultdict(int)
@@ -85,14 +89,48 @@ class Player(object):
         for item in self.items.items():
             if item: print(invtpl % item)
 
+    def roomview(self):
+        room     = self.room
+        doorsdir = copy(self.dir)
+        doors    = doorsdir.prev(), doorsdir.next(), doorsdir.next()
+        doors    = [room.doors[d] for d in doors]
+        doordirs = ["on the left", "in front", "on the right"]
+
+        L = []
+        L.append(space.join(doorchar if d else space for d in doors))
+        L.append("You enter a room.")
+
+        if room.item:
+            L.append("You see %s lying on the floor." % a_an(room.item))
+
+        doordirs = [d[1] for d in zip(doors, doordirs) if d[0]]
+        self.doors_desc(doordirs, L)
+        return L
+
+    def doors_desc(self, doordirs, L):
+        if doordirs:
+            msg = "You see a door "
+
+            if len(doordirs) == 1:
+                msg += first(doordirs) + " of you."
+            elif len(doordirs) == 2:
+                msg += sjoin(doordirs, " and ") + " of you."
+            else:
+                msg += sjoin(doordirs[:2], ", ") + "and %s of you."
+                msg = msg % doordirs[2]
+
+            L.append(msg)
+
 
 def genitem():
     for name, chance in sorted(itemchance.items(), key=itemgetter(1)):
         if random() <= chance:
             return locals()[name]()
 
-if __name__ == "__main__":
-    board  = AdvBoard()
-    player = Player(board.center())
+def a_an(item):
+    return "an " + item if item.startswith('A') else "a " + item
 
-    test()
+
+if __name__ == "__main__":
+    board  = AdvBoard(size, None)
+    player = Player(board.center())
