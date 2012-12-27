@@ -2,10 +2,7 @@ from __future__ import print_function, unicode_literals, division
 import math
 from time import sleep
 
-from utils import ujoin, range1, enumerate1
-
-nl    = '\n'
-space = ' '
+from utils import ujoin, range1, enumerate1, first, nl, space
 
 
 class BaseTile(object):
@@ -165,8 +162,9 @@ class BaseBoard(object):
     def nextloc(self, tile_loc, dir, n=1, wrap=False):
         """Return location next to `tile_loc` point in direction `dir`."""
         loc = self.ploc(tile_loc)
-        x = loc.x + dir.x*n
-        y = loc.y + dir.y*n
+
+        x   = loc.x + dir.x*n
+        y   = loc.y + dir.y*n
 
         if wrap:
             while not self.valid(Loc(x,y)):
@@ -241,6 +239,8 @@ class StackableBoard(BaseBoard):
 
     def __getitem__(self, loc):
         self.init_board()
+
+        # print(self.board[loc.y][loc.x])
         return self.board[loc.y][loc.x][-1]
 
     def __setitem__(self, tile_loc, item):
@@ -262,9 +262,14 @@ class StackableBoard(BaseBoard):
         loc = self.ploc(tile_loc)
         return self.board[loc.y][loc.x]
 
+    def get_instance(self, cls, tile_loc, default=None):
+        """Get first instance of `cls` from `tile_loc` location."""
+        return first([i for i in self.items(tile_loc) if isinstance(i, cls)], default)
+
     def move(self, tile_loc, newloc):
-        loc          = self.ploc(tile_loc)
-        item         = self[loc]
+        item = self[tile_loc] if isinstance(tile_loc, Loc) else tile_loc
+
+        loc = self.ploc(tile_loc)
         self[newloc] = item
         self.items(loc).remove(item)
 
