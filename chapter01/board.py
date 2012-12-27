@@ -56,6 +56,7 @@ class BaseBoard(object):
     def __init__(self, size, num_grid=False, padding=(0, 0), pause_time=0.2, screen_sep=5):
         if isinstance(size, int):
             size = size, size   # handle square board
+
         self.width, self.height = size
 
         self.num_grid    = num_grid
@@ -143,12 +144,7 @@ class BaseBoard(object):
 
     def make_tile(self, loc):
         """Make a tile using `self.def_tile`. If def_tile is simply a string, return it, otherwise instantiate with x, y as arguments."""
-        try:
-            isstr = isinstance(self.def_tile, basestring)
-        except NameError:
-            isstr = isinstance(self.def_tile, str)
-
-        return self.def_tile if isstr else self.def_tile(loc)
+        return self.def_tile if self._def_tile_str else self.def_tile(loc)
 
     def move(self, tile_loc, newloc):
         loc          = self.ploc(tile_loc)
@@ -200,6 +196,10 @@ class BaseBoard(object):
 class Board(BaseBoard):
     def __init__(self, size, def_tile, **kwargs):
         super(Board, self).__init__(size, **kwargs)
+
+        try              : self._def_tile_str = isinstance(def_tile, basestring)
+        except NameError : self._def_tile_str = isinstance(def_tile, str)
+
         self.def_tile = def_tile
         xrng, yrng    = range(self.width), range(self.height)
         self.board    = [ [None for x in xrng] for y in yrng ]
@@ -217,8 +217,15 @@ class Board(BaseBoard):
         loc = self.ploc(tile_loc)
         self.board[loc.y][loc.x] = self.make_tile(loc)
 
+    def empty(self, tile_loc):
+        loc = self.ploc(tile_loc)
+        if self._def_tile_str:
+            return bool(self[loc] == self.def_tile)
+        else:
+            return isinstance(self[loc], self.def_tile)
+
     def init_board(self):
-        """ To allow tiles that place themselves on the board, board is first initialized with None values in __init__, 
+        """ To allow tiles that place themselves on the board, board is first initialized with None values in __init__,
             then on the first __setitem__ or __getitem__, init_board() runs; self.board_initialized needs to be set
             immediately to avoid recursion.
         """
@@ -233,6 +240,10 @@ class StackableBoard(BaseBoard):
 
     def __init__(self, size, def_tile, **kwargs):
         super(StackableBoard, self).__init__(size, **kwargs)
+
+        try              : self._def_tile_str = isinstance(def_tile, basestring)
+        except NameError : self._def_tile_str = isinstance(def_tile, str)
+
         self.def_tile = def_tile
         xrng, yrng    = range(self.width), range(self.height)
         self.board    = [ [[None] for x in xrng] for y in yrng ]
@@ -251,6 +262,9 @@ class StackableBoard(BaseBoard):
     def __delitem__(self, tile_loc):
         loc = self.ploc(tile_loc)
         del self.board[loc.y][loc.x][-1]
+
+    def empty(self, tile_loc):
+        return len( self.items(self.ploc(tile_loc)) ) == 1
 
     def init_board(self):
         if not self.board_initialized:

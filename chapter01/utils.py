@@ -58,6 +58,12 @@ class Loop(object):
         self.item = self.items[self.index]
         setattr(self, self.name, self.items[self.index])
 
+    def __getitem__(self, i):
+        return self.items[i]
+
+    def __setitem__(self, i, val):
+        self.items[i] = val
+
     def __eq__(self, value):
         return bool(self.item == value)
 

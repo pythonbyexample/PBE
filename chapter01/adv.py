@@ -6,21 +6,20 @@
 
 from random import randint, random
 from random import choice as randchoice
-from time import sleep
 from collections import defaultdict
-from operator import itemgetter
 from copy import copy
 
-from utils import Loop, Container, TextInput, range1, first, sjoin, nl, space
+from utils import Loop, Container, TextInput, first, sjoin, nl, space
 from board import StackableBoard, Loc, BaseTile
 
 roomchance  = Container(door=0.8, shaky_floor=0.01)
 itemchance  = Container(Gem=0.1, Key=0.05, Gold=0.25, Anvil=0.01)
 border      = Container(tl='╭', tr='╮', bl='╰', br='╯', horiz='─', vertical='│')
-size        = 10, 10
+size        = 2
 doorchar    = '⌺'
-roomchar    = '#'
-player_char = '@'
+roomchar    = '▢'
+player_char = '☺'
+absdirs     = range(4)
 
 """
 ─────────────
@@ -59,10 +58,15 @@ class DirLoop(Loop):
     def cw(self, n=1)  : return super(DirLoop, self).next(n)
     def ccw(self, n=1) : return super(DirLoop, self).prev(n)
 
+    def rotate_cw(self, n=1):
+        for _ in range(n):
+            self.items.append(self.items.pop(0))
+        self.update_attr()
+
 
 class AdvBoard(StackableBoard):
-    def nlocs(self, tile_loc):
-        x, y = self.ploc(tile_loc)
+    def nlocs(self, loc):
+        x, y = loc
         locs = ((x, y-1), (x+1, y), (x, y+1), (x-1, y))
         locs = [Loc(*tup) for tup in locs]
         return [(loc if self.valid(loc) else None) for loc in locs]
@@ -75,63 +79,75 @@ class Room(object):
     item = None
 
     def __init__(self, loc):
-        self.doors   = defaultdict(bool)
-        self.loc     = loc
-        board[loc]   = self
-        inverse_dirs = (2,3,0,1)
-        # print("loc", loc)
-
-        for rd, nd, nloc in zip(range(4), inverse_dirs, board.nlocs(loc)):
-            if nloc:
-                # print("nloc", nloc)
-
-                room = board.get_instance(Room, nloc)
-                self.doors[rd] = bool( (random()<roomchance.door or room and room.doors[nd]) )
-
-        # print("self.doors", self.doors)
+        self.loc         = loc
+        self.doors       = list(self.gendoors())
+        print("self.doors", self.doors)
         self.item        = genitem()
         self.shaky_floor = bool(random() < roomchance.shaky_floor)
+        board[loc]       = self
 
     def __str__(self):
         return roomchar
+
+    def gendoors(self):
+        inverse_dirs = (2,3,0,1)
+        for rd, nd, nloc in zip(absdirs, inverse_dirs, board.nlocs(self.loc)):
+            if not nloc:
+                yield False
+            else:
+                room = board.get_instance(Room, nloc)
+                yield bool( (random()<roomchance.door or room and room.doors[nd]) )
 
     def show_doors(self, doors):
         d     = "%s"
         h, v  = border.horiz, border.vertical
         walls = ''.join([h*13, nl, v, space, d, space, v, space, d, space, v, space, d, space, v])
-        return walls % tuple(doors)
+        return walls % tuple((doorchar if d else space) for d in doors)
+
+
+class PlayerDir(object):
+    dir = DirLoop(range(4), name="dir")
+
+    def __init__(self, player):
+        self.player = player
+        self.update()
+
+    def update(self, dirnum=0):
+        self.dir.cw(dirnum)
+
+        room        = self.player.room
+        self.absdir = DirLoop(board.dirlist).cw(self.dir.dir)
+        self.doors  = DirLoop(copy(room.doors))
+        self.doors.rotate_cw(self.dir.dir)
+
+        self.viewdoors = [self.doors[d] for d in (3,0,1)]
+        descdoors      = ["on the left", "in front", "on the right"]
+        self.descdoors = [d[1] for d in zip(self.viewdoors, descdoors) if d[0]]
 
 
 class Player(object):
-    dir    = DirLoop(range(4), name="dir")
-    items  = defaultdict(int)
-    invtpl = "%20s %4d"
+    items     = defaultdict(int)
+    invtpl    = "%20s %4d"
+    bump_wall = "You bump into the wall"
 
-    def __init__(self, loc):
-        self.loc   = loc
-        self.room  = Room(loc)
-        self.doors = []
-        board[loc] = self
-
+    def __init__(self, room):
+        self.room       = room
+        self.loc        = room.loc
+        board[self.loc] = self
+        self.dir        = PlayerDir(self)
 
     def __str__(self):
         return player_char
 
     def move(self, ndir):
-        doordict = dict(zip((3,0,1), self.doors))
-        if ndir!=2 and not doordict[ndir]:
-            print("You bump into the wall")
+        if not self.dir.doors[ndir]:
+            print(self.bump_wall)
             return
 
-        self.dir.cw(ndir)
-        absdir    = DirLoop(board.dirlist).cw(self.dir.dir)
-        newloc    = board.nextloc(self, absdir)
-        self.room = board[newloc]
-
-        if board[newloc] == space:
-            self.room = Room(newloc)
+        self.dir.update(ndir)
+        newloc    = board.nextloc(self, self.dir.absdir)
+        self.room = Room(newloc) if board.empty(newloc) else board[newloc]
         board.move(self, newloc)
-        # print("self.dir.dir", self.dir.dir)
 
     def forward(self) : self.move(0)
     def right(self)   : self.move(1)
@@ -147,50 +163,42 @@ class Player(object):
             if item: print(invtpl % item)
 
     def roomview(self):
-        room      = self.room
-        doorsdir  = copy(self.dir)
-        doors     = doorsdir.ccw(), doorsdir.cw(), doorsdir.cw()
-        doors     = [room.doors[d] for d in doors]
-        doordirs  = ["on the left", "in front", "on the right"]
-
-        doorchars = (doorchar if d else space for d in doors)
-        L         = []
-
-        L.append(self.room.show_doors(doorchars))
+        L = []
+        L.append(self.room.show_doors(self.dir.viewdoors))
         L.append("You enter a room.")
 
         if room.item:
             L.append("You see %s lying on the floor." % a_an(str(room.item)))
 
-        doordirs   = [d[1] for d in zip(doors, doordirs) if d[0]]
-        self.doors = doors
-        self.doors_desc(doordirs, L)
+        self.doormsg(L)
         return L
 
-    def doors_desc(self, doordirs, L):
-        if doordirs:
-            msg = "You see a door "
-            end = " of you."
+    def doormsg(self, lines):
+        descdoors = self.dir.descdoors
+        if descdoors:
+            msg  = "You see a door "
+            end  = " of you."
+            _and = " and "
 
-            if len(doordirs) == 1:
-                msg += first(doordirs) + end
-            elif len(doordirs) == 2:
-                msg += sjoin(doordirs, " and ") + end
+            if len(descdoors) == 1:
+                msg += first(descdoors) + end
+            elif len(descdoors) == 2:
+                msg += sjoin(descdoors, _and) + end
             else:
-                msg += sjoin(doordirs[:2], ", ") + " and %s" + end
-                msg = msg % doordirs[2]
+                last = descdoors.pop()
+                msg += sjoin(descdoors, ", ") + _and + last + end
 
-            L.append(msg)
+            lines.append(msg)
 
 
 class Adv(object):
     pass
 
 class BasicInterface(object):
-    commands = dict(a="left", s="back", w="forward", d="right", p="pickup", i="inventory")
+    commands = dict(a="left", s="back", w="forward", d="right", p="pickup", i="inventory", m="map")
 
     def run(self):
-        self.textinput = TextInput("(a|s|w|d|p|i)")
+        self.textinput = TextInput("(a|s|w|d|p|i|m)")
 
         while True:
             print( nl.join(player.roomview()) )
@@ -200,7 +208,7 @@ class BasicInterface(object):
 
 
 def genitem():
-    for name, chance in sorted(itemchance.items(), key=itemgetter(1)):
+    for name, chance in itemchance.items():
         if random() <= chance:
             return globals()[name]()
 
@@ -210,5 +218,6 @@ def a_an(item):
 
 if __name__ == "__main__":
     board  = AdvBoard(size, space)
-    player = Player(board.center())
+    room   = Room(board.center())
+    player = Player(room)
     BasicInterface().run()
