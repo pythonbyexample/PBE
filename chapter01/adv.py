@@ -15,7 +15,7 @@ from board import StackableBoard, Loc, BaseTile
 roomchance  = Container(door=0.8, shaky_floor=0.01)
 itemchance  = Container(Gem=0.1, Key=0.05, Gold=0.25, Anvil=0.01)
 border      = Container(tl='╭', tr='╮', bl='╰', br='╯', horiz='─', vertical='│')
-size        = 2
+size        = 4
 doorchar    = '⌺'
 roomchar    = '▢'
 player_char = '☺'
@@ -81,7 +81,7 @@ class Room(object):
     def __init__(self, loc):
         self.loc         = loc
         self.doors       = list(self.gendoors())
-        print("self.doors", self.doors)
+        # print("self.doors", self.doors)
         self.item        = genitem()
         self.shaky_floor = bool(random() < roomchance.shaky_floor)
         board[loc]       = self
@@ -101,28 +101,32 @@ class Room(object):
     def show_doors(self, doors):
         d     = "%s"
         h, v  = border.horiz, border.vertical
-        walls = ''.join([h*13, nl, v, space, d, space, v, space, d, space, v, space, d, space, v])
+        walls = ''.join([h*13, nl, v, space, d, space, v, space, d, space, v, space, d, space, v, nl])
         return walls % tuple((doorchar if d else space) for d in doors)
 
 
 class PlayerDir(object):
-    dir = DirLoop(range(4), name="dir")
+    dir      = DirLoop(absdirs, name="dir")
+    bearings = "North East South West".split()
 
     def __init__(self, player):
         self.player = player
         self.update()
+        self.update_doors()
 
     def update(self, dirnum=0):
         self.dir.cw(dirnum)
-
-        room        = self.player.room
         self.absdir = DirLoop(board.dirlist).cw(self.dir.dir)
-        self.doors  = DirLoop(copy(room.doors))
-        self.doors.rotate_cw(self.dir.dir)
 
+    def update_doors(self):
+        self.doors  = DirLoop(copy(self.player.room.doors))
+        self.doors.rotate_cw(self.dir.dir)
         self.viewdoors = [self.doors[d] for d in (3,0,1)]
         descdoors      = ["on the left", "in front", "on the right"]
         self.descdoors = [d[1] for d in zip(self.viewdoors, descdoors) if d[0]]
+
+    def bearing(self):
+        return "Bearing: " + self.bearings[self.dir.dir]
 
 
 class Player(object):
@@ -135,6 +139,7 @@ class Player(object):
         self.loc        = room.loc
         board[self.loc] = self
         self.dir        = PlayerDir(self)
+        self.messages   = []
 
     def __str__(self):
         return player_char
@@ -143,11 +148,13 @@ class Player(object):
         if not self.dir.doors[ndir]:
             print(self.bump_wall)
             return
+        self.messages = ["You enter a room.", nl]
 
         self.dir.update(ndir)
         newloc    = board.nextloc(self, self.dir.absdir)
         self.room = Room(newloc) if board.empty(newloc) else board[newloc]
         board.move(self, newloc)
+        self.dir.update_doors()
 
     def forward(self) : self.move(0)
     def right(self)   : self.move(1)
@@ -155,26 +162,27 @@ class Player(object):
     def left(self)    : self.move(3)
 
     def pickup(self):
-        self.items[self.room.item] += 1
-        self.room.item = None
+        if self.room.item:
+            self.items[self.room.item] += 1
+            self.room.item = None
 
     def inventory(self):
         for item in self.items.items():
-            if item: print(invtpl % item)
+            print(invtpl % item)
 
     def roomview(self):
-        L = []
+        L = self.messages
         L.append(self.room.show_doors(self.dir.viewdoors))
-        L.append("You enter a room.")
 
         if room.item:
             L.append("You see %s lying on the floor." % a_an(str(room.item)))
 
-        self.doormsg(L)
-        return L
+        self.doormsg()
+        return nl.join(L)
 
-    def doormsg(self, lines):
+    def doormsg(self):
         descdoors = self.dir.descdoors
+
         if descdoors:
             msg  = "You see a door "
             end  = " of you."
@@ -188,23 +196,25 @@ class Player(object):
                 last = descdoors.pop()
                 msg += sjoin(descdoors, ", ") + _and + last + end
 
-            lines.append(msg)
+            self.messages.append(msg)
+
+    def map(self):
+        board.draw()
 
 
 class Adv(object):
     pass
 
 class BasicInterface(object):
-    commands = dict(a="left", s="back", w="forward", d="right", p="pickup", i="inventory", m="map")
-
     def run(self):
-        self.textinput = TextInput("(a|s|w|d|p|i|m)")
+        commands = dict(a="left", s="back", w="forward", d="right", p="pickup", i="inventory", m="map")
 
         while True:
-            print( nl.join(player.roomview()) )
-            cmd = self.textinput.getval()
-            getattr(player, self.commands[cmd])()
-            board.draw()
+            print(player.dir.bearing())
+            print(player.roomview())
+            cmd = TextInput("(a|s|w|d|p|i|m)").getval()
+            getattr(player, commands[cmd])()
+            print(nl)
 
 
 def genitem():

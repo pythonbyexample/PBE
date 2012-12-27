@@ -58,6 +58,9 @@ class Loop(object):
         self.item = self.items[self.index]
         setattr(self, self.name, self.items[self.index])
 
+    def __str__(self):
+        return str(self.items)
+
     def __getitem__(self, i):
         return self.items[i]
 
