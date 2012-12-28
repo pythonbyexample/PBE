@@ -14,20 +14,15 @@ from board import StackableBoard, Loc, BaseTile
 
 roomchance  = Container(door=0.8, shaky_floor=0.01)
 itemchance  = Container(Gem=0.1, Key=0.05, Gold=0.25, Anvil=0.01)
-border      = Container(tl='╭', tr='╮', bl='╰', br='╯', horiz='─', vertical='│')
+itemchance  = Container(Gem=0.7, Key=0.5, Gold=0.5, Anvil=0.01)
+
 size        = 4
+lhoriz      = '─'
+lvertical   = '│'
 doorchar    = '⌺'
 roomchar    = '▢'
 player_char = '☺'
 absdirs     = range(4)
-
-"""
-─────────────
-|   |   |   |
-| ⌺ | ⌺ | ⌺ |
-─────────────
-
-"""
 
 
 class Item(BaseTile):
@@ -41,8 +36,8 @@ class Item(BaseTile):
         return self.__class__ == other.__class__
 
     def __str__(self):
-        if self.gold : return "piece of gold"
-        else         : return self.name
+        if self.gold : return "a piece of gold"
+        else         : return a_an(self.name)
 
     def __hash__(self):
         return hash(self.name)
@@ -100,7 +95,7 @@ class Room(object):
 
     def show_doors(self, doors):
         d     = "%s"
-        h, v  = border.horiz, border.vertical
+        h, v  = lhoriz, lvertical
         walls = ''.join([h*13, nl, v, space, d, space, v, space, d, space, v, space, d, space, v, nl])
         return walls % tuple((doorchar if d else space) for d in doors)
 
@@ -132,7 +127,9 @@ class PlayerDir(object):
 class Player(object):
     items     = defaultdict(int)
     invtpl    = "%20s %4d"
-    bump_wall = "You bump into the wall"
+    bump_wall = "You bump into the wall."
+    item_tpl  = "You see %s lying on the floor."
+    pickedup  = "You've picked up %s."
 
     def __init__(self, room):
         self.room       = room
@@ -144,11 +141,15 @@ class Player(object):
     def __str__(self):
         return player_char
 
+    def action(self, cmd):
+        self.messages = [nl]
+        getattr(self, cmd)()
+
     def move(self, ndir):
         if not self.dir.doors[ndir]:
             print(self.bump_wall)
             return
-        self.messages = ["You enter a room.", nl]
+        self.messages.extend(["You enter a room.", nl])
 
         self.dir.update(ndir)
         newloc    = board.nextloc(self, self.dir.absdir)
@@ -162,8 +163,10 @@ class Player(object):
     def left(self)    : self.move(3)
 
     def pickup(self):
-        if self.room.item:
-            self.items[self.room.item] += 1
+        item = self.room.item
+        if item:
+            self.items[item] += 1
+            self.messages.append(self.pickedup % item)
             self.room.item = None
 
     def inventory(self):
@@ -171,14 +174,12 @@ class Player(object):
             print(invtpl % item)
 
     def roomview(self):
-        L = self.messages
-        L.append(self.room.show_doors(self.dir.viewdoors))
+        M = self.messages
+        M.append( self.room.show_doors(self.dir.viewdoors) )
 
-        if room.item:
-            L.append("You see %s lying on the floor." % a_an(str(room.item)))
-
+        if room.item: M.append(self.item_tpl % room.item)
         self.doormsg()
-        return nl.join(L)
+        return nl.join(M)
 
     def doormsg(self):
         descdoors = self.dir.descdoors
@@ -213,8 +214,8 @@ class BasicInterface(object):
             print(player.dir.bearing())
             print(player.roomview())
             cmd = TextInput("(a|s|w|d|p|i|m)").getval()
-            getattr(player, commands[cmd])()
-            print(nl)
+            player.action(commands[cmd])
+            print(nl*5)
 
 
 def genitem():
@@ -227,7 +228,7 @@ def a_an(item):
 
 
 if __name__ == "__main__":
-    board  = AdvBoard(size, space)
+    board  = AdvBoard(size, space, screen_sep=0)
     room   = Room(board.center())
     player = Player(room)
     BasicInterface().run()
