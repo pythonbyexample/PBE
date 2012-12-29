@@ -192,6 +192,10 @@ class BaseBoard(object):
             if n == 1 : break
             if n: n -= 1
 
+    def reset(self):
+        self.board_initialized = False
+        self.init_board()
+
 
 class Board(BaseBoard):
     def __init__(self, size, def_tile, **kwargs):
@@ -250,8 +254,6 @@ class StackableBoard(BaseBoard):
 
     def __getitem__(self, loc):
         self.init_board()
-
-        # print(self.board[loc.y][loc.x])
         return self.board[loc.y][loc.x][-1]
 
     def __setitem__(self, tile_loc, item):
@@ -270,7 +272,7 @@ class StackableBoard(BaseBoard):
         if not self.board_initialized:
             self.board_initialized = True
             xrng, yrng = range(self.width), range(self.height)
-            self.board = [ [[self.make_tile(Loc(x, y))] for x in xrng] for y in yrng ]
+            self.board = [ [ [self.make_tile( Loc(x, y) )] for x in xrng] for y in yrng ]
 
     def items(self, tile_loc):
         loc = self.ploc(tile_loc)

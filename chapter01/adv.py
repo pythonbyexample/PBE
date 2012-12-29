@@ -12,17 +12,19 @@ from copy import copy
 from utils import Loop, Container, TextInput, first, sjoin, nl, space
 from board import StackableBoard, Loc, BaseTile
 
-roomchance  = Container(door=0.8, shaky_floor=0.01)
-itemchance  = Container(Gem=0.1, Key=0.05, Gold=0.25, Anvil=0.01)
-itemchance  = Container(Gem=0.7, Key=0.5, Gold=0.5, Anvil=0.01)
+commands      = dict(a="left", s="back", w="forward", d="right", p="pickup", i="inventory", m="map", l="look")
+roomchance    = Container(door=0.8, shaky_floor=0.01)
+itemchance    = Container(Gem=0.1, Key=0.05, Gold=0.25, Anvil=0.01)
+itemchance    = Container(Gem=0.7, Key=0.5, Gold=0.5, Anvil=0.01)
+crystalchance = 0.01
 
-size        = 15
-lhoriz      = '─'
-lvertical   = '│'
-doorchar    = '⌺'
-roomchar    = '▢'
-player_char = '☺'
-absdirs     = range(4)
+size          = 15
+lhoriz        = '─'
+lvertical     = '│'
+doorchar      = '⌺'
+roomchar      = '▢'
+player_char   = '☺'
+absdirs       = range(4)
 
 
 class Item(BaseTile):
@@ -43,10 +45,11 @@ class Item(BaseTile):
         return hash(self.name)
 
 
-class Gem(Item)   : pass
-class Key(Item)   : pass
-class Gold(Item)  : pass
-class Anvil(Item) : pass
+class Gem(Item)     : pass
+class Key(Item)     : pass
+class Gold(Item)    : pass
+class Anvil(Item)   : pass
+class Crystal(Item) : pass
 
 
 class DirLoop(Loop):
@@ -121,39 +124,58 @@ class PlayerDir(object):
         return "Bearing: " + self.bearings[self.dir.dir]
 
 
+class Msg(object):
+    bump_wall    = "You bump into the wall."
+    item_tpl     = "You see %s lying on the floor."
+    pickedup     = "You pick up %s."
+    shfloor      = "This room appears to have a shaky floor."
+    ent_room     = "You enter a room."
+    fall_through = "The floor can no longer hold your weight and starts breaking up into pieces; " \
+                   "you fall down through the floor."
+
+    win          = "You have found the goal of your journey: the Crystal of Light and Darkness! " \
+                   "You activate its teleportation ability and it brings you back home, safe and sound." \
+                   "\n\nThe End."
+
+
 class Player(object):
     items     = defaultdict(int)
     invtpl    = "%20s %4d"
-    bump_wall = "You bump into the wall."
-    item_tpl  = "You see %s lying on the floor."
-    pickedup  = "You pick up %s."
 
     def __init__(self, room):
         self.room       = room
         self.loc        = room.loc
         board[self.loc] = self
         self.dir        = PlayerDir(self)
-        self.messages   = []
 
     def __str__(self):
         return player_char
 
-    def action(self, cmd):
-        self.messages = [nl]
-        getattr(self, cmd)()
-
     def move(self, ndir):
         if not self.dir.doors[ndir]:
-            print(self.bump_wall)
+            print(Msg.bump_wall)
             return
-        self.messages.extend([nl*5, "You enter a room."])
 
+        M = [nl*5, Msg.ent_room]    # messages for the player
         self.dir.update(ndir)
         newloc    = board.nextloc(self, self.dir.absdir)
         self.room = Room(newloc) if board.empty(newloc) else board[newloc]
+
         board.move(self, newloc)
         self.dir.update_doors()
-        print(self.roomview())
+        self.roomview(M)
+
+        if self.room.shaky_floor and any(i.anvil for i in self.items):
+            self.next_level()
+
+        print(nl.join(M))
+
+    def next_level(self):
+        M.append(Msg.fall_through)
+        board.reset()
+        self.room = Room(board.center())
+        self.loc  = self.room.loc
+        itemchance["Crystal"] = crystalchance
 
     def forward(self) : self.move(0)
     def right(self)   : self.move(1)
@@ -164,26 +186,33 @@ class Player(object):
         item = self.room.item
         if item:
             self.items[item] += 1
-            print(self.pickedup % item)
+            print(Msg.pickedup % item)
             self.room.item = None
+
+            if item.crystal:
+                print(Msg.win)
+                sys.exit()
 
     def inventory(self):
         for item in self.items.items():
             print(self.invtpl % item)
 
-    def roomview(self):
-        M    = self.messages
+    def roomview(self, M=None):
+        M = M or []
         room = self.room
-        M.extend( [self.dir.bearing(), nl, room.show_doors(self.dir.viewdoors)] )
+        M.extend( [self.dir.bearing(), nl, room.show_doors(self.dir.viewdoors) + nl] )
 
-        if room.item: M.append(self.item_tpl % room.item)
-        self.doormsg()
-        return nl.join(M)
+        if room.item        : M.append(Msg.item_tpl % room.item)
+        if room.shaky_floor : M.append(Msg.shfloor)
+
+        self.doormsg(M)
+        return M
 
     def look(self):
-        print(nl*5, self.roomview())
+        print(nl*5)
+        print(nl.join(self.roomview()))
 
-    def doormsg(self):
+    def doormsg(self, messages):
         descdoors = copy(self.dir.descdoors)
 
         if descdoors:
@@ -199,7 +228,7 @@ class Player(object):
                 last = descdoors.pop()
                 msg += sjoin(descdoors, ", ") + _and + last + end
 
-            self.messages.append(msg)
+            messages.append(msg)
 
     def map(self):
         board.draw()
@@ -208,14 +237,14 @@ class Player(object):
 class Adv(object):
     pass
 
+
 class BasicInterface(object):
     def run(self):
-        commands = dict(a="left", s="back", w="forward", d="right", p="pickup", i="inventory", m="map", l="look")
         print(player.roomview())
 
         while True:
             cmd = TextInput("(a|s|w|d|p|i|m|l)").getval()
-            player.action(commands[cmd])
+            getattr(player, commands[cmd])()
 
 
 def genitem():
