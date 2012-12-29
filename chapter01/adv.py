@@ -4,6 +4,7 @@
 """ a text adventure game
 """
 
+import sys
 from random import randint, random
 from random import choice as randchoice
 from collections import defaultdict
@@ -13,10 +14,10 @@ from utils import Loop, Container, TextInput, first, sjoin, nl, space
 from board import StackableBoard, Loc, BaseTile
 
 commands      = dict(a="left", s="back", w="forward", d="right", p="pickup", i="inventory", m="map", l="look")
-roomchance    = Container(door=0.8, shaky_floor=0.01)
+roomchance    = Container(door=0.8, shaky_floor=0.1)
 itemchance    = Container(Gem=0.1, Key=0.05, Gold=0.25, Anvil=0.01)
-itemchance    = Container(Gem=0.7, Key=0.5, Gold=0.5, Anvil=0.01)
-crystalchance = 0.01
+itemchance    = Container(Gem=0.1, Key=0.1, Gold=0.1, Anvil=0.2)
+crystalchance = 0.1
 
 size          = 15
 lhoriz        = '─'
@@ -28,7 +29,7 @@ absdirs       = range(4)
 
 
 class Item(BaseTile):
-    gem = key = gold = anvil = False
+    gem = key = gold = anvil = crystal = False
 
     def __init__(self):
         super().__init__(self)
@@ -156,7 +157,7 @@ class Player(object):
             print(Msg.bump_wall)
             return
 
-        M = [nl*5, Msg.ent_room]    # messages for the player
+        M = [Msg.ent_room]    # messages for the player
         self.dir.update(ndir)
         newloc    = board.nextloc(self, self.dir.absdir)
         self.room = Room(newloc) if board.empty(newloc) else board[newloc]
@@ -166,15 +167,17 @@ class Player(object):
         self.roomview(M)
 
         if self.room.shaky_floor and any(i.anvil for i in self.items):
-            self.next_level()
+            self.next_level(M)
 
         print(nl.join(M))
 
-    def next_level(self):
-        M.append(Msg.fall_through)
+    def next_level(self, messages):
+        messages.append(Msg.fall_through)
         board.reset()
-        self.room = Room(board.center())
-        self.loc  = self.room.loc
+
+        self.room             = Room(board.center())
+        self.loc              = self.room.loc
+        board[self.loc]       = self
         itemchance["Crystal"] = crystalchance
 
     def forward(self) : self.move(0)
@@ -200,7 +203,7 @@ class Player(object):
     def roomview(self, M=None):
         M = M or []
         room = self.room
-        M.extend( [self.dir.bearing(), nl, room.show_doors(self.dir.viewdoors) + nl] )
+        M[:] = [nl*5, room.show_doors(self.dir.viewdoors) + nl] + M + [self.dir.bearing()]
 
         if room.item        : M.append(Msg.item_tpl % room.item)
         if room.shaky_floor : M.append(Msg.shfloor)
@@ -240,7 +243,7 @@ class Adv(object):
 
 class BasicInterface(object):
     def run(self):
-        print(player.roomview())
+        player.look()
 
         while True:
             cmd = TextInput("(a|s|w|d|p|i|m|l)").getval()
