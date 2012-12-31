@@ -91,6 +91,7 @@ def genitem():
         if random() <= chance:
             return locals()[name]()
 
+
 if __name__ == "__main__":
     board  = AdvBoard()
     player = Player(board.center())

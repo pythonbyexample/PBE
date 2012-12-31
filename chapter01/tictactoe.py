@@ -36,7 +36,7 @@ class Tictactoe(object):
             lines.append( [Loc(n, m) for m in range(size)] )
 
             diag1.append(Loc(n, n))
-            diag2.append(Loc(2-n, n))
+            diag2.append(Loc(size-n-1, n))
 
         return lines + [diag1, diag2]
 
