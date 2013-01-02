@@ -2,7 +2,7 @@
 # -*- encoding: utf-8 -*-
 
 import sys
-from random import choice as rndchoice
+from random import choice as randchoice
 from itertools import cycle
 
 from board import Loc, Board
@@ -17,7 +17,7 @@ class TictactoeBoard(Board):
         return not any(tile==blank for tile in self)
 
     def random_blank(self):
-        return rndchoice( [loc for loc in self.locations() if self[loc] == blank] )
+        return randchoice( [loc for loc in self.locations() if self[loc] == blank] )
 
     def completed(self, line, item):
         return all(self[loc] == item for loc in line)

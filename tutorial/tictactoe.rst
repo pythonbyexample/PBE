@@ -4,6 +4,10 @@ TicTacToe
 Since TicTacToe is a very simple but not a very interesting game, this chapter will be more of a
 simulation than a full game; there will be no user input, just the AI playing itself.
 
+This chapter is meant for readers with some degree of experience in Python and other languages;
+if you are just starting out, please navigate to the next chapter which covers the same
+material in much greater detail.
+
 You can view or download the code here:
 
 https://github.com/pythonbyexample/PBE/tree/master/code/tictactoe.py
@@ -107,19 +111,32 @@ The board will need to do three simple things:
             return not any( self[loc] == blank for loc in self.locations() )
 
         def random_blank(self):
-            return rndchoice( [loc for loc in self.locations() if self[loc] == blank] )
+            return randchoice( [loc for loc in self.locations() if self[loc] == blank] )
 
         def completed(self, line, item):
             return all(self[loc] == item for loc in line)
 
 The method `self.locations()` returns the list of all locations in the board; `blank` is a
-character constant '.' used to show blank locations; `rndchoice()` is aliased from python's
+character constant '.' used to show blank locations; `randchoice()` is aliased from python's
 `random.choice()`.
 
 The built-ins `all()` and `any()` are both extremely useful, especially when used with list
 comprehensions or generators. The first of these returns True if all items in the list are True;
 the second returns True if at least a single item in the list is True. For an empty list, `any()`
 returns False, `all()` returns True.
+
+
+Configuration
+-------------
+
+At the top of file, you can set the size of the Board, blank character (it's
+best not to set it to space to let you see the size of the Board), and two single-character
+players::
+
+    size    = 3
+    blank   = '.'
+    players = 'XO'
+
 
 Here's the 'screenshot' of a sample run, with some of the padding removed::
 
