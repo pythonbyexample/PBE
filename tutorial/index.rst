@@ -18,6 +18,7 @@ Welcome to Lark's Tongue Guide to Python!
     slots
     flashcards
     tictactoe
+    tictactoe2
     achief
     blockyblocks
     sudoku
