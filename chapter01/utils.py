@@ -285,6 +285,42 @@ class Container:
     def values(self)               : return self.__dict__.values()
 
 
+class BIterator(object):
+    """Iterator with 'buffered' takewhile."""
+
+    def __init__(self, seq):
+        self.seq        = iter(seq)
+        self.buffer     = []
+        self.end_marker = object()
+        self.last       = None
+
+    def consume(self, n):
+        for _ in range(n): self.next()
+
+    def next(self):
+        val = self.buffer.pop() if self.buffer else next(self.seq, self.end_marker)
+        self.last = val
+        return val
+
+    def takewhile(self, test):
+        lst = []
+        while True:
+            val = self.next()
+            if val is self.end_marker:
+                return lst
+            elif test(val):
+                lst.append(val)
+            else:
+                self.buffer.append(val)
+                return lst
+
+    def joined_takewhile(self, test):
+        return ''.join(self.takewhile(test))
+
+    def done(self):
+        return bool(self.last is self.end_marker)
+
+
 # ==== Functions =======================================================
 
 def ujoin(iterable, sep=' ', tpl='%s'):
