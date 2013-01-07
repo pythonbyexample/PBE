@@ -158,8 +158,8 @@ class TextInput(object):
                    (" "    , " *"),
                     )
 
-    def __init__(self, formats=None, board=None, options=(), prompt="> ", quit_key='q', accept_blank=False, invalid_inp=None,
-                 singlechar_cmds=False):
+    def __init__(self, formats=None, board=None, prompt="> ", quit_key='q', accept_blank=False,
+                 invalid_inp=None, singlechar_cmds=False):
         try              : is_str = isinstance(formats, basestring)
         except NameError : is_str = isinstance(formats, str)
 
@@ -167,7 +167,6 @@ class TextInput(object):
 
         self.board           = board
         self.formats         = formats
-        self.options         = options
         self.prompt          = prompt
         self.quit_key        = quit_key
         self.accept_blank    = accept_blank
@@ -197,11 +196,11 @@ class TextInput(object):
         formats = formats or self.formats
 
         while True:
-            # return self.parse_input(formats)
-            try:
-                return self.parse_input(formats)
-            except (IndexError, ValueError, TypeError, KeyError):
-                print(self.invalid_inp)
+            return self.parse_input(formats)
+            # try:
+                # return self.parse_input(formats)
+            # except (IndexError, ValueError, TypeError, KeyError) as e:
+                # print(self.invalid_inp)
 
     def matchfmt(self, fmt, inp):
         for init, repl in self.regexes:
@@ -214,6 +213,7 @@ class TextInput(object):
 
         fmt      = fmt.split()
         inp      = copy(inp)
+        print("inp", inp)
         commands = []
         handlers = {"%d": int, "%f": float, "%s": str}
         regexes  = dict(self.regexes)
@@ -265,7 +265,13 @@ class TextInput(object):
         if self.singlechar_cmds:
             inp = inp.replace(space, '')
 
-        inp      = inp.split() if space in inp else list(inp)
+        if space in inp:
+            inp = inp.split()
+        elif len(formats) > 1:
+            inp = list(inp)
+        else:
+            inp = [inp]
+
         commands = self.parse_fmt(inp, fmt)
         return commands
 
