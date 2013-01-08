@@ -1,0 +1,35 @@
+List comprehensions are easy
+
+:sleep 2
+
+List comprehensions let you process and filter lists with minimal effort
+
+:sleep 5
+
+Let's make a small list:
+
+    >>> lst = range(20)
+
+:sleep 5
+
+Now let's make a simple list comprehension that does not do ANYTHING:
+
+    >>> [i for i in lst]
+
+:sleep 5
+
+This should give you a good idea of what elements you can have in a list
+comprehension and where they are. In the example above, both elements are
+absent, but you can have a processing element and a filter element:
+
+    [process(i) for i in lst if filter(i)]
+
+:sleep 12
+
+Let's look at what you can do with the filter element:
+
+    >>> [i for i in lst if i>5]
+
+:sleep 5
+
+    >>> [i for i in lst if i<5 or i>15]
