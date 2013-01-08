@@ -3,7 +3,7 @@
 import sys
 import re
 from copy import copy
-from random import randint
+from random import randint, shuffle
 from itertools import zip_longest
 
 sentinel = object()
@@ -283,6 +283,7 @@ class Container:
     def __getitem__(self, k)       : return self.__dict__[k]
     def __iter__(self)             : return iter(self.__dict__)
     def __nonzero__(self)          : return bool(self.__dict__)
+    def __bool__(self)             : return bool(self.__dict__)
     def pop(self, *args, **kwargs) : return self.__dict__.pop(*args, **kwargs)
     def get(self, *args, **kwargs) : return self.__dict__.get(*args, **kwargs)
     def update(self, arg)          : return self.__dict__.update(arg)
@@ -430,3 +431,7 @@ def grouper(n, iterable, fillvalue=None):
     # grouper(3, 'ABCDEFG', 'x') --> ABC DEF Gxx
     args = [iter(iterable)] * n
     return zip_longest(fillvalue=fillvalue, *args)
+
+def shuffled(lst):
+    shuffle(lst)
+    return lst

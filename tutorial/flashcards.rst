@@ -25,11 +25,10 @@ The `__init__()` method parses the card's front and back text:
 
 .. sourcecode:: python
 
-    def __init__(self, cards, card):
+    def __init__(self, card):
         front, back = card.split(sep, 1)
         self.front  = front.strip()
         self.back   = back.strip()
-        cards.append(self)
 
 In the `draw()` method, we need to print the card front and status, pause for the user, print the
 back and status again, and finally return `True` if the user got the card right.
@@ -84,11 +83,12 @@ method goes over each line and passes it to `Card` to create the flashcard.
         with open(fname) as fp:
             for line in fp:
                 if line.strip():
-                    Card(self.cards, line)
+                    self.cards.append(Card(line))
 
-The `run()` method does some simple stats reporting and generates a new randomized list of cards
-every time it runs out of them (using the `get_cards()` method), so that you have to go over the
-entire set of cards without repeating them before you have to start over.
+The `run()` method does some simple stats reporting and generates a new randomized list of
+cards every time it runs out of them (using `copy.copy()` and `utils.shuffled()` functions), so
+that you have to go over the entire set of cards without repeating them before you have to
+start over.
 
 .. sourcecode:: python
 
@@ -96,17 +96,12 @@ entire set of cards without repeating them before you have to start over.
         right = cards = total = 0
 
         while True:
-            cards   = cards or self.get_cards()
+            cards   = cards or shuffled(copy(self.cards))
             percent = (right/total*100.0) if total else 0
             stat    = status % (right, total, percent)
 
             right += int( cards.pop().draw(stat) )
             total += 1
-
-    def get_cards(self):
-        cards = copy(self.cards)
-        shuffle(cards)
-        return cards
 
 This code is not very efficient since it creates two copies of the `cards` list; it should be fine
 for this script as you'll usually have a small number of cards, but you should not that this
@@ -124,6 +119,7 @@ otherwise the default cards.txt is used. Filename argument processing is handled
     if not exists(fname):
         print("Error: %s could not be found" % fname)
         sys.exit()
+
 
 Screenshots
 -----------
