@@ -8,12 +8,11 @@
 
 import sys
 from os.path import exists
-from random import shuffle
 from textwrap import wrap
 from time import sleep
 from copy import copy
 
-from utils import TextInput, Container, getitem, nl, space
+from utils import TextInput, Container, shuffled, getitem, nl, space
 
 
 width     = 78
@@ -29,11 +28,10 @@ textinput = Container(question = TextInput(accept_blank=True, prompt=question),
 
 
 class Card(object):
-    def __init__(self, cards, card):
+    def __init__(self, card):
         front, back = card.split(sep, 1)
         self.front  = front.strip()
         self.back   = back.strip()
-        cards.append(self)
 
     def draw(self, status_msg):
         print(nl*screensep)
@@ -67,23 +65,18 @@ class Flashcards(object):
         with open(fname) as fp:
             for line in fp:
                 if line.strip():
-                    Card(self.cards, line)
+                    self.cards.append(Card(line))
 
     def run(self):
         right = cards = total = 0
 
         while True:
-            cards   = cards or self.get_cards()
+            cards   = cards or shuffled(copy(self.cards))
             percent = (right/total*100.0) if total else 0
             stat    = status % (right, total, percent)
 
             right += int( cards.pop().draw(stat) )
             total += 1
-
-    def get_cards(self):
-        cards = copy(self.cards)
-        shuffle(cards)
-        return cards
 
 
 if __name__ == "__main__":

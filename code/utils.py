@@ -3,7 +3,7 @@
 import sys
 import re
 from copy import copy
-from random import randint
+from random import randint, shuffle
 from itertools import zip_longest
 
 sentinel = object()
@@ -57,6 +57,15 @@ class Loop(object):
     def update_attr(self):
         self.item = self.items[self.index]
         setattr(self, self.name, self.items[self.index])
+
+    def __str__(self):
+        return str(self.items)
+
+    def __getitem__(self, i):
+        return self.items[i]
+
+    def __setitem__(self, i, val):
+        self.items[i] = val
 
     def __eq__(self, value):
         return bool(self.item == value)
@@ -149,8 +158,8 @@ class TextInput(object):
                    (" "    , " *"),
                     )
 
-    def __init__(self, formats=None, board=None, options=(), prompt="> ", quit_key='q', accept_blank=False, invalid_inp=None,
-                 singlechar_cmds=False):
+    def __init__(self, formats=None, board=None, prompt="> ", quit_key='q', accept_blank=False,
+                 invalid_inp=None, singlechar_cmds=False):
         try              : is_str = isinstance(formats, basestring)
         except NameError : is_str = isinstance(formats, str)
 
@@ -158,7 +167,6 @@ class TextInput(object):
 
         self.board           = board
         self.formats         = formats
-        self.options         = options
         self.prompt          = prompt
         self.quit_key        = quit_key
         self.accept_blank    = accept_blank
@@ -188,11 +196,11 @@ class TextInput(object):
         formats = formats or self.formats
 
         while True:
-            # return self.parse_input(formats)
-            try:
-                return self.parse_input(formats)
-            except (IndexError, ValueError, TypeError, KeyError):
-                print(self.invalid_inp)
+            return self.parse_input(formats)
+            # try:
+                # return self.parse_input(formats)
+            # except (IndexError, ValueError, TypeError, KeyError) as e:
+                # print(self.invalid_inp)
 
     def matchfmt(self, fmt, inp):
         for init, repl in self.regexes:
@@ -205,6 +213,7 @@ class TextInput(object):
 
         fmt      = fmt.split()
         inp      = copy(inp)
+        print("inp", inp)
         commands = []
         handlers = {"%d": int, "%f": float, "%s": str}
         regexes  = dict(self.regexes)
@@ -256,7 +265,13 @@ class TextInput(object):
         if self.singlechar_cmds:
             inp = inp.replace(space, '')
 
-        inp      = inp.split() if space in inp else list(inp)
+        if space in inp:
+            inp = inp.split()
+        elif len(formats) > 1:
+            inp = list(inp)
+        else:
+            inp = [inp]
+
         commands = self.parse_fmt(inp, fmt)
         return commands
 
@@ -268,12 +283,56 @@ class Container:
     def __getitem__(self, k)       : return self.__dict__[k]
     def __iter__(self)             : return iter(self.__dict__)
     def __nonzero__(self)          : return bool(self.__dict__)
+    def __bool__(self)             : return bool(self.__dict__)
     def pop(self, *args, **kwargs) : return self.__dict__.pop(*args, **kwargs)
     def get(self, *args, **kwargs) : return self.__dict__.get(*args, **kwargs)
     def update(self, arg)          : return self.__dict__.update(arg)
     def items(self)                : return self.__dict__.items()
     def keys(self)                 : return self.__dict__.keys()
     def values(self)               : return self.__dict__.values()
+
+
+class BufferedIterator(object):
+    """Iterator with 'buffered' takewhile and takeuntil."""
+
+    def __init__(self, seq):
+        self.seq        = iter(seq)
+        self.end_marker = object()
+        self.buffer     = []
+        self.last       = None
+
+    def __bool__(self):
+        return self.last is not self.end_marker
+
+    def __next__(self):
+        self.last = self.buffer.pop() if self.buffer else next(self.seq, self.end_marker)
+        return self.last
+
+    def consume(self, n):
+        for _ in range(n): next(self)
+
+    def takewhile(self, test):
+        lst = []
+        while True:
+            val = next(self)
+
+            if val is self.end_marker:
+                return lst
+            elif test(val):
+                lst.append(val)
+            else:
+                self.buffer.append(val)
+                return lst
+
+    def takeuntil(self, test):
+        """Return items BEFORE the item for which `test` passes."""
+        return self.takewhile(lambda x: not test(x))
+
+    def joined_takewhile(self, test):
+        return ''.join(self.takewhile(test))
+
+    def joined_takeuntil(self, test):
+        return ''.join(self.takeuntil(test))
 
 
 # ==== Functions =======================================================
@@ -372,3 +431,7 @@ def grouper(n, iterable, fillvalue=None):
     # grouper(3, 'ABCDEFG', 'x') --> ABC DEF Gxx
     args = [iter(iterable)] * n
     return zip_longest(fillvalue=fillvalue, *args)
+
+def shuffled(lst):
+    shuffle(lst)
+    return lst
