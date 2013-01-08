@@ -285,27 +285,30 @@ class Container:
     def values(self)               : return self.__dict__.values()
 
 
-class BIterator(object):
-    """Iterator with 'buffered' takewhile."""
+class BufferedIterator(object):
+    """Iterator with 'buffered' takewhile and takeuntil."""
 
     def __init__(self, seq):
         self.seq        = iter(seq)
-        self.buffer     = []
         self.end_marker = object()
+        self.buffer     = []
         self.last       = None
 
-    def consume(self, n):
-        for _ in range(n): self.next()
+    def __bool__(self):
+        return self.last is not self.end_marker
 
-    def next(self):
-        val = self.buffer.pop() if self.buffer else next(self.seq, self.end_marker)
-        self.last = val
-        return val
+    def __next__(self):
+        self.last = self.buffer.pop() if self.buffer else next(self.seq, self.end_marker)
+        return self.last
+
+    def consume(self, n):
+        for _ in range(n): next(self)
 
     def takewhile(self, test):
         lst = []
         while True:
-            val = self.next()
+            val = next(self)
+
             if val is self.end_marker:
                 return lst
             elif test(val):
@@ -314,11 +317,15 @@ class BIterator(object):
                 self.buffer.append(val)
                 return lst
 
+    def takeuntil(self, test):
+        """Return items BEFORE the item for which `test` passes."""
+        return self.takewhile(lambda x: not test(x))
+
     def joined_takewhile(self, test):
         return ''.join(self.takewhile(test))
 
-    def done(self):
-        return bool(self.last is self.end_marker)
+    def joined_takeuntil(self, test):
+        return ''.join(self.takeuntil(test))
 
 
 # ==== Functions =======================================================
