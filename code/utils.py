@@ -235,6 +235,7 @@ class TextInput(object):
                 if nomatch( ujoin(inp[:2]) ):
                     continue
                 else:
+                    # print("inp", inp)
                     x, y = inp.pop(0), inp.pop(0)
                     loc = Loc( int(x)-1, int(y)-1 )
                     if self.board and not self.board.valid(loc):
@@ -268,10 +269,10 @@ class TextInput(object):
 
         if space in inp:
             inp = inp.split()
-        elif fmt == "loc":
-            inp = list(inp)
+        # elif fmt == "loc":
         else:
-            inp = [inp]
+            inp = list(inp)
+            # inp = [inp]
 
         commands = self.parse_fmt(inp, fmt)
         return commands
