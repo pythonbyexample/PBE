@@ -141,6 +141,7 @@ class TextInput(object):
     invalid_inp  = "Invalid input"
     invalid_move = "Invalid move"
     formats      = ("loc",)
+    choice_tpl   = "%2d) %s"
 
     # needs to be in precise order for matchfmt() method
     regexes     = (
@@ -196,11 +197,11 @@ class TextInput(object):
         formats = formats or self.formats
 
         while True:
-            return self.parse_input(formats)
-            # try:
-                # return self.parse_input(formats)
-            # except (IndexError, ValueError, TypeError, KeyError) as e:
-                # print(self.invalid_inp)
+            # return self.parse_input(formats)
+            try:
+                return self.parse_input(formats)
+            except (IndexError, ValueError, TypeError, KeyError) as e:
+                print(self.invalid_inp)
 
     def matchfmt(self, fmt, inp):
         for init, repl in self.regexes:
@@ -213,7 +214,6 @@ class TextInput(object):
 
         fmt      = fmt.split()
         inp      = copy(inp)
-        print("inp", inp)
         commands = []
         handlers = {"%d": int, "%f": float, "%s": str}
         regexes  = dict(self.regexes)
@@ -274,6 +274,15 @@ class TextInput(object):
 
         commands = self.parse_fmt(inp, fmt)
         return commands
+
+    def menu(self, choices):
+        self.choices = choices
+        for c in enumerate1(choices):
+            print(self.choice_tpl % c)
+
+        fmt = "(%s)" % sjoin( range1(len(choices)), '|' )
+        self.formats = [fmt]
+        return int(self.getval()) - 1
 
 
 class Container:
