@@ -15,9 +15,7 @@ stat_tpl     = " %s   %s"
 resetchar    = '\r'
 update_speed = 8        # for progress bar
 
-# for x in range(5): print(TextInput().menu("abcdefgabcdefgab"))
-# nnoremap \s ^2daWk$xkk$xjddkP<<JJJ
-# nnoremap \S ^/if<cr>hs<cr><esc>/else<cr>hs<cr><esc>ea:<cr><esc>kkA:<esc>kddp>>2yaWjjP
+for x in range(5): print(TextInput().menu("abcdefgabcdefgab"))
 
 
 class Tutorial(object):

@@ -4,7 +4,7 @@ import sys
 import re
 from copy import copy
 from random import randint, shuffle
-from itertools import zip_longest
+from itertools import zip_longest, takewhile
 
 sentinel = object()
 space    = ' '
@@ -138,10 +138,11 @@ class TextInput(object):
 
         Note: location is accepted in "human format", i.e. it's adjusted from 1-indexed to 0-indexed.
     """
-    invalid_inp  = "Invalid input"
-    invalid_move = "Invalid move"
-    formats      = ("loc",)
-    choice_tpl   = "%2d) %s"
+    invalid_inp    = "Invalid input"
+    invalid_move   = "Invalid move"
+    formats        = ("loc",)
+    choice_tpl     = "%2d) %s"
+    explicit_split = True       # input contained spaces & it was possible to explicitly split values
 
     # needs to be in precise order for matchfmt() method
     regexes     = (
@@ -198,10 +199,8 @@ class TextInput(object):
 
         while True:
             # return self.parse_input(formats)
-            try:
-                return self.parse_input(formats)
-            except (IndexError, ValueError, TypeError, KeyError) as e:
-                print(self.invalid_inp)
+            try: return self.parse_input(formats)
+            except (IndexError, ValueError, TypeError, KeyError) as e: print(self.invalid_inp)
 
     def matchfmt(self, fmt, inp):
         for init, repl in self.regexes:
@@ -217,6 +216,7 @@ class TextInput(object):
         commands = []
         handlers = {"%d": int, "%f": float, "%s": str}
         regexes  = dict(self.regexes)
+        isdigit  = lambda x: x.isdigit()
 
         def nomatch(val): return bool( optional and not re.match(regex, val) )
 
@@ -240,13 +240,40 @@ class TextInput(object):
                         raise IndexError
                     commands.append(loc)
 
-            elif code == "%hd":     # 'human' format, 1-indexed, integer
-                if nomatch(first(inp)) : continue
-                else                   : commands.append( int(inp.pop(0)) - 1 )
+            # int and 'human format' (1-indexed) int
+            elif code in ("%d", "%hd"):
+                if nomatch(first(inp)):
+                    continue
+                else:
+                    if self.explicit_split:
+                        n = inp.pop(0)
+                    else:
+                        n = list(takewhile(isdigit, iter(inp)))
+                        n = sjoin(n, '')
+                        inp = inp[len(n):]
+                    n = int(n) if code=="%d" else int(n)-1
+                    commands.append(n)
 
             else:
-                if nomatch(first(inp)) : continue
-                else                   : commands.append( handlers.get(code, str)(inp.pop(0)) )
+                if nomatch(first(inp)) :
+                    continue
+                else:
+                    if self.explicit_split:
+                        val = inp.pop(0)
+                    else:
+                        val = []
+
+                        def match(x):
+                            pat = sjoin(val, sep='') + x
+                            if re.match(regex, pat):
+                                val.append(x)
+                                return True
+
+                        val = list(takewhile(match, iter(inp)))
+                        val = sjoin(val, '')
+                        inp = inp[len(val):]
+
+                    commands.append( handlers.get(code, str)(val) )
 
         if inp: raise ValueError
         return commands
@@ -267,10 +294,9 @@ class TextInput(object):
 
         if space in inp:
             inp = inp.split()
-        elif len(formats) > 1:
-            inp = list(inp)
         else:
-            inp = [inp]
+            inp = list(inp)
+            self.explicit_split = False
 
         commands = self.parse_fmt(inp, fmt)
         return commands
