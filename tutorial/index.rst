@@ -24,3 +24,4 @@ Welcome to Lark's Tongue Guide to Python!
     sudoku
     battleship
     words
+    mines

@@ -20,7 +20,7 @@ hitchar    = '♈'
 padding    = 2, 1
 
 players    = [1, 2]
-ai_players = [1, 2]
+ai_players = [1, ]
 divider    = '-' * (size[0] * 4 + 6)
 
 

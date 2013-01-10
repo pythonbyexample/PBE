@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- encoding: utf-8 -*-
 
 import sys
 import re
@@ -59,7 +60,7 @@ class Loop(object):
         setattr(self, self.name, self.items[self.index])
 
     def __str__(self):
-        return str(self.items)
+        return str(self.item)
 
     def __getitem__(self, i):
         return self.items[i]
@@ -234,6 +235,7 @@ class TextInput(object):
                 if nomatch( ujoin(inp[:2]) ):
                     continue
                 else:
+                    # print("inp", inp)
                     x, y = inp.pop(0), inp.pop(0)
                     loc = Loc( int(x)-1, int(y)-1 )
                     if self.board and not self.board.valid(loc):
@@ -470,3 +472,8 @@ def grouper(n, iterable, fillvalue=None):
 def shuffled(lst):
     shuffle(lst)
     return lst
+
+def progress_bar(value, total, size=78, char='∘', border='||'):
+    inside = size - 2
+    tpl    = "%s%%-%ds%s" % (border[0], inside, border[1])
+    return tpl % (char * iround(inside * value/total))

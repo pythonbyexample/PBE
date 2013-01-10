@@ -37,5 +37,5 @@ class BasicInterface(object):
 if __name__ == "__main__":
     board = MinesBoard(size, Tile, num_mines=num_mines, num_grid=True, padding=padding)
     mines = Mines(board)
-    try: BasicInterface().run()
-    except KeyboardInterrupt: pass
+    try                      : BasicInterface().run()
+    except KeyboardInterrupt : pass
