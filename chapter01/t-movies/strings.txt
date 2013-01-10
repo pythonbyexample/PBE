@@ -7,44 +7,128 @@ Let's make a simple string:
 :type
     >>> s = "Large space rock flies past Earth"
 
+:pause 6
+
+You can count the number of characters:
+
+:type
     >>> s.count('a')
     4
+
+:pause 4
+
+You can check if a string ends with something or not:
+
+:type
     >>> s.endswith("Earth")
     True
+
+:type
     >>> s.endswith("Mars")
     False
+
+:pause 4
+
+.. or starts with a substring:
+
+:type
     >>> s.startswith("La")
     True
+
+:pause 4
+
+You can also find the location of a substring:
+
+:type
+    >>> s = "Large space rock flies past Earth"
     >>> s.find('s')
     6
+
+:pause 4
+
+If not found, -1 is returned:
+
+:type
     >>> s.find('z')
     -1
-    >>> s.index('z')
-    Traceback (most recent call last):
-      File "<stdin>", line 1, in <module>
-    ValueError: substring not found
-    >>> s.index('s')
-    6
-    >>> s.isalnum()
-    False
-    >>> s.islower()
-    False
-    >>> s.isprintable()
-    True
-    >>> s.istitle()
-    False
-    >>> s.isupper()
-    False
-    >>> s.lower()
-    'large space rock flies past earth'
-    >>> s.lstrip('La')
-    'rge space rock flies past Earth'
-    >>> s.replace("Large", "Small")
-    'Small space rock flies past Earth'
+
+:pause 4
+
+.. of course you can also find from right:
+
+:type
     >>> s.rfind('a')
     29
+
+:pause 4
+
+You can check if it's alphanumeric (False because we have spaces in our string):
+
+:type
+    >>> s.isalnum()
+    False
+
+:pause 4
+
+You can check if it's all lower case:
+
+:type
+    >>> s.islower()
+    False
+
+:pause 4
+
+.. or upper case:
+
+:type
+    >>> s.isupper()
+    False
+
+:pause 4
+
+.. or if all characters are printable:
+
+:type
+    >>> s.isprintable()
+    True
+
+:pause 4
+
+You can also convert to lowercase or uppercase:
+
+:type
+    >>> s.lower()
+    'large space rock flies past earth'
+
+:pause 4
+
+You can strip characters:
+
+:type
+    >>> "abba is a swedish band".lstrip('ab')
+    ' is a swedish band'
+
+:pause 4
+
+(I've used a different string to demonstrate that multiple instances
+of given characters are stripped)
+
+One of the most useful methods is replace():
+
+:type
+    >>> s.replace("Large", "Small")
+    'Small space rock flies past Earth'
+
+:pause 4
+
+Justifying is also very easy to do:
+
+:type
     >>> s.ljust(50)
     'Large space rock flies past Earth                 '
+
+:type
     >>> s.rjust(50)
     '                 Large space rock flies past Earth'
 
+:pause 4

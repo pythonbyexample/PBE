@@ -49,7 +49,7 @@ class Tutorial(object):
                 elif cmd == ":type"  : self.typeblock = True
 
             else:
-                self.display(section.lstrip())
+                self.display(section.lstrip(nl))
 
         print(nl*2, "----- END -----", nl*2)
 
