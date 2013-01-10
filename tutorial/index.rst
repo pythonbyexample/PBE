@@ -25,3 +25,4 @@ Welcome to Lark's Tongue Guide to Python!
     battleship
     words
     mines
+    betelgeuse

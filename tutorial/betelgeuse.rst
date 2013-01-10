@@ -75,7 +75,7 @@ out the status message (current turn).
     class BetelgeuseBoard(Board):
         stat = "turn: %d"
 
-        def random_blank(self) : return rndchoice(self.locations("blank"))
+        def random_blank(self) : return randchoice(self.locations("blank"))
         def status(self)       : print(self.stat % betelgeuse.turn)
 
 Fleet
@@ -211,6 +211,11 @@ Unlike the games in previous sections, in Betelgeuse the player can make multipl
 A move has to specify the source star, the destination and the number of ships to send; to end the
 turn, the player simply hits Enter on an empty prompt.
 
+At first, the player needs to wait for his star to produce spaceships by waiting a few turns.
+
+If the player controls star #2 and wishes to attack star #5 with 10 ships, the command would
+be: `2 5 10`.
+
 The `run()` method handles each of player's turns, draws the Board, checks for the end of game and
 lets stars and fleets handle their production/movement.
 
@@ -264,6 +269,8 @@ The Player can always quit the game by entering the 'q' command.
 
 Configuration
 -------------
+By default the playing board is large and you need to maximize your terminal window to play;
+you can change the `size`, of course.
 
 You can play human vs. human by setting `ai_players` empty, AI vs AI by setting it to include all AI
 players, and human vs AI by omitting one player. You can have more than two players; read the

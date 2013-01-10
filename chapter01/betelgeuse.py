@@ -2,7 +2,7 @@
 # -*- encoding: utf-8 -*-
 
 import sys
-from random import choice as rndchoice
+from random import choice as randchoice
 from random import randint, random
 
 from utils import range1, TextInput, sjoin, first, space, nl
@@ -11,7 +11,7 @@ from board import Board, BaseTile
 size           = 8, 6
 player_chars   = '⎔▣'
 ai_players     = '⎔▣'
-ai_players     = '⎔'
+ai_players     = '▣'
 
 neutral_char   = '⊛'
 blank          = '.'
@@ -64,7 +64,7 @@ class Star(Blank):
 class BetelgeuseBoard(Board):
     stat = "turn: %d"
 
-    def random_blank(self) : return rndchoice(self.locations("blank"))
+    def random_blank(self) : return randchoice(self.locations("blank"))
     def status(self)       : print(self.stat % betelgeuse.turn)
 
 
