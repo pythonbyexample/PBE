@@ -1,0 +1,50 @@
+Python strings let you store and manipulate text
+
+:sleep 5
+
+Let's make a simple string:
+
+:type
+    >>> s = "Large space rock flies past Earth"
+
+    >>> s.count('a')
+    4
+    >>> s.endswith("Earth")
+    True
+    >>> s.endswith("Mars")
+    False
+    >>> s.startswith("La")
+    True
+    >>> s.find('s')
+    6
+    >>> s.find('z')
+    -1
+    >>> s.index('z')
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    ValueError: substring not found
+    >>> s.index('s')
+    6
+    >>> s.isalnum()
+    False
+    >>> s.islower()
+    False
+    >>> s.isprintable()
+    True
+    >>> s.istitle()
+    False
+    >>> s.isupper()
+    False
+    >>> s.lower()
+    'large space rock flies past earth'
+    >>> s.lstrip('La')
+    'rge space rock flies past Earth'
+    >>> s.replace("Large", "Small")
+    'Small space rock flies past Earth'
+    >>> s.rfind('a')
+    29
+    >>> s.ljust(50)
+    'Large space rock flies past Earth                 '
+    >>> s.rjust(50)
+    '                 Large space rock flies past Earth'
+

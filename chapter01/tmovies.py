@@ -9,21 +9,24 @@ from utils import TextInput, BufferedIterator, getitem, iround, enumerate1, rang
 from utils import progress_bar
 
 
-tut_dir      = "t-movies"
-screensep    = 25
-cmdpat       = "(:sleep ?\d*|:clear|:type)"
-stat_tpl     = " %s   %s"
-resetchar    = '\r'
-update_speed = 8        # for progress bar
-default_slp  = 4
-screensep    = 25
-screen_width = 78
-line_pause   = 0.3
+tut_dir          = "t-movies"
+cmdpat           = "(:sleep ?\d*\n|:clear\n|:type\n)"
+stat_tpl         = " %s   %s"
+resetchar        = '\r'
+
+update_speed     = 8        # for progress bar
+default_slp      = 4
+screensep        = 25
+screen_width     = 78
+line_pause       = 0.3
+char_pause       = 0.03
+pause_progress   = False
+section_progress = True
 
 # for x in range(5): print(TextInput().menu("abcdefgabcdefgab"))
 
 class Tutorial(object):
-    typeline = False
+    typeblock = False
 
     def __init__(self, fn):
         with open(os.path.join(tut_dir, fn)) as fp:
@@ -38,7 +41,7 @@ class Tutorial(object):
 
                 if   cmd == ":sleep" : self.sleep(int(arg), section_num)
                 elif cmd == ":clear" : print(nl * screensep)
-                elif cmd == ":type"  : self.typeline = True
+                elif cmd == ":type"  : self.typeblock = True
 
             else:
                 self.display(section)
@@ -55,19 +58,28 @@ class Tutorial(object):
     def display(self, section):
         for line in section.split(nl):
             line = space + line
-            if line.strip() and self.typeline:
+
+            if line.strip() and self.typeblock:
                 for c in line:
                     print(c, end='')
                     sys.stdout.flush()
-                    sleep(0.03)
-                self.typeline = False
+                    sleep(char_pause)
+                print()
             else:
                 print(space + line)
                 sleep(line_pause)
 
+            if not line.strip() and self.typeblock:
+                self.typeblock = False
+
     def progress(self, section_num, n, total):
-        sprogress = progress_bar(section_num, len(self.sections), 45)
-        print( stat_tpl % (progress_bar(n, total, 20), sprogress), end='' )
+        sprogress = pprogress = ''
+
+        if section_progress:
+            sprogress = progress_bar(section_num, len(self.sections), 45)
+        if pause_progress:
+            pprogress = progress_bar(n, total, 20)
+        print(stat_tpl % (pprogress, sprogress), end='')
 
 
 class TutorialMovies(object):
@@ -82,6 +94,5 @@ class TutorialMovies(object):
 
 
 if __name__ == "__main__":
-    # pass
     try                      : TutorialMovies().run()
     except KeyboardInterrupt : pass
