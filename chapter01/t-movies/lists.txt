@@ -1,13 +1,16 @@
+:type
 List comprehensions are easy
 
 :sleep 2
 
+:type
 List comprehensions let you process and filter lists with minimal effort
 
 :sleep 5
 
 Let's make a small list:
 
+:type
     >>> lst = range(20)
 
 :sleep 5

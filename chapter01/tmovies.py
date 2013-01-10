@@ -10,15 +10,17 @@ from utils import TextInput, BufferedIterator, getitem, iround, enumerate1, rang
 
 tut_dir      = "t-movies"
 screensep    = 25
-cmdpat       = "(:sleep ?\d*|:clear)"
+cmdpat       = "(:sleep ?\d*|:clear|:type)"
 stat_tpl     = " %s   %s"
 resetchar    = '\r'
 update_speed = 8        # for progress bar
 
-for x in range(5): print(TextInput().menu("abcdefgabcdefgab"))
+# for x in range(5): print(TextInput().menu("abcdefgabcdefgab"))
 
 
 class Tutorial(object):
+    typeline = False
+
     def __init__(self, fn):
         with open(os.path.join(tut_dir, fn)) as fp:
             self.sections = re.split(cmdpat, fp.read())
@@ -30,8 +32,9 @@ class Tutorial(object):
                 section  = section.split()
                 cmd, arg = section[0], getitem(section, 1)
 
-                if   cmd == ":sleep": self.sleep(int(arg), section_num)
-                elif cmd == ":clear": print(nl * screensep)
+                if   cmd == ":sleep" : self.sleep(int(arg), section_num)
+                elif cmd == ":clear" : print(nl * screensep)
+                elif cmd == ":type"  : self.typeline = True
 
             else:
                 self.display(section)
@@ -47,8 +50,16 @@ class Tutorial(object):
 
     def display(self, section):
         for line in section.split(nl):
-            print(space + line)
-            sleep(0.3)
+            line = space + line
+            if line.strip() and self.typeline:
+                for c in line:
+                    print(c, end='')
+                    sys.stdout.flush()
+                    sleep(0.03)
+                self.typeline = False
+            else:
+                print(space + line)
+                sleep(0.3)
 
     def progress(self, section_num, n, total):
         sprogress = progress_bar(len(self.sections), section_num, 45)
