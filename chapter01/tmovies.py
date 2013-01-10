@@ -6,19 +6,20 @@ import re
 from time import sleep
 
 from utils import TextInput, BufferedIterator, getitem, iround, enumerate1, range1, sjoin, nl, first, space
+from utils import progress_bar
 
 
 tut_dir      = "t-movies"
-screensep    = 25
 cmdpat       = "(:sleep ?\d*|:clear)"
 stat_tpl     = " %s   %s"
 resetchar    = '\r'
 update_speed = 8        # for progress bar
+default_slp  = 4
+screensep    = 25
+screen_width = 78
+line_pause   = 0.3
 
 # for x in range(5): print(TextInput().menu("abcdefgabcdefgab"))
-# nnoremap \s ^2daWk$xkk$xjddkP<<JJJ
-# nnoremap \S ^/if<cr>hs<cr><esc>/else<cr>hs<cr><esc>ea:<cr><esc>kkA:<esc>kddp>>2yaWjjP
-
 
 class Tutorial(object):
     def __init__(self, fn):
@@ -30,7 +31,7 @@ class Tutorial(object):
 
             if re.match(cmdpat, section):
                 section  = section.split()
-                cmd, arg = section[0], getitem(section, 1)
+                cmd, arg = section[0], getitem(section, 1, default_slp)
 
                 if   cmd == ":sleep": self.sleep(int(arg), section_num)
                 elif cmd == ":clear": print(nl * screensep)
@@ -38,23 +39,23 @@ class Tutorial(object):
             else:
                 self.display(section)
 
-        print(nl*2, '-'*5, "END", '-'*5, nl*2)
+        print(nl*2, "----- END -----", nl*2)
 
     def sleep(self, seconds, section_num):
         for n in range(seconds * update_speed):
             self.progress(section_num, n/update_speed, seconds)
             sys.stdout.flush()
             sleep(1 / update_speed)
-            print(resetchar + space*78 + resetchar, end='')
+            print(resetchar + space*screen_width + resetchar, end='')
 
     def display(self, section):
         for line in section.split(nl):
             print(space + line)
-            sleep(0.3)
+            sleep(line_pause)
 
     def progress(self, section_num, n, total):
-        sprogress = progress_bar(len(self.sections), section_num, 45)
-        print( stat_tpl % (progress_bar(total, n, 20), sprogress), end='' )
+        sprogress = progress_bar(section_num, len(self.sections), 45)
+        print( stat_tpl % (progress_bar(n, total, 20), sprogress), end='' )
 
 
 class TutorialMovies(object):
@@ -68,12 +69,7 @@ class TutorialMovies(object):
             Tutorial(mfiles[i]).play()
 
 
-def progress_bar(total, value, size=78, char='∘'):
-    size = size - 2
-    tpl  = "|%%-%ds|" % size
-    return tpl % (char * iround(size * value/total))
-
-
 if __name__ == "__main__":
+    # pass
     try                      : TutorialMovies().run()
     except KeyboardInterrupt : pass

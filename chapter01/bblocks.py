@@ -11,7 +11,7 @@ from board import Board, BaseTile
 size        = 5
 pause_time  = 0.2
 players     = {1: "➀➁➂➃", 2: "➊➋➌➍"}
-ai_players  = [1, 2]
+ai_players  = [1, ]
 check_moves = 15
 padding     = 2, 1
 

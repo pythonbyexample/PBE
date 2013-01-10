@@ -15,6 +15,7 @@ Let's make a small list:
 Now let's make a simple list comprehension that does not do ANYTHING:
 
     >>> [i for i in lst]
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 
 :sleep 5
 
@@ -24,12 +25,38 @@ absent, but you can have a processing element and a filter element:
 
     [process(i) for i in lst if filter(i)]
 
+(don't run this command, it just shows you the placement of process and filter)
+
 :sleep 12
 
-Let's look at what you can do with the filter element:
+Let's look at what you can do by adding a filter:
 
     >>> [i for i in lst if i>5]
+    [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 
 :sleep 5
 
+A bit more complex filter:
+
     >>> [i for i in lst if i<5 or i>15]
+    [0, 1, 2, 3, 4, 16, 17, 18, 19]
+
+Enough with filters! Let's look at the processing part:
+
+    >>> [i*3 for i in lst]
+    [0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57]
+
+
+
+    >>> ['#'+str(i) for i in lst]
+    ['#0', '#1', '#2', '#3', '#4', '#5', '#6', '#7', '#8', '#9', '#10', '#11', '#12', '#13', '#14', '#15', '#16', '#17', '#18', '#19']
+    >>> [(i,i*i) for i in lst]
+    [(0, 0), (1, 1), (2, 4), (3, 9), (4, 16), (5, 25), (6, 36), (7, 49), (8, 64), (9, 81), (10, 100), (11, 121), (12, 144), (13, 169), (14, 196), (15, 225), (16, 256), (17, 289), (18, 324), (19, 361)]
+    >>> [(i+1, i+2, i+3) for i in lst if i>10]
+    [(12, 13, 14), (13, 14, 15), (14, 15, 16), (15, 16, 17), (16, 17, 18), (17, 18, 19), (18, 19, 20), (19, 20, 21), (20, 21, 22)]
+    >>> def process(x): return x+1, x+2, x+3
+    >>> def filter(i): return bool(i>10)
+    >>> def process(i): return i+1, i+2, i+3
+    >>> [process(i) for i in lst if filter(i)]
+    [(12, 13, 14), (13, 14, 15), (14, 15, 16), (15, 16, 17), (16, 17, 18), (17, 18, 19), (18, 19, 20), (19, 20, 21), (20, 21, 22)]
+
