@@ -1,6 +1,6 @@
 Python strings let you store and manipulate text
 
-:sleep 5
+:pause 5
 
 Let's make a simple string:
 

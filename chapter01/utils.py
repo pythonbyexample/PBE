@@ -304,13 +304,13 @@ class TextInput(object):
         return commands
 
     def menu(self, choices):
-        self.choices = choices
-        for c in enumerate1(choices):
-            print(self.choice_tpl % c)
+        for n, (title, _) in enumerate1(choices):
+            print(self.choice_tpl % (n, title))
 
-        fmt = "(%s)" % sjoin( range1(len(choices)), '|' )
+        fmt          = "(%s)" % sjoin( range1(len(choices)), '|' )
         self.formats = [fmt]
-        return int(self.getval()) - 1
+        i            = int(self.getval()) - 1
+        return choices[i][1]
 
 
 class Container:
