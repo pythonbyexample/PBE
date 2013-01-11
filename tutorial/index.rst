@@ -26,3 +26,4 @@ Welcome to Lark's Tongue Guide to Python!
     words
     mines
     betelgeuse
+    versi

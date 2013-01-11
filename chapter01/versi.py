@@ -15,7 +15,7 @@ ai_players   = '▣⎔'
 ai_players   = '⎔'
 blank        = '.'
 padding      = 4, 2
-pause_time   = 0.2
+pause_time   = 0.3
 
 
 class PlayerBase(object):
