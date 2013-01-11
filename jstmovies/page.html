@@ -15,13 +15,34 @@ for (var x = 1; x<40; x++) {
     commands.push( ["text", [" line "+x, '', '']] )
 }
 
-$(document).ready( function() {
-    var $index       = 0;
-    var $type_effect = false;
-    var $scrolldist  = 0;
+window.pause     = false;
+var $index       = 0;
+var $type_effect = false;
+var $scrolldist  = 0;
+var start_scroll = 22;
 
-    function process_commands() {
-        if ($index >= commands.length) return;
+$(document).ready( function() {
+
+    $.fn.teletype = function(opts) {
+        var $this = this,
+            defaults = {
+                animDelay: 50
+            },
+            settings = $.extend(defaults, opts);
+
+        $.each(settings.text.split(''), function(i, letter) {
+            setTimeout(function(){
+                $this.html($this.html() + letter);
+            }, settings.animDelay * i);
+        });
+    };
+
+    process_commands();
+
+});
+
+function process_commands() {
+        if (window.pause || $index >= commands.length) return;
 
         var command  = commands[$index][0];
         var arg      = commands[$index][1];
@@ -32,7 +53,7 @@ $(document).ready( function() {
         if (command == "text") {
             for (var x = 0; x<arg.length; x++) {
                 var line = arg[x];
-                if ($index >= 25) {
+                if ($index >= start_scroll) {
                     $scrolldist += 30;
                     textarea.scrollTop($scrolldist);
                 }
@@ -56,30 +77,29 @@ $(document).ready( function() {
             $type_effect = true;
         }
 
-        setTimeout(process_commands, timeout);
+        if (window.pause) {
+            // avoid skipping scheduled command
+            $index--;
+            if ($index<0) $index = 0;
+        } else {
+            setTimeout(process_commands, timeout);
+        }
     }
 
 
-    $.fn.teletype = function(opts) {
-        var $this = this,
-            defaults = {
-                animDelay: 50
-            },
-            settings = $.extend(defaults, opts);
-
-        $.each(settings.text.split(''), function(i, letter) {
-            setTimeout(function(){
-                $this.html($this.html() + letter);
-            }, settings.animDelay * i);
-        });
-    };
-
-    process_commands();
-
-});
+function toggle_pause() {
+    $("button").text(window.pause ? "Pause" : "Unpause")
+    window.pause = window.pause ? false : true;
+    if (!window.pause) process_commands();
+}
 
 </script>
 <style>
+    * {
+        font-family: Verdana, Arial, Sans-Serif;
+        font-size: 14px;
+    }
+
     div#main {
         background:#CCCCCC none repeat scroll 0 0;
         border:3px solid #666666;
@@ -87,7 +107,7 @@ $(document).ready( function() {
         padding:5px;
         position:relative;
         width:900px;
-        height:600px;
+        height:550px;
         overflow:auto;
     }
 </style>
@@ -95,7 +115,10 @@ $(document).ready( function() {
 </head>
 
 <body>
-<div id="main"></div>
-<!-- <textarea rows='40' cols='90'> </textarea> -->
+    <h3>Python List Comprehensions</h3>
+
+    <button onClick="toggle_pause()">Pause</button>
+
+    <div id="main"></div>
 </body>
 </html>
