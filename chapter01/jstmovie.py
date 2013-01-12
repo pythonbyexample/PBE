@@ -4,29 +4,26 @@
 import os, sys
 import re
 from time import sleep
+from json import dumps
+from os.path import join as pjoin
 
 from utils import TextInput, BufferedIterator, getitem, enumerate1, first, nl, space
 from utils import progress_bar
 
 
-cmdpat           = "(:pause ?\d*|:clear|:type)"
-tut_dir          = "t-movies"
-
-update_speed     = 8        # for progress bar
-default_pause    = 4
-screensep        = 25
-screen_width     = 78
-line_pause       = 0.3
-char_pause       = 0.03
-pause_progress   = False
-section_progress = True
-
+cmdpat  = "(:pause ?\d*|:clear|:type)"
+tut_dir = "t-movies"
+outdir  = "jstmovies"
+tplfn   = "page.html"
+nbsp    = "&nbsp;"
 
 class Tutorial(object):
     typeblock = False
 
-    def __init__(self, fn):
+    def __init__(self, fn, tpl):
         self.commands = []
+        self.name     = first(fn.split('.'))
+        self.tpl      = tpl
 
         with open(os.path.join(tut_dir, fn)) as fp:
             self.sections = re.split(cmdpat, fp.read())
@@ -46,21 +43,29 @@ class Tutorial(object):
             else:
                 add(section.lstrip(nl))
 
-        add(nl*2, "----- END -----", nl*2)
+        self.write_html()
+
+    def write_html(self):
+        # cmds = dumps(self.commands)
+        cmds = dumps(self.commands, indent=4, separators=(',', ':'))
+        html = self.tpl % dict(commands=cmds)
+        with open(pjoin(outdir, self.name + ".html"), 'w') as fp:
+            fp.write(html)
 
     def add_text(self, *args):
         text = ''.join(args)
-        for line in text.split(nl):
-            self.commands.append(("text", space + line))
+        if text.endswith('\n'): text = text[:-1]
+        text = text.replace(space*4, nbsp*4).split(nl)
+        self.commands.extend( [("text", space+l) for l in text] )
 
 
 class TutorialMovies(object):
     def run(self):
-        mfiles  = [fn for fn in os.listdir(tut_dir) if not fn.startswith('.')]
-        choices = [ (first(f.split('.')), f) for f in mfiles ]
+        mfiles = [fn for fn in os.listdir(tut_dir) if not fn.startswith('.')]
+        tpl    = open(pjoin(outdir, tplfn)).read()
 
         for fn in mfiles:
-            Tutorial(fn).run()
+            Tutorial(fn, tpl).run()
 
 
 if __name__ == "__main__":
