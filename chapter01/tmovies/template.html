@@ -98,31 +98,39 @@ function process_commands() {
     var command  = commands[$index][0];
     var arg      = commands[$index][1];
     var textarea = $("div#main");
-    var timeout  = 400;
+    var timeout  = 500;
+    var speed    = $("input#speed").val();
+
+    if (!speed) speed = 1;
+    speed = parseInt(speed);
+
+    //if (speed < 1 || speed > 5) speed = 1;
+    speed = 1 + (speed-1) / 4;
+    // final max speed should be 2 at most.
+    console.log(speed);
     $index++;
 
     if (command == "text") {
-        //for (var x = 0; x<arg.length; x++) {
-            //var line = arg[x];
-            var line = arg;
-            if ($index >= start_scroll) {
-                $scrolldist += 40;
-                textarea.scrollTop($scrolldist);
-            }
+        var line = arg;
+        if ($index >= start_scroll) {
+            $scrolldist += 40;
+            textarea.scrollTop($scrolldist);
+        }
 
-            eline = $("<span>" + line + "</span><br />").hide().appendTo(textarea);
-            //console.log(eline);
-            if ($type_effect) {
-                //eline.typewriter();
-                //timeout += line.length * 70;
-                eline.show();
-            } else {
-                eline.show();
-            }
+        eline = $("<span>" + line + "&nbsp;</span><br />").hide().appendTo(textarea);
+        if ($type_effect) {
+            eline.typewriter();
+            timeout += (line.length * 40) / speed;
 
-            if (line.replace(/ /g, '') == '') $type_effect = false;
+            // typewriter needs this to be shown fully
+            $scrolldist += 40;
+            textarea.scrollTop($scrolldist);
+        } else {
+            eline.show();
+        }
 
-        //}
+        if (line.replace(/ /g, '') == '') $type_effect = false;
+
     } else if (command == "pause") {
         timeout = parseInt(arg, 10) * 1000;
 
@@ -133,9 +141,10 @@ function process_commands() {
     if ($pause) {
         // avoid skipping scheduled command
         $index--;
-        if ($index<0) $index = 0;
+        if ($index < 0) $index = 0;
     } else {
-        setTimeout(process_commands, timeout/4);
+        setTimeout(process_commands, timeout / speed);
+        //setTimeout(process_commands, timeout);
     }
 }
 
@@ -164,16 +173,14 @@ function toggle_pause() {
         overflow:auto;
     }
 
-    p {
-        padding-bottom: 0;
-        margin-bottom: 0;
-    }
+    button { margin-left: 100px; }
 </style>
       <!-- p { margin:10px;padding:5px;border:2px solid #666; } -->
 </head>
 
 <body>
     <button onClick="toggle_pause()">Pause</button>
+    Speed (1-5): <input id="speed" type="text" name="speed" value="1" size="3" />
 
     <div id="main"></div>
 </body>

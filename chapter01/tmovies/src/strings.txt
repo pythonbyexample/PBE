@@ -1,29 +1,28 @@
-Python strings let you store and manipulate text
+Python strings let you store and manipulate text! Easily!
 
 :pause 5
 
 Let's make a simple string:
 
-:type
     >>> s = "Large space rock flies past Earth"
 
 :pause 6
 
 You can count the number of characters:
 
-:type
     >>> s.count('a')
     4
 
 :pause 4
 
+
+
+
 You can check if a string ends with something or not:
 
-:type
     >>> s.endswith("Earth")
     True
 
-:type
     >>> s.endswith("Mars")
     False
 
@@ -31,15 +30,16 @@ You can check if a string ends with something or not:
 
 .. or starts with a substring:
 
-:type
     >>> s.startswith("La")
     True
 
 :pause 4
 
+
+
+
 You can also find the location of a substring:
 
-:type
     >>> s = "Large space rock flies past Earth"
     >>> s.find('s')
     6
@@ -48,7 +48,6 @@ You can also find the location of a substring:
 
 If not found, -1 is returned:
 
-:type
     >>> s.find('z')
     -1
 
@@ -56,15 +55,16 @@ If not found, -1 is returned:
 
 .. of course you can also find from right:
 
-:type
     >>> s.rfind('a')
     29
 
 :pause 4
 
+
+
+
 You can check if it's alphanumeric (False because we have spaces in our string):
 
-:type
     >>> s.isalnum()
     False
 
@@ -72,7 +72,6 @@ You can check if it's alphanumeric (False because we have spaces in our string):
 
 You can check if it's all lower case:
 
-:type
     >>> s.islower()
     False
 
@@ -80,7 +79,6 @@ You can check if it's all lower case:
 
 .. or upper case:
 
-:type
     >>> s.isupper()
     False
 
@@ -88,25 +86,18 @@ You can check if it's all lower case:
 
 .. or if all characters are printable:
 
-:type
     >>> s.isprintable()
     True
 
 :pause 4
 
-You can also convert to lowercase or uppercase:
 
-:type
-    >>> s.lower()
-    'large space rock flies past earth'
 
-:pause 4
 
 You can strip characters:
 
-:type
-    >>> "abba is a swedish band".lstrip('ab')
-    ' is a swedish band'
+    >>> "savanna covers approximately 20% of the Earth's land area".lstrip('savn')
+    " covers approximately 20% of the Earth's land area"
 
 :pause 4
 
@@ -115,20 +106,78 @@ of given characters are stripped)
 
 One of the most useful methods is replace():
 
-:type
     >>> s.replace("Large", "Small")
     'Small space rock flies past Earth'
 
 :pause 4
 
+
+
+
 Justifying is also very easy to do:
 
-:type
     >>> s.ljust(50)
     'Large space rock flies past Earth                 '
 
-:type
     >>> s.rjust(50)
     '                 Large space rock flies past Earth'
 
 :pause 4
+
+This one must be useful for something! partition method:
+
+    >>> "x = something something".partition(" = ")
+    ('x', ' = ', 'something something')
+
+:pause 4
+
+If you wish to split your string by newline characters, use splitlines():
+
+    >>> "a \n b \n c".splitlines()
+    ['a ', ' b ', ' c']
+
+:pause 4
+
+
+
+
+Alongside with replace(), the next two methods are some of the most useful in string manipulation;
+split() produces a list split by whitespace:
+
+    >>> s.split()
+    ['Large', 'space', 'rock', 'flies', 'past', 'Earth']
+
+:pause 4
+
+.. but you can split by any substring:
+
+    >>> "feathers and beaks and tails and eggs".split(" and ")
+    ['feathers', 'beaks', 'tails', 'eggs']
+
+:pause 4
+
+You can join any list of strings with any separator:
+
+    >>> sep = ", "
+    >>> sep.join(s.split())
+    'Large, space, rock, flies, past, Earth'
+
+:pause 4
+
+
+
+
+Here's how you can capitalize every word in a string:
+
+    >>> s.title()
+    'Large Space Rock Flies Past Earth'
+
+:pause 4
+
+And finally, changing to upper and lower case:
+
+    >>> s.upper()
+    'LARGE SPACE ROCK FLIES PAST EARTH'
+
+    >>> s.lower()
+    'large space rock flies past earth'

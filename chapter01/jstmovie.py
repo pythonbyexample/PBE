@@ -1,21 +1,37 @@
 #!/usr/bin/env python3
 # -*- encoding: utf-8 -*-
 
+""" jstmovie - convert a text movie into a javascript file
+
+sample format:
+
+Yadda yadda
+:pause 4
+This will be shown after 4s pause
+
+:type
+This text will be shown with typewriter effect
+
+(Note that :clear command is used in console version but is ignored in javascript)
+
+copyright 2013 lightbird.net
+license: (see LICENSE file)
+"""
+
 import os, sys
 import re
-from time import sleep
-from json import dumps
 from os.path import join as pjoin
+from json import dumps
 
-from utils import TextInput, BufferedIterator, getitem, enumerate1, first, nl, space
-from utils import progress_bar
+from utils import getitem, first, nl, space
 
 
-cmdpat  = "(:pause ?\d*|:clear|:type)"
-tut_dir = "t-movies"
-outdir  = "jstmovies"
-tplfn   = "page.html"
-nbsp    = "&nbsp;"
+cmdpat         = "(:pause ?\d*|:clear|:type)"
+tut_dir        = "tmovies/src/"
+outdir         = "tmovies/out/"
+tplfn          = "tmovies/template.html"
+nbsp           = "&nbsp;"
+interp_typecmd = True   # auto insert type effect before python interpreter lines (>>>)
 
 class Tutorial(object):
     typeblock = False
@@ -32,7 +48,7 @@ class Tutorial(object):
         add = self.add_text
         add(nl * 2)
 
-        for section_num, section in enumerate1(self.sections):
+        for section in self.sections:
 
             if re.match(cmdpat, section):
                 section  = section.split()
@@ -41,28 +57,32 @@ class Tutorial(object):
                     arg = arg or default_pause
                 self.commands.append((cmd, arg))
             else:
-                add(section.lstrip(nl))
+                add(section)
 
+        add(nl*3 + "  --- THE END ---")
         self.write_html()
 
     def write_html(self):
-        # cmds = dumps(self.commands)
         cmds = dumps(self.commands, indent=4, separators=(',', ':'))
         html = self.tpl % dict(commands=cmds)
         with open(pjoin(outdir, self.name + ".html"), 'w') as fp:
             fp.write(html)
 
-    def add_text(self, *args):
-        text = ''.join(args)
-        if text.endswith('\n'): text = text[:-1]
-        text = text.replace(space*4, nbsp*4).split(nl)
-        self.commands.extend( [("text", space+l) for l in text] )
+    def add_text(self, text):
+        if text.startswith(nl):
+            text = text[1:]
+
+        for line in text.split(nl):
+            if interp_typecmd and line.strip().startswith(">>>"):
+                self.commands.append(("type", None))
+            self.commands.append( ("text", space + line.replace(space*4, nbsp*4)) )
+        # self.commands.extend( [("text", space+l) for l in text] )
 
 
 class TutorialMovies(object):
     def run(self):
         mfiles = [fn for fn in os.listdir(tut_dir) if not fn.startswith('.')]
-        tpl    = open(pjoin(outdir, tplfn)).read()
+        tpl    = open(tplfn).read()
 
         for fn in mfiles:
             Tutorial(fn, tpl).run()
