@@ -59,7 +59,7 @@ class Tutorial(object):
             else:
                 add(section)
 
-        add(nl*3 + "  --- THE END ---")
+        add(nl*3 + "  --- THE END ---" + nl*2)
         self.write_html()
 
     def write_html(self):
