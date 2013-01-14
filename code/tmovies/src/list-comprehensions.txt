@@ -1,0 +1,113 @@
+List comprehensions are easy
+
+:pause 2
+
+List comprehensions let you process and filter lists with minimal effort
+
+:pause 5
+
+Let's make a small list:
+
+    >>> lst = range(20)
+
+:pause 2
+
+Now let's make a simple list comprehension that does not do ANYTHING:
+
+    >>> [i for i in lst]
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
+:pause 3
+
+
+
+
+This should give you a good idea of what elements you can have in a list
+comprehension and where they are. In the example above, both elements are
+absent, but you can have a processing element and a filter element:
+
+    [process(i) for i in lst if filter(i)]
+
+(don't run this command, it just shows you the placement of process and
+filter)
+
+:pause 12
+
+
+
+
+
+Let's look at what you can do by adding a filter:
+
+    >>> [i for i in lst if i>5]
+    [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
+:pause 3
+
+A bit more complex filter:
+
+    >>> [i for i in lst if i<5 or i>15]
+    [0, 1, 2, 3, 4, 16, 17, 18, 19]
+
+:pause 3
+
+
+
+
+
+Enough with filters! Let's look at the processing part:
+
+    >>> [i*3 for i in lst]
+    [0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57]
+
+:pause 3
+
+Naturally, you can also create new types in your comprehension, like
+strings:
+
+    >>> ['#'+str(i) for i in lst]
+    ['#0', '#1', '#2', '#3', '#4', '#5', '#6', '#7', '#8', '#9', '#10', '#11', '#12', '#13',
+    '#14', '#15', '#16', '#17', '#18', '#19']
+
+:pause 3
+
+.. or tuples:
+
+    >>> [(i, i*i) for i in lst]
+    [(0, 0), (1, 1), (2, 4), (3, 9), (4, 16), (5, 25), (6, 36), (7, 49), (8, 64), (9, 81), (10,
+    100), (11, 121), (12, 144), (13, 169), (14, 196), (15, 225), (16, 256), (17, 289), (18, 324),
+    (19, 361)]
+
+:pause 2
+
+
+
+
+
+Often you might want to combine processing and a filter in the same
+comprehension:
+
+    >>> [(i+1, i+2, i+3) for i in lst if i>10]
+    [(12, 13, 14), (13, 14, 15), (14, 15, 16), (15, 16, 17), (16, 17, 18), (17, 18, 19), (18, 19,
+    20), (19, 20, 21), (20, 21, 22)]
+
+:pause 3
+
+
+
+
+If either filter or processing logic get cumbersome, you can tuck them away
+in functions:
+
+    >>> def over_ten(i): return bool(i>10)
+    >>> def mktuple(i): return i+1, i+2, i+3
+
+:pause 3
+
+The result is the same, but much more readable:
+
+    >>> [mktuple(i) for i in lst if over_ten(i)]
+    [(12, 13, 14), (13, 14, 15), (14, 15, 16), (15, 16, 17), (16, 17, 18), (17, 18, 19), (18, 19,
+    20), (19, 20, 21), (20, 21, 22)]
+
+:pause 3
