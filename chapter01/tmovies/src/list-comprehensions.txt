@@ -99,14 +99,14 @@ comprehension:
 If either filter or processing logic get cumbersome, you can tuck them away
 in functions:
 
-    >>> def filter(i): return bool(i>10)
-    >>> def process(i): return i+1, i+2, i+3
+    >>> def over_ten(i): return bool(i>10)
+    >>> def mktuple(i): return i+1, i+2, i+3
 
 :pause 3
 
 The result is the same, but much more readable:
 
-    >>> [process(i) for i in lst if filter(i)]
+    >>> [mktuple(i) for i in lst if over_ten(i)]
     [(12, 13, 14), (13, 14, 15), (14, 15, 16), (15, 16, 17), (16, 17, 18), (17, 18, 19), (18, 19,
     20), (19, 20, 21), (20, 21, 22)]
 

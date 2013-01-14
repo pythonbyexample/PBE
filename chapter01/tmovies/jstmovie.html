@@ -10,18 +10,6 @@ https://github.com/pythonbyexample/PBE/tree/master/code/jstmovie.py
 <script src="jquery-1.8.3.min.js" type="text/javascript"></script>
 <script>
 
-// Test commands
-var commands = [];
-commands.push( ["text", ['']] )
-
-for (var x = 1; x<40; x++) {
-    commands.push( ["type", ''] )
-    commands.push( ["text", ["  line line line line line line line line line line line line line "+x, '']] )
-    commands.push( ["pause", '1'] )
-    commands.push( ["text", [" line "+x, '', '']] )
-}
-
-var commands = %COMMANDS%;
 
 (function($, name) {
 /* jQuery typewriter plugin
@@ -82,19 +70,22 @@ var commands = %COMMANDS%;
 })(jQuery, "typewriter");
 
 
+var commands = [];
 var $pause       = false;
 var $type_effect = false;
 var $index       = 0;
 var $scrolldist  = 0;
 var start_scroll = 15;
 
-$(document).ready( function() {
-    process_commands();
-});
+//$(document).ready( function() { });
 
 
 function process_commands() {
-    if ($pause || $index >= commands.length) return;
+    if ($pause) return;
+    if ($index >= commands.length) {
+        $("span#progress").text("100%");
+        return;
+    }
 
     var command  = commands[$index][0];
     var arg      = commands[$index][1];
@@ -108,7 +99,6 @@ function process_commands() {
     //if (speed < 1 || speed > 5) speed = 1;
     speed = 1 + (speed-1) / 4;
     // final max speed should be 2 at most.
-    //$("span#progress").text($index + '/' + commands.length);
     $("span#progress").text(parseInt($index / commands.length * 100.0) + '%');
     $index++;
 
@@ -146,16 +136,61 @@ function process_commands() {
         if ($index < 0) $index = 0;
     } else {
         setTimeout(process_commands, timeout / speed);
-        //setTimeout(process_commands, timeout);
     }
 }
 
 
 function toggle_pause() {
-    $("button").text($pause ? "Pause" : "Unpause")
+    $("button#pause").text($pause ? "Pause" : "Unpause")
     $pause = $pause ? false : true;
     if (!$pause) process_commands();
 }
+
+function start() {
+    //var text = $("textarea#input").text().split('\n');
+    commands.length = 0;
+    var text = $("textarea#input").val().split('\n');
+
+    $.each(text, function(i, line) {
+        var txt = lineBreaks(line, 90).split('\n');
+        $.each(txt, function(i, line) {
+            commands.push( ["text", line] );
+            commands.push( ["pause", '1'] );
+        });
+    });
+
+    var blank = ["text", ' ']
+    var d = Array(30).join('-');
+    commands.push(blank, blank, blank);
+    commands.push( ["text", d + " THE END " + d]);
+    commands.push(blank, blank, blank);
+    process_commands();
+}
+
+function lineBreaks(text, maxlength) {
+      var len = text.length;
+      var pos = -1;
+      var replace = true;
+      for (var i=maxlength; i<len; i += maxlength)
+      {
+        var separator = "\n"
+        for (var pos = i; text.charAt(pos) != " "; pos--)
+        {
+          if (pos == i-maxlength)
+          {
+            pos = i;
+            separator += text.charAt(pos);
+            len++;
+            break;
+          }
+        }
+        text = text.substring(0, pos) + separator + text.substring(pos+1, len);
+        i = pos;
+        replace = true;
+      }
+      return text;
+}
+
 
 </script>
 <style>
@@ -175,16 +210,20 @@ function toggle_pause() {
         overflow:auto;
     }
 
-    button { margin-left: 100px; }
+    button#start { margin-left: 100px; }
 </style>
       <!-- p { margin:10px;padding:5px;border:2px solid #666; } -->
 </head>
 
 <body>
-    <button onClick="toggle_pause()">Pause</button>
+    <button id="start" onClick="start()">Start</button>
+    <button id="pause" onClick="toggle_pause()">Pause</button>
     Speed (1-5): <input id="speed" type="text" name="speed" value="1" size="3" />
     <span id="progress"></span>
 
     <div id="main"></div>
+
+    <p>Input</p>
+    <textarea id="input" cols="120" rows="10"></textarea>
 </body>
 </html>

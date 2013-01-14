@@ -64,7 +64,7 @@ class Tutorial(object):
 
     def write_html(self):
         cmds = dumps(self.commands, indent=4, separators=(',', ':'))
-        html = self.tpl % dict(commands=cmds)
+        html = self.tpl.replace("%COMMANDS%", cmds)
         with open(pjoin(outdir, self.name + ".html"), 'w') as fp:
             fp.write(html)
 

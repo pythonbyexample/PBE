@@ -181,3 +181,7 @@ And finally, changing to upper and lower case:
 
     >>> s.lower()
     'large space rock flies past earth'
+
+:pause 4
+
+Testing for a substring can be done with the `in` keyword:

@@ -1,65 +1,215 @@
-A list is an ordered collection of objects
+A list is an ordered collection of objects.
 
-:sleep 2
+:pause 2
+
+You can use Python lists to store collections like: a shopping list, list of lines on a page, list
+of students in a class, list of files in a directory.
+
+:pause 4
+
+Let's make a small list:
 
     >>> lst = list(range(20))
     >>> lst
     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 
-    >>> lst.append(30)
-    >>> lst
+:pause 4
+
+You can add items at the end of list like so:
+
+    >>> lst.append(30); lst
     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 30]
 
-    >>> lst.extend((40,50,60))
-    >>> lst
+(I've used the semicolon to run two commands on the same line)
+
+:pause 4
+
+What if you wish to add many items at the same time?
+
+    >>> lst.extend((40,50,60)); lst
     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 30, 40, 50, 60]
 
-    >>> [1, 1, 1, 5, 6, 20].count(1)
+:pause 4
+
+Counting and indexing is done with the same methods as with strings:
+
+    >>> [1, 5, 1, 1, 6, 20].count(1)
     3
 
     >>> lst.index(50)
     22
 
+:pause 4
+
+You can insert a new item at any location in the list, in this example, at the beginning:
+
     >>> lst.insert(0, 70); lst
     [70, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 30, 40, 50, 60]
 
+:pause 4
+
+You can remove and return an item from the end of list in one operation:
+
     >>> lst.pop()
     60
-
     >>> lst
     [70, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 30, 40, 50]
 
+:pause 4
+
+You can also provide an index to the pop() method:
+
     >>> lst.pop(0)
     70
-
     >>> lst
     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 30, 40, 50]
+
+:pause 4
+
+Reversing lists has never been so easy!
 
     >>> lst.reverse(); lst
     [50, 40, 30, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
 
-    >>> lst.sort()
-    >>> lst
+:pause 4
+
+Let's sort our list:
+
+    >>> lst.sort(); lst
     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 30, 40, 50]
 
-    >>> lst.reverse()
-    >>> lst
+:pause 4
+
+I'll reverse it again to make slicing examples clearer:
+
+    >>> lst.reverse(); lst
     [50, 40, 30, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+
+:pause 4
+
+Lists are indexed starting with 0, so you'll get the 4th item at index 3:
 
     >>> lst[3]
     19
 
+:pause 4
+
+The next few examples will show slicing operations. You can slice with 2 indexes:
+
     >>> lst[3:10]
     [19, 18, 17, 16, 15, 14, 13]
+
+:pause 4
+
+.. or from one index to the end:
 
     >>> lst[3:]
     [19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
 
+:pause 4
+
+Did you know you can also provide the step value? It's rarely used but there it is:
+
     >>> lst[3:20:3]
     [19, 16, 13, 10, 7, 4]
+
+:pause 4
+
+Indexes can be negative, indicating count from the end of string:
 
     >>> lst[-5:-2]
     [4, 3, 2]
 
     >>> lst[-2]
     1
+
+:pause 4
+
+Step can also be negative, then two indexes have to be in reverse order; this is also useful to
+give you a reversed copy of the list in one step:
+
+    >>> lst[20:3:-2]
+    [2, 4, 6, 8, 10, 12, 14, 16, 18]
+
+    >>> lst[::-1]
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 30, 40, 50]
+
+:pause 5
+
+To randomize a list, you need to use the shuffle() function from random module:
+
+    >>> from random import shuffle
+    >>> shuffle(lst); lst
+    [8, 4, 2, 13, 19, 11, 5, 12, 10, 1, 14, 3, 16, 9, 40, 0, 6, 17, 7, 50, 18, 30, 15]
+
+:pause 4
+
+Adding two lists together is just like adding two strings or numbers:
+
+    >>> lst + lst
+    [8, 4, 2, 13, 19, 11, 5, 12, 10, 1, 14, 3, 16, 9, 40, 0, 6, 17, 7, 50, 18, 30, 15, 8, 4, 2,
+    13, 19, 11, 5, 12, 10, 1, 14, 3, 16, 9, 40, 0, 6, 17, 7, 50, 18, 30, 15]
+
+:pause 4
+
+Let's go into more detail on list sorting -- you can use the `key` argument to provide the
+function that prepares value for sorting. First I'll make a list of words:
+
+    >>> lst = "Clownfish live at the bottom of shallow seas in sheltered reefs or in shallow lagoons".split()
+    >>> lst
+    ['Clownfish', 'live', 'at', 'the', 'bottom', 'of', 'shallow', 'seas', 'in', 'sheltered',
+    'reefs', 'or', 'in', 'shallow', 'lagoons']
+
+:pause 6
+
+Why not start with sorting by length?
+
+(I will use sorted() function which returns a sorted copy; you can sort in-place by using .sort()
+method.)
+
+    >>> sorted(lst, key=len)
+    ['at', 'of', 'in', 'or', 'in', 'the', 'live', 'seas', 'reefs', 'bottom', 'shallow', 'shallow',
+    'lagoons', 'Clownfish', 'sheltered']
+
+:pause 6
+
+What happens here is that each word is passed to len() function; the function returns length as an
+integer and finally words are sorted by these integers.
+
+Often you'll want to sort a list of sequences (e.g. tuples, lists or strings) by Nth item. This
+example is a bit pointless but you can sort by the last letter using operator.itemgetter():
+
+    >>> from operator import itemgetter
+
+    >>> sorted(lst, key=itemgetter(-1))
+    ['sheltered', 'live', 'the', 'of', 'Clownfish', 'bottom', 'in', 'in', 'or', 'seas',
+    'reefs', 'lagoons', 'at', 'shallow', 'shallow']
+
+:pause 8
+
+Before the next example, I want to remind you that by default sorting is ascending and True values
+are sorted after False:
+
+    >>> sorted([False,True,False,True])
+    [False, False, True, True]
+
+:pause 4
+
+Let's make a list of tuples using a 2 dimensional comprehension:
+
+    >>> lst = [(x,y) for x in range(3) for y in range(3,0,-1)]
+    >>> lst
+    [(0, 3), (0, 2), (0, 1), (1, 3), (1, 2), (1, 1), (2, 3), (2, 2), (2, 1)]
+
+:pause 6
+
+We'll need a key function that first sorts by evenness (odd numbers will end up at the start) and
+then by the 2nd item:
+
+    >>> def byeven_2nd(val): return (val[0] % 2 == 0, val[1])
+
+    >>> sorted(lst, key=byeven_2nd)
+    [(1, 1), (1, 2), (1, 3), (0, 1), (2, 1), (0, 2), (2, 2), (0, 3), (2, 3)]
+
+:pause 4
+
