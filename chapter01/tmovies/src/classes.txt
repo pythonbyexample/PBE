@@ -1,0 +1,77 @@
+Classes let you package data and functions together in one unit
+
+:pause 3
+
+Classes also allow you to inherit behaviour from other classes
+
+:pause 4
+
+A simple class with no data or methods:
+
+    >>> class A(object): pass
+
+:pause 4
+
+Let's make an instance:
+
+    >>> a = A()
+
+:pause 2
+
+The instance has no attributes or methods because the class did not have any, but we can add some
+attributes and use the instance simply to store data:
+
+    >>> a.x = 1
+    >>> a.y = "hi"
+    >>> a.x; a.y
+    1
+    'hi'
+
+
+    >>> class Tree(object):
+    ...  height = 0
+
+:pause 4
+
+    >>> birch = Tree()
+
+:pause 4
+
+    >>> birch.height
+    0
+
+:pause 4
+
+    >>> def grow(tree): tree.height += 1
+    >>> grow(birch)
+    >>> birch.height
+    3
+
+
+:pause 4
+
+    >>> class Tree(object):
+    ...  height = 0
+    ...  def grow(self):
+    ...   self.height += 1
+
+:pause 4
+
+    >>> bamboo = Tree()
+
+:pause 4
+
+    >>> birch.grow(); birch.height
+    1
+
+:pause 4
+
+    >>> birch.grow(); birch.height
+    2
+
+:pause 4
+
+    >>> bamboo.height
+    0
+
+:pause 4
