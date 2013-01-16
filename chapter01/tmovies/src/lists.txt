@@ -249,6 +249,10 @@ then by the 2nd item:
 
 :pause 4
 
+
+
+
+
 You can get the list's length with len() function:
 
     >>> lst = [1, 2, 3]
@@ -257,9 +261,20 @@ You can get the list's length with len() function:
 
 :pause 4
 
-Lists can be multiplied:
+Lists can also be multiplied:
 
     >>> lst*4
     [1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3]
+
+:pause 4
+
+Deletion of items can be done by index or slice:
+
+    >>> lst = [1, 2, 3, 4, 5]
+
+    >>> del lst[0]; lst
+    [2, 3, 4, 5]
+    >>> del lst[1:3]; lst
+    [2, 5]
 
 :pause 4

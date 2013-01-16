@@ -1,0 +1,89 @@
+Classes let you package data and functions together in one unit
+
+:pause 3
+
+Classes also allow you to inherit behaviour from other classes
+
+:pause 4
+
+A simple class with no data or methods:
+
+    >>> class A(object): pass
+
+:pause 4
+
+Let's make an instance:
+
+    >>> a = A()
+
+:pause 2
+
+The instance has no attributes or methods because the class did not have any, but we can add some
+attributes and use the instance simply to store data:
+
+    >>> a.x = 1
+    >>> a.y = "hi"
+    >>> a.x; a.y
+    1
+    'hi'
+
+
+    >>> class Tree(object):
+    ...  height = 0
+
+:pause 4
+
+    >>> birch = Tree()
+
+    >>> birch.height
+    0
+
+:pause 4
+
+Now I'd like to make a small function to make the tree grow one centimeter, or foot, or what have
+you, at a time:
+
+    >>> def grow(tree):
+    ...     tree.height += 1
+
+    >>> grow(birch); grow(birch)
+    >>> birch.height
+    2
+
+:pause 4
+
+That's really great but it would make even more sense if the tree class itself knew how to grow
+itself. Certainly, a real tree does know how to grow.
+
+:pause 4
+
+In the grow() function, we were passing the tree instance as an argument. In the class, we want to
+do the same, but I'm going to call it 'self' instead of 'tree' -- the current instance is always
+called 'self' by python convention:
+
+    >>> class Tree(object):
+    ...  height = 0
+    ...  def grow(self):
+    ...   self.height += 1
+
+:pause 4
+
+    >>> birch = Tree()
+    >>> bamboo = Tree()
+
+:pause 4
+
+    >>> birch.grow(); birch.height
+    1
+
+:pause 4
+
+    >>> birch.grow(); birch.height
+    2
+
+:pause 4
+
+    >>> bamboo.height
+    0
+
+:pause 4
