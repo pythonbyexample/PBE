@@ -174,7 +174,7 @@ Here's how you can capitalize every word in a string:
 
 :pause 4
 
-And finally, changing to upper and lower case:
+Changing to upper and lower case:
 
     >>> s.upper()
     'LARGE SPACE ROCK FLIES PAST EARTH'
@@ -184,4 +184,52 @@ And finally, changing to upper and lower case:
 
 :pause 4
 
+.. and getting length:
+
+    >>> len(s)
+    33
+
+:pause 4
+
 Testing for a substring can be done with the `in` keyword:
+
+    >>> "rock" in s
+    True
+
+    >>> "classical" in s
+    False
+
+
+
+
+
+The next few examples will show slicing operations.
+
+:pause 4
+
+    >>> s[8:16]
+    'ace rock'
+
+    >>> s[8:]
+    'ace rock flies past earth'
+
+:pause 2
+
+    >>> s[:8]
+    'Large sp'
+
+:pause 4
+
+You can even provide the step as the third slicing argument:
+
+    >>> s[::2]
+    'Lresaerc le aterh'
+
+:pause 4
+
+A negative step will reverse the string:
+
+    >>> s[::-1]
+    'htrae tsap seilf kcor ecaps egraL'
+
+:pause 4

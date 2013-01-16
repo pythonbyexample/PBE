@@ -28,6 +28,10 @@ function:
 
 :pause 4
 
+
+
+
+
 A function can, of course, do something:
 
     >>> def f(): print("hello")
@@ -53,6 +57,10 @@ doesn't:
 
 :pause 4
 
+
+
+
+
 Let's make it return the argument multiplied:
 
     >>> def f(x): return x * 5
@@ -63,35 +71,36 @@ Let's make it return the argument multiplied:
 
 :pause 7
 
-Amazingly, function can even accept two arguments:
+Amazingly, a function can even accept two arguments:
 
-    >>> def f(x, y): return x * y + x + y
-
-:pause 4
-
+    >>> def f(x, y):
+    ...     return x * y + x + y
     >>> f(2, 5)
     17
 
 :pause 4
 
-    >>> def f(x, y=1, z=2): return x * y + z
 
-:pause 4
 
+
+
+Sometimes you may have arguments that *usually* have a certain value but you still want to have an
+option to override them. These are known as "keyword arguments":
+
+    >>> def f(x, y=1, z=2):
+    ...     return x * y + z
     >>> f(1)
     3
-
-:pause 4
-
     >>> f(2)
     4
-
-:pause 4
-
     >>> f(1, 3)
     5
+    >>> f(1, 3, 5)
+    8
 
-:pause 4
+:pause 7
+
+The first argument, 'x', is still required because I did not give the default for it:
 
     >>> f()
     Traceback (most recent call last):
@@ -100,66 +109,76 @@ Amazingly, function can even accept two arguments:
 
 :pause 4
 
-    >>> f(1, 3, 5)
-    8
 
-:pause 4
+
+
+
+You can tell the function to accept ANY number of arguments:
 
     >>> def f(*args): return sum(args)
 
-:pause 4
+:pause 3
 
-    >>> f(1, 3, 8)
-    12
+    >>> f(1, 3, 8, 1)
+    13
 
-:pause 4
+:pause 3
 
-    >>> def f(x, y, z): return x + y + z
+Let's say we have a functions that accepts three arguments. If you had a list of three values, it
+would be convenient to be able to tell the function to take the list as arguments. In fact, you
+can do that:
 
-:pause 4
+    >>> def f(x, y, z):
+    ...     return x + y + z
 
-    >>> lst = [1,3,8]
+:pause 2
 
-:pause 4
-
-    >>> f(lst)
-    Traceback (most recent call last):
-      File "<stdin>", line 1, in <module>
-    TypeError: f() takes exactly 3 arguments (1 given)
-
-:pause 4
-
+    >>> lst = [1, 3, 8]
     >>> f(*lst)
     12
 
 :pause 4
 
-    >>> def f(x=1, y=2, z=3): return x * y + z
 
-:pause 4
+
+
+
+What if I had a function that takes keyword arguments.. What do these arguments remind me of?
+Don't they look a lot like a dictionary? Surely there must be a way to give a dictionary to the
+function to use as arguments!
+
+    >>> def f(x=1, y=2, z=3):
+    ...     return x * y + z
+
+:pause 2
 
     >>> d = dict(x=2, y=3)
-
-:pause 4
-
     >>> f(**d)
     9
 
 :pause 4
 
+We can try an empty dict, too:
+
     >>> d = dict()
-
-:pause 4
-
     >>> f(**d)
     5
 
 :pause 4
 
+Of course, that'd be the same thing as not passing any arguments at all, so it's a bit pointless.
+
     >>> f()
     5
 
 :pause 4
+
+
+
+
+
+By now it will make sense to you that a function can also accept an arbitrary number of keyword
+arguments:
 
     >>> def f(**kwargs):
     ...  if 'x' in kwargs:
@@ -169,16 +188,18 @@ Amazingly, function can even accept two arguments:
 
     >>> f()
 
-:pause 4
-
     >>> f(y=1)
-
-:pause 4
 
     >>> f(x=1)
     got an 'x' arg!
 
 :pause 4
+
+
+
+
+
+Both types can be accepted at the same time, with keyword args following the positional:
 
     >>> def f(*args, **kwargs):
     ...  print(args)
@@ -193,13 +214,60 @@ Amazingly, function can even accept two arguments:
 :pause 4
 
     >>> lst = [3, 4]
-
-:pause 4
-
     >>> d = dict(x=5, y=7)
-
-:pause 4
 
     >>> f(*lst, **d)
     (3, 4)
     {'y': 7, 'x': 5}
+
+:pause 6
+
+
+
+
+
+A function has its own namespace, separate from global one and from other functions:
+
+    >>> def f():
+    ...  a = "hi"
+    ...  print(a)
+
+    >>> a = 1
+    >>> f()
+    hi
+    >>> print(a)
+    1
+
+:pause 2
+
+When you are writing a function, you can create the variables you need to use in the function,
+without worrying that you might overwrite or accidentally change other variables in global
+namespace.
+
+:pause 4
+
+
+
+
+
+Functions are objects just like any other object in Python -- you can store them somewhere, for
+example in a list or a dictionary:
+
+    >>> def f(x):
+    ...     return x*x
+
+    >>> lst = [f, f, f]
+    >>> lst[1](5)
+    25
+
+:pause 4
+
+Just as easily, you can pass a function as an argument:
+
+    >>> def a(myfunc, x):
+    ...     return myfunc(x)
+
+    >>> a(f, 6)
+    36
+
+:pause 4

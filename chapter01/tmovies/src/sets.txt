@@ -18,6 +18,10 @@ You can also create a set using a set() call (or figure brackets):
 
 :pause 4
 
+
+
+
+
 Intersection can be created using & operator or intersection() method:
 
     >>> s & s2
@@ -53,6 +57,10 @@ Symmetric difference returns a set of items in one or the other (but not both) s
 
 :pause 4
 
+
+
+
+
 Unlike lists, you need to use add() method (instead of append()) to add items:
 
     >>> s2.add(6); s2
@@ -66,6 +74,10 @@ Merging with a second set can be done with update() method, similar to dicts:
     {1, 2, 3, 4, 5, 6}
 
 :pause 4
+
+
+
+
 
 Arbitrary item is popped with pop() method, again similar to dicts:
 
