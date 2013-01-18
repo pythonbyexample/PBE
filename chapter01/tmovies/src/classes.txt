@@ -78,16 +78,23 @@ Now we can tell the tree itself to grow:
 
 :pause 4
 
-It was not necessary to pass the instance as an argument because the class already handles that
-automatically (the instance is passed as the first argument, so if you have additional arguments,
-they have to be after 'self').
+It wasn't necessary to pass the instance as an argument because the class already handles that
+automatically (the instance is passed as the first argument -- if you have additional arguments,
+they have to be positioned after 'self').
 
 :pause 4
 
-    >>> birch.grow(); birch.height
+You can add other trees and they all will have the same methods but will be independent instances
+and will have their own sets of data:
+
+    >>> bamboo = Tree()
+    >>> bamboo.grow(); bamboo.height
     1
+    >>> bamboo.grow(); bamboo.height
+    2
 
 :pause 4
+
 
     >>> birch.grow(); birch.height
     2
