@@ -22,8 +22,9 @@ import os, sys
 import re
 from os.path import join as pjoin
 from json import dumps
+from html import escape
 
-from utils import getitem, first, nl, space
+from utils import getitem, first, nl, space, multi_replace
 
 
 cmdpat         = "(:pause ?\d*|:clear|:type)"
@@ -32,6 +33,7 @@ outdir         = "tmovies/out/"
 tplfn          = "tmovies/template.html"
 nbsp           = "&nbsp;"
 interp_typecmd = True   # auto insert type effect before python interpreter lines (>>>)
+
 
 class Tutorial(object):
     typeblock = False
@@ -75,8 +77,7 @@ class Tutorial(object):
         for line in text.split(nl):
             if interp_typecmd and line.strip().startswith(">>>"):
                 self.commands.append(("type", None))
-            self.commands.append( ("text", space + line.replace(space*4, nbsp*4)) )
-        # self.commands.extend( [("text", space+l) for l in text] )
+            self.commands.append( ("text", space + escape(line).replace(space*4, nbsp*4)) )
 
 
 class TutorialMovies(object):

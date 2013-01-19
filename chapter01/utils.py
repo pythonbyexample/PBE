@@ -477,3 +477,8 @@ def progress_bar(value, total, size=78, char='∘', border='||'):
     inside = size - 2
     tpl    = "%s%%-%ds%s" % (border[0], inside, border[1])
     return tpl % (char * iround(inside * value/total))
+
+def multi_replace(text, tuples):
+    for s1, s2 in tuples:
+        text = text.replace(s1, s2)
+    return text
