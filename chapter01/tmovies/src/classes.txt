@@ -67,8 +67,8 @@ itself. Certainly, a real tree does know how to grow!
 :pause 4
 
 In the grow() function, we were passing the tree instance as an argument. In the class, we want to
-do the same, but I'm going to call it 'self' instead of 'tree' -- the current instance is always
-called 'self' by Python convention:
+do the same, but I'm going to call it 'self' instead of 'tree' -- by Python convention, current
+instance is always called 'self':
 
     >>> class Tree(object):
             height = 0
@@ -167,8 +167,6 @@ are __init__() and __str__() methods:
             def grow(self):
                 self.height += 1
 
-(I've added blank lines for readability but you need to omit them if entering the code at the
-interactive prompt.)
 
 :pause 4
 

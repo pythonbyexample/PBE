@@ -6,7 +6,7 @@ from dbe.questionnaire.models import *
 from dbe.questionnaire.forms import *
 from dbe.classviews.edit import *
 from dbe.classviews.list import *
-from dbe.classviews.detail import *
+from dbe.classviews.detail_custom import *
 
 
 class Questionnaires(ListView):
@@ -38,7 +38,6 @@ class QuestStats(DetailView2):
         """Calculate statistics for current questionnaire."""
         user_quests = UserQuestionnaire.obj.filter(questionnaire=self.object)
         d           = DefaultOrderedDict
-
         #             quests    sections  questions answers:nums
         quests      = d( lambda:d( lambda:d( lambda:d(int) ) ) )
 
