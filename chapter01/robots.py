@@ -173,8 +173,7 @@ class RobotsGame(object):
         return L
 
 
-class Test(object):
-
+class BasicInterface(object):
     def run(self):
         cmdpat  = "%d?"
         cmdpat  = cmdpat + " (%s)" % sjoin(commands.keys(), '|')
@@ -200,7 +199,6 @@ class Test(object):
 
 if __name__ == "__main__":
     board = RBoard(size, Blank, pause_time=pause_time)
-    # board.place_tiles()
 
     rgame   = RobotsGame()
     randloc = board.random_blank
@@ -210,5 +208,5 @@ if __name__ == "__main__":
 
     Goal(randloc())
 
-    try: Test().run()
-    except KeyboardInterrupt: sys.exit()
+    try                      : BasicInterface().run()
+    except KeyboardInterrupt : sys.exit()

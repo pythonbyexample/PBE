@@ -76,33 +76,39 @@ class ModelFormMixin(FormMixin, SingleObjectMixin):
     """
     A mixin that provides a way to show and handle a modelform in a request.
     """
+    form_model                    = None
+    modelform_class               = None
+    context_modelform_object_name = None
 
-    def get_form_class(self):
+    def get_modelform_class(self):
         """
         Returns the form class to use in this view.
         """
-        if self.form_class:
-            return self.form_class
+        if self.modelform_class:
+            return self.modelform_class
         else:
-            if self.model is not None:
+            if self.form_model is not None:
                 # If a model has been explicitly provided, use it
-                model = self.model
-            elif hasattr(self, 'object') and self.object is not None:
+                model = self.form_model
+            elif hasattr(self, 'modelform_object') and self.modelform_object is not None:
                 # If this view is operating on a single object, use
                 # the class of that object
-                model = self.object.__class__
+                model = self.modelform_object.__class__
             else:
                 # Try to get a queryset and extract the model class
                 # from that
                 model = self.get_queryset().model
             return model_forms.modelform_factory(model)
 
-    def get_form_kwargs(self):
+    def get_modelform(self, form_class):
+        return form_class(**self.get_modelform_kwargs())
+
+    def get_modelform_kwargs(self):
         """
         Returns the keyword arguments for instantiating the form.
         """
         kwargs = super(ModelFormMixin, self).get_form_kwargs()
-        kwargs.update({'instance': self.object})
+        kwargs.update({'instance': self.modelform_object})
         return kwargs
 
     def get_success_url(self):
@@ -110,7 +116,7 @@ class ModelFormMixin(FormMixin, SingleObjectMixin):
         Returns the supplied URL.
         """
         if self.success_url:
-            url = self.success_url % self.object.__dict__
+            url = self.success_url % self.modelform_object.__dict__
         else:
             try:
                 url = self.object.get_absolute_url()
@@ -120,11 +126,11 @@ class ModelFormMixin(FormMixin, SingleObjectMixin):
                     " a get_absolute_url method on the Model.")
         return url
 
-    def form_valid(self, form):
+    def modelform_valid(self, form):
         """
         If the form is valid, save the associated model.
         """
-        self.object = form.save()
+        self.modelform_object = form.save()
         return super(ModelFormMixin, self).form_valid(form)
 
     def get_context_data(self, **kwargs):
@@ -133,11 +139,11 @@ class ModelFormMixin(FormMixin, SingleObjectMixin):
         supplied context_object_name name.
         """
         context = {}
-        if self.object:
-            context['object'] = self.object
-            context_object_name = self.get_context_object_name(self.object)
-            if context_object_name:
-                context[context_object_name] = self.object
+        if self.modelform_object:
+            context['modelform_object'] = self.modelform_object
+            # context_object_name = self.get_context_object_name(self.modelform_object)
+            if context_modelform_object_name:
+                context[context_modelform_object_name] = self.modelform_object
         context.update(kwargs)
         return super(ModelFormMixin, self).get_context_data(**context)
 
@@ -150,9 +156,12 @@ class ProcessFormView(View):
         """
         Handles GET requests and instantiates a blank version of the form.
         """
-        form_class = self.get_form_class()
-        form = self.get_form(form_class)
-        return self.render_to_response(self.get_context_data(form=form))
+        form_class      = self.get_form_class()
+        form            = self.get_form(form_class)
+        modelform_class = self.get_modelform_class()
+        modelform       = self.get_modelform(modelform_class)
+
+        return self.render_to_response(self.get_context_data(form=form, modelform=modelform))
 
     def post(self, request, *args, **kwargs):
         """

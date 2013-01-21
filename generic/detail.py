@@ -11,12 +11,12 @@ class SingleObjectMixin(ContextMixin):
     """
     Provides the ability to retrieve a single object for further manipulation.
     """
-    model = None
-    queryset = None
-    slug_field = 'slug'
-    context_object_name = None
-    slug_url_kwarg = 'slug'
-    pk_url_kwarg = 'pk'
+    detail_model               = None
+    detail_context_object_name = None
+    detail_queryset            = None
+    slug_field                 = 'slug'
+    slug_url_kwarg             = 'slug'
+    pk_url_kwarg               = 'pk'
 
     def get_object(self, queryset=None):
         """
@@ -55,21 +55,27 @@ class SingleObjectMixin(ContextMixin):
                           {'verbose_name': queryset.model._meta.verbose_name})
         return obj
 
-    def get_queryset(self):
+    def get_detail_object(self, queryset=None):
+        return self.get_object(self.get_detail_queryset())
+
+    def get_queryset(self, model):
         """
         Get the queryset to look an object up against. May not be called if
         `get_object` is overridden.
         """
-        if self.queryset is None:
-            if self.model:
-                return self.model._default_manager.all()
+        if self.detail_queryset is None:
+            if model:
+                return model._default_manager.all()
             else:
                 raise ImproperlyConfigured("%(cls)s is missing a queryset. Define "
-                                           "%(cls)s.model, %(cls)s.queryset, or override "
+                                           "%(cls)s.detail_model, %(cls)s.detail_queryset, or override "
                                            "%(cls)s.get_queryset()." % {
                                                 'cls': self.__class__.__name__
                                         })
         return self.queryset._clone()
+
+    def get_detail_queryset(self):
+        return self.get_queryset(self.detail_model)
 
     def get_slug_field(self):
         """
@@ -77,25 +83,25 @@ class SingleObjectMixin(ContextMixin):
         """
         return self.slug_field
 
-    def get_context_object_name(self, obj):
+    def get_context_detail_object_name(self, obj):
         """
         Get the name to use for the object.
         """
-        if self.context_object_name:
-            return self.context_object_name
+        if self.context_detail_object_name:
+            return self.context_detail_object_name
         elif isinstance(obj, models.Model):
             return obj._meta.object_name.lower()
         else:
             return None
 
-    def get_context_data(self, **kwargs):
+    def get_detail_context_data(self, **kwargs):
         """
         Insert the single object into the context dict.
         """
         context = {}
-        context_object_name = self.get_context_object_name(self.object)
+        context_object_name = self.get_context_detail_object_name(self.detail_object)
         if context_object_name:
-            context[context_object_name] = self.object
+            context[context_object_name] = self.detail_object
         context.update(kwargs)
         return super(SingleObjectMixin, self).get_context_data(**context)
 
@@ -105,8 +111,8 @@ class BaseDetailView(SingleObjectMixin, View):
     A base view for displaying a single object
     """
     def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        context = self.get_context_data(object=self.object)
+        self.detail_object = self.get_detail_object()
+        context = self.get_context_data(detail_object=self.detail_object)
         return self.render_to_response(context)
 
 
@@ -122,7 +128,7 @@ class SingleObjectTemplateResponseMixin(TemplateResponseMixin):
         * the value of ``template_name`` on the view (if provided)
         * the contents of the ``template_name_field`` field on the
           object instance that the view is operating upon (if available)
-        * ``<app_label>/<object_name><template_name_suffix>.html``        
+        * ``<app_label>/<object_name><template_name_suffix>.html``
         """
         try:
             names = super(SingleObjectTemplateResponseMixin, self).get_template_names()
@@ -134,23 +140,23 @@ class SingleObjectTemplateResponseMixin(TemplateResponseMixin):
         # If self.template_name_field is set, grab the value of the field
         # of that name from the object; this is the most specific template
         # name, if given.
-        if self.object and self.template_name_field:
-            name = getattr(self.object, self.template_name_field, None)
+        if self.detail_object and self.template_name_field:
+            name = getattr(self.detail_object, self.template_name_field, None)
             if name:
                 names.insert(0, name)
 
         # The least-specific option is the default <app>/<model>_detail.html;
         # only use this if the object in question is a model.
-        if isinstance(self.object, models.Model):
+        if isinstance(self.detail_object, models.Model):
             names.append("%s/%s%s.html" % (
-                self.object._meta.app_label,
-                self.object._meta.object_name.lower(),
+                self.detail_object._meta.app_label,
+                self.detail_object._meta.object_name.lower(),
                 self.template_name_suffix
             ))
-        elif hasattr(self, 'model') and self.model is not None and issubclass(self.model, models.Model):
+        elif hasattr(self, 'detail_model') and self.detail_model is not None and issubclass(self.detail_model, models.Model):
             names.append("%s/%s%s.html" % (
-                self.model._meta.app_label,
-                self.model._meta.object_name.lower(),
+                self.detail_model._meta.app_label,
+                self.detail_model._meta.object_name.lower(),
                 self.template_name_suffix
             ))
         return names

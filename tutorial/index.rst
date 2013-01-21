@@ -28,3 +28,4 @@ Welcome to Lark's Tongue Guide to Python!
     mines
     betelgeuse
     versi
+    robots
