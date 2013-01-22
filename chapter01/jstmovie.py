@@ -32,6 +32,7 @@ tut_dir        = "tmovies/src/"
 outdir         = "tmovies/out/"
 tplfn          = "tmovies/template.html"
 nbsp           = "&nbsp;"
+endmsg         = "--- THE END ---".center(79)
 interp_typecmd = True   # auto insert type effect before python interpreter lines (>>>)
 
 
@@ -43,7 +44,7 @@ class Tutorial(object):
         self.name     = first(fn.split('.'))
         self.tpl      = tpl
 
-        with open(os.path.join(tut_dir, fn)) as fp:
+        with open(pjoin(tut_dir, fn), encoding="utf-8") as fp:
             self.sections = re.split(cmdpat, fp.read())
 
     def run(self):
@@ -61,13 +62,15 @@ class Tutorial(object):
             else:
                 add(section)
 
-        add(nl*3 + "  --- THE END ---" + nl*2)
+        add(nl*3 + endmsg + nl*2)
         self.write_html()
 
     def write_html(self):
-        cmds = dumps(self.commands, indent=4, separators=(',', ':'))
-        html = self.tpl.replace("%COMMANDS%", cmds)
-        with open(pjoin(outdir, self.name + ".html"), 'w') as fp:
+        cmds  = dumps(self.commands, indent=4, separators=(',', ':'))
+        html  = self.tpl.replace("%COMMANDS%", cmds)
+        outfn = pjoin(outdir, self.name + ".html")
+
+        with open(outfn, 'w', encoding="utf-8") as fp:
             fp.write(html)
 
     def add_text(self, text):
@@ -77,7 +80,7 @@ class Tutorial(object):
         for line in text.split(nl):
             if interp_typecmd and line.strip().startswith(">>>"):
                 self.commands.append(("type", None))
-            self.commands.append( ("text", space + escape(line).replace(space*4, nbsp*4)) )
+            self.commands.append( ("text", space + escape(line).replace(space, nbsp)) )
 
 
 class TutorialMovies(object):
