@@ -482,3 +482,9 @@ def multi_replace(text, tuples):
     for s1, s2 in tuples:
         text = text.replace(s1, s2)
     return text
+
+def getter(fn, is_at_end=lambda v: not v):
+  while True:
+    val = fn()
+    if is_at_end(val): break
+    yield val

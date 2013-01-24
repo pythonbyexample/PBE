@@ -4,7 +4,7 @@
 <div class="main">
     <ul>
         {% for quest in user_quests %}
-            <li><a href="{% url user_questionnaire quest.pk %}"
+            <li><a href="{% url 'user_questionnaire' quest.pk %}"
                         >{{ quest.user }} - {{ quest.questionnaire.name }}</a></li>
         {% endfor %}
     </ul>

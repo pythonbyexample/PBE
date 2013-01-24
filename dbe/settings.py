@@ -31,10 +31,10 @@ SITE_ID                 = 1
 USE_I18N                = True
 USE_L10N                = True
 ACCOUNT_ACTIVATION_DAYS = 2
-SITE_ROOT               = '/home/ak/projects/dprojects/dbe/'
-MEDIA_ROOT              = '/home/ak/projects/dprojects/dbe/media/'
+SITE_ROOT               = '/media/Main/Home/Projects/pytut/dbe/'
+MEDIA_ROOT              = '/media/Main/Home/Projects/pytut/dbe/media/'
 MEDIA_URL               = 'http://localhost:8001/media/'
-STATIC_ROOT             = '/home/ak/Django-1.4/django/contrib/admin/static/'
+STATIC_ROOT             = '/home/ak/Downloads/Django-1.5c1/django/contrib/admin/static/'
 STATIC_URL              = 'http://localhost:8001/static/'
 SECRET_KEY              = 'i02p@*@*3&(434gc1n80z^hu8g09mfbsi^+%ylo5$&jrusg^h5'
 ROOT_URLCONF            = 'dbe.urls'
@@ -65,7 +65,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.request',
     'django.contrib.messages.context_processors.messages',
-    'dbe.photo.views.photo_context',
+    # 'dbe.photo.views.photo_context',
 )
 
 INSTALLED_APPS = [

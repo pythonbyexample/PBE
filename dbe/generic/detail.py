@@ -4,7 +4,8 @@ from django.core.exceptions import ImproperlyConfigured, ObjectDoesNotExist
 from django.db import models
 from django.http import Http404
 from django.utils.translation import ugettext as _
-from django.views.generic.base import TemplateResponseMixin, ContextMixin, View
+
+from base import TemplateResponseMixin, ContextMixin, View
 
 
 class SingleObjectMixin(ContextMixin):
@@ -14,11 +15,11 @@ class SingleObjectMixin(ContextMixin):
     detail_model               = None
     detail_context_object_name = None
     detail_queryset            = None
+    detail_pk_url_kwarg        = 'dpk'
     slug_field                 = 'slug'
     slug_url_kwarg             = 'slug'
-    pk_url_kwarg               = 'pk'
 
-    def get_object(self, queryset=None):
+    def get_object(self, queryset=None, pk_url_kwarg=None):
         """
         Returns the object the view is displaying.
 
@@ -31,7 +32,8 @@ class SingleObjectMixin(ContextMixin):
             queryset = self.get_queryset()
 
         # Next, try looking up by primary key.
-        pk = self.kwargs.get(self.pk_url_kwarg, None)
+        pk = self.kwargs.get(pk_url_kwarg, None)
+
         slug = self.kwargs.get(self.slug_url_kwarg, None)
         if pk is not None:
             queryset = queryset.filter(pk=pk)
@@ -56,7 +58,7 @@ class SingleObjectMixin(ContextMixin):
         return obj
 
     def get_detail_object(self, queryset=None):
-        return self.get_object( queryset or self.get_detail_queryset() )
+        return self.get_object( queryset or self.get_detail_queryset(), self.detail_pk_url_kwarg )
 
     def get_queryset(self, model):
         """
@@ -112,10 +114,10 @@ class BaseDetailView(SingleObjectMixin, View):
     """
     A base view for displaying a single object
     """
-    def get(self, request, *args, **kwargs):
+    def detail_get(self, request, *args, **kwargs):
         self.detail_object = self.get_detail_object()
-        context = self.get_context_data(detail_object=self.detail_object)
-        return self.render_to_response(context)
+        return self.get_detail_context_data(detail_object=self.detail_object)
+        # return self.render_to_response(context)
 
 
 class SingleObjectTemplateResponseMixin(TemplateResponseMixin):

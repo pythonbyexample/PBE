@@ -7,7 +7,7 @@
 </style>
 <div class="main">
 
-    {% for quest, sections in stats.items %}
+    {% for quest, sections in view.stats.items %}
         <h4>{{ quest }}</h4>
         <ul id="quest">
             {% for section, questions in sections.items %}

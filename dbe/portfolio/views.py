@@ -2,52 +2,50 @@ from dbe.portfolio.models import *
 from dbe.portfolio.forms import *
 from settings import MEDIA_URL
 
-from dbe.classviews.list_custom import *
-from dbe.classviews.edit_custom import *
+from dbe.generic.list import ListView
+from dbe.cbv.edit_custom import *
 
 
-class Main(AKListView):
-    model               = Group
-    context_object_name = "groups"
-    paginate_by         = 10
-    template_name       = "portfolio/list.html"
+class Main(ListView):
+    list_model               = Group
+    list_context_object_name = "groups"
+    paginate_by              = 10
+    template_name            = "portfolio/list.html"
 
 
 class SlideshowView(ListRelated):
-    """Slideshow"""
-    model               = Image
-    related_model       = Group
-    foreign_key_field   = "group"
-    context_object_name = "images"
-    template_name       = "slideshow.html"
-    paginate_by         = None
+    """Show images in a group."""
+    list_model               = Image
+    detail_model             = Group
+    related_name             = "images"
+    list_context_object_name = "images"
+    template_name            = "slideshow.html"
 
 
-class AddImages(CreateWithFormset):
-    """Create new images."""
-    model            = Image
-    form_class       = AddImageForm
-    item_name        = "image"
-    template_name    = "add_images.html"
-    extra            = 10
+class AddImages(DetailView, FormSetView):
+    """Add images to a group view."""
+    detail_model       = Group
+    formset_model      = Image
+    formset_form_class = AddImageForm
+    template_name      = "add_images.html"
+    extra              = 10
 
-    def form_valid(self, formset):
-        group = get_object_or_404(Group, pk=self.kwargs["pk"])
+    def formset_valid(self, formset):
         for form in formset:
             if form.has_changed():
                 img = form.save(commit=False)
-                img.group = group
+                img.group = self.detail_object
                 img.save()
         return HttpResponseRedirect(reverse2("group", pk=group.pk))
 
 
 class GroupView(DetailListFormsetView):
     """List of images in an group, optionally with a formset to update image data."""
-    main_model          = Group
-    list_model          = Image
+    detail_model        = Group
+    formset_model       = Image
     related_name        = "images"
     context_object_name = "group"
-    form_class          = ImageForm
+    formset_form_class  = ImageForm
     paginate_by         = 25
     template_name       = "group.html"
 
@@ -56,27 +54,31 @@ class GroupView(DetailListFormsetView):
         if self.show == "edit" and not self.request.user.is_authenticated():
             self.show = "thumbnails"
 
-    def form_valid(self, form):
-        super(GroupView, self).form_valid(form)
-        url = reverse2("group", pk=self.main_object.pk, show=self.show)
-        return redir("%s?%s" % (url, self.request.GET.urlencode()))     # keep page num.
+    def formset_valid(self, formset):
+        super(GroupView, self).formset_valid(formset)
+        url = reverse2("group", pk=self.detail_object.pk, show=self.show)
 
-    def add_context(self, **kwargs):
+        # keep page num
+        url = "%s?%s" % (url, self.request.GET.urlencode())
+        return redir(url)
+
+    def add_context(self):
         return dict(show=self.show)
 
 
-class ImageView(UpdateView2):
-    model               = Image
-    form_class          = ImageForm
-    context_object_name = "image"
-    template_name       = "portfolio/image.html"
+class ImageView(UpdateView):
+    modelform_model               = Image
+    modelform_class               = ImageForm
+    modelform_context_object_name = "image"
+    template_name                 = "portfolio/image.html"
 
     def get_context_data(self, **kwargs):
-        c = super(ImageView, self).get_context_data(**kwargs)
-        edit = self.request.GET.get("edit", False)
-        if not self.request.user.is_authenticated():
+        R = self.request
+        context = super(ImageView, self).get_context_data(**kwargs)
+        edit = R.GET.get("edit", False)
+        if not R.user.is_authenticated():
             edit = False
-        return updated(c, dict(edit=edit))
+        return dict(context, edit=edit)
 
 
 def portfolio_context(request):

@@ -5,58 +5,64 @@ from django.http import Http404
 from dbe.shared.utils import *
 from dbe.bombquiz.models import *
 from dbe.bombquiz.forms import *
-from dbe.classviews.edit import *
-from dbe.classviews.base_custom import *
+
+from dbe.generic.base import TemplateView
+from dbe.generic.edit import CreateView, FormView
 
 seconds       = 30
 lose_question = 20
 
 
 class NewPlayer(CreateView):
-    model               = PlayerRecord
-    form_class          = NewPlayerForm
-    context_object_name = "new_player"
-    template_name       = "question.html"
-    success_url         = reverse_lazy("question")
+    """Create new player & add data to session."""
+    modelform_model               = PlayerRecord
+    modelform_form_class          = NewPlayerForm
+    modelform_context_object_name = "new_player"
+    template_name                 = "question.html"
+    success_url                   = reverse_lazy("question")
 
-    def form_valid(self, form):
-        url = super(NewPlayer, self).form_valid(form)
-        self.request.session.update( dict(player_record=self.object, question=1, left=seconds) )
-        return url
+    def form_valid(self, form, modelform, _):
+        resp = super(NewPlayer, self).form_valid(form, modelform, _)
+        data = dict(player_record=self.modelform_object, question=1, left=seconds)
+        self.request.session.update(data)
+        return resp
 
 
-class Done(TemplateView2):
+class Done(TemplateView):
     template_name = "bombquiz/done.html"
 
-    def add_context(self, **kwargs):
-        return dict(left=self.request.session.get("left"))
+    def add_context(self):
+        return dict( left=self.request.session.get("left") )
 
 
-class Stats(TemplateView2):
+class Stats(TemplateView):
     template_name = "stats.html"
 
-    def add_context(self, **kwargs):
-        ans = PlayerRecord.obj.filter(passed=False).annotate(anum=Count("answers"))
-        return dict( ans_failed=ans.aggregate(avg=Avg("anum")) )
+    def add_context(self):
+        answer    = PlayerRecord.obj.filter(passed=False).annotate( anum=Count("answers") )
+        aggregate = answer.aggregate(avg=Avg("anum"))
+        return dict(ans_failed=aggregate)
 
 
 class QuestionView(FormView):
-    """View question."""
+    form_class    = QuestionForm
     template_name = "question.html"
 
-    def get_form(self, form_class):
+    def get_form_kwargs(self):
         """Get current section (container), init the form based on questions in the section."""
+        kwargs      = super(QuestionView, self).get_form_kwargs()
         session     = self.request.session
-        self.player = session.get("player_record", None)
+        self.player = session.get("player_record")
         self.qn     = session.get("question", 1)
         if not self.player: raise Http404
 
         self.questions = Question.obj.all()
         if not self.questions: raise Http404
-        self.question = self.questions[self.qn-1]
-        return QuestionForm(question=self.question, **self.get_form_kwargs())
 
-    def form_valid(self, form):
+        self.question = self.questions[self.qn-1]
+        return dict(kwargs, question=self.question)
+
+    def form_valid(self, form, *args):
         """Create user answer records from form data."""
         session = self.request.session
         left    = session.get("left", seconds)
@@ -71,13 +77,13 @@ class QuestionView(FormView):
 
         # redirect to the next question or to 'done' page
         if self.qn >= self.questions.count() or left <= 0:
-            self.player.update( passed=bool(left>0) )
+            self.player.update( passed=bool(left > 0) )
             return redir("done")
         else:
             session["question"] = session.get("question", 1) + 1
             return redir("question")
 
     def get_context_data(self, **kwargs):
-        c = super(QuestionView, self).get_context_data(**kwargs)
+        context = super(QuestionView, self).get_context_data(**kwargs)
         session = self.request.session
-        return updated(c, dict(qnum=self.qn, total=self.questions.count(), left=session["left"]))
+        return dict(context, qnum=self.qn, total=self.questions.count(), left=session["left"])

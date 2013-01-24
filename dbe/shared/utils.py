@@ -98,11 +98,11 @@ class DefaultOrderedDict(OrderedDict):
 
     def __deepcopy__(self, memo):
         import copy
-        return type(self)(self.default_factory,
-                          copy.deepcopy(self.items()))
+        return type(self)(self.default_factory, copy.deepcopy(self.items()))
+
     def __repr__(self):
-        return 'DefaultOrderedDict(%s, %s)' % (self.default_factory,
-                                        OrderedDict.__repr__(self))
+        return 'DefaultOrderedDict(%s, %s)' % (self.default_factory, OrderedDict.__repr__(self))
+
 
 def redir(to, *args, **kwargs):
     if not (to.startswith('/') or to.startswith("http://") or to.startswith("../") or to=='#'):
@@ -134,16 +134,13 @@ def make_paginator(request, items, per_page=50):
     return items
 
 def updated(dict1, dict2):
-    dict1.update(dict2)
-    return dict1
+    return dict(dict1, **dict2)
 
 def referer(request):
-
     return request.META["HTTP_REFERER"]
 
 def defdict_to_dict(defdict, constructor=dict):
     """ Recursively convert default dicts to regular dicts.
-
         constructor: convert to a custom type of dict, e.g. OrderedDict
     """
     if isinstance(defdict, dict):
@@ -159,7 +156,6 @@ def defdict_to_odict(defdict):
     return defdict_to_dict(defdict, OrderedDict)
 
 def cjoin(lst):
-
     return join(lst, ", ")
 
 def float_or_none(val):

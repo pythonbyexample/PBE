@@ -4,39 +4,38 @@ from collections import OrderedDict
 from dbe.shared.utils import *
 from dbe.questionnaire.models import *
 from dbe.questionnaire.forms import *
-from dbe.classviews.edit import *
-from dbe.classviews.list import *
-from dbe.classviews.detail_custom import *
+
+from dbe.generic.detail import *
+from dbe.generic.list import *
+from dbe.generic.edit import *
+from dbe.cbv.list_custom import ListRelated
 
 
 class Questionnaires(ListView):
-    model               = Questionnaire
-    context_object_name = "questionnaires"
-    template_name       = "questionnaires.html"
+    list_model               = Questionnaire
+    list_context_object_name = "questionnaires"
+    template_name            = "questionnaires.html"
 
 class UserQuest(DetailView):
-    model               = UserQuestionnaire
-    context_object_name = "user_quest"
-    template_name       = "user-quest.html"
+    detail_model               = UserQuestionnaire
+    detail_context_object_name = "user_quest"
+    template_name              = "user-quest.html"
 
-class UserQuests(ListView):
-    model               = UserQuestionnaire
-    context_object_name = "user_quests"
-    template_name       = "user-quests.html"
-
-    def get_queryset(self):
-        quest = Questionnaire.obj.get(pk=self.args[0])
-        return super(UserQuests, self).get_queryset().filter(questionnaire=quest)
+class UserQuests(ListRelated):
+    detail_model             = Questionnaire
+    list_model               = UserQuestionnaire
+    list_context_object_name = "user_quests"
+    related_name             = "user_questionnaires"
+    template_name            = "user-quests.html"
 
 
-class QuestStats(DetailView2):
-    model               = Questionnaire
-    context_object_name = "quest_stats"
-    template_name       = "quest-stats.html"
+class QuestStats(DetailView):
+    detail_model               = Questionnaire
+    detail_context_object_name = "quest_stats"
+    template_name              = "quest-stats.html"
 
     def stats(self):
-        """Calculate statistics for current questionnaire."""
-        user_quests = UserQuestionnaire.obj.filter(questionnaire=self.object)
+        user_quests = UserQuestionnaire.obj.filter(questionnaire=self.detail_object)
         d           = DefaultOrderedDict
         #             quests    sections  questions answers:nums
         quests      = d( lambda:d( lambda:d( lambda:d(int) ) ) )
@@ -62,26 +61,24 @@ class QuestStats(DetailView2):
 
         return defdict_to_odict(quests)
 
-    def add_context(self, **kwargs):
-        return dict(stats=self.stats())
 
-
-class ViewQuest(FormView):
-    """View questions in a questionnaire section."""
+class ViewQuestionnaire(DetailView, FormView):
+    form_class    = SectionForm
+    detail_model  = Questionnaire
     template_name = "quest.html"
 
-    def get_form(self, form_class):
-        """Get current section (container), init the form based on questions in the section."""
-        pk            = self.kwargs["questionnaire"]
+    def get_form_kwargs(self):
+        """Get current section (container), add it to kwargs; init some view instance vars."""
+        kwargs        = super(ViewQuestionnaire, self).get_form_kwargs()
+        object        = self.get_detail_object()
         sn            = int(self.kwargs.get("section", 1))
-        quest         = Questionnaire.obj.get(pk=pk)
-        self.sections = Section.obj.filter(questionnaire=quest)
+        self.sections = Section.obj.filter(questionnaire=object)
         section       = self.sections[sn-1]
 
-        self.snum, self.quest, self.section = sn, quest, section
-        return SectionForm(section=section, **self.get_form_kwargs())
+        self.snum, self.quest, self.section = sn, object, section
+        return dict(kwargs, section=section)
 
-    def form_valid(self, form):
+    def form_valid(self, form, *args):
         """Create user answer records from form data."""
         data   = form.cleaned_data
         user   = self.request.user
@@ -97,4 +94,4 @@ class ViewQuest(FormView):
         if self.snum >= self.sections.count():
             return redir("done")
         else:
-            return redir("questionnaire", questionnaire=quest.pk, section=self.snum+1)
+            return redir("questionnaire", dpk=quest.pk, section=self.snum+1)

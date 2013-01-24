@@ -1,4 +1,4 @@
-from detail import *
+from ..cbv.detail import DetailView
 
 class DetailView2(DetailView):
     def add_context(self, **kwargs):

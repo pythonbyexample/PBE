@@ -35,7 +35,7 @@ class Group(BasicModel):
     def image_links(self):
         lst = [x.image.name for x in self.images.all()]
         lst = [link % ( "/media/"+x, basename(x) ) for x in lst]
-        return cjoin(lst)
+        return ", ".join(lst)
     image_links.allow_tags = True
 
 
@@ -83,14 +83,8 @@ class Image(BasicModel):
         tf.close()
 
     def size(self):
-        """Image size."""
         return "%s x %s" % (self.width, self.height)
 
-    def thumbnail1_url(self):
-        return MEDIA_URL + self.thumbnail1.name
-
-    def thumbnail2_url(self):
-        return MEDIA_URL + self.thumbnail2.name
-
-    def image_url(self):
-        return MEDIA_URL + self.image.name
+    def thumbnail1_url(self) : return MEDIA_URL + self.thumbnail1.name
+    def thumbnail2_url(self) : return MEDIA_URL + self.thumbnail2.name
+    def image_url(self)      : return MEDIA_URL + self.image.name

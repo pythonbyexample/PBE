@@ -4,7 +4,8 @@ from django.core.paginator import Paginator, InvalidPage
 from django.core.exceptions import ImproperlyConfigured
 from django.http import Http404
 from django.utils.translation import ugettext as _
-from django.views.generic.base import TemplateResponseMixin, ContextMixin, View
+
+from base import TemplateResponseMixin, ContextMixin, View
 
 
 class MultipleObjectMixin(ContextMixin):
@@ -105,8 +106,11 @@ class MultipleObjectMixin(ContextMixin):
         """
         Get the context for this view.
         """
-        queryset = kwargs.pop('object_list')
-        page_size = self.get_paginate_by(queryset)
+        if "object_list" not in kwargs:
+            kwargs["object_list"] = self.get_queryset()
+
+        queryset            = kwargs.pop('object_list')
+        page_size           = self.get_paginate_by(queryset)
         context_object_name = self.get_list_context_object_name(queryset)
 
         if page_size:
@@ -136,9 +140,9 @@ class BaseListView(MultipleObjectMixin, View):
     """
     A base view for displaying a list of objects.
     """
-    def get(self, request, *args, **kwargs):
+    def list_get(self, request, *args, **kwargs):
         self.object_list = self.get_list_queryset()
-        allow_empty = self.get_allow_empty()
+        allow_empty      = self.get_allow_empty()
 
         if not allow_empty:
             # When pagination is enabled and object_list is a queryset,
@@ -152,8 +156,7 @@ class BaseListView(MultipleObjectMixin, View):
             if is_empty:
                 raise Http404(_("Empty list and '%(class_name)s.allow_empty' is False.")
                         % {'class_name': self.__class__.__name__})
-        context = self.get_context_data(object_list=self.object_list)
-        return self.render_to_response(context)
+        return self.get_list_context_data(object_list=self.object_list)
 
 
 class MultipleObjectTemplateResponseMixin(TemplateResponseMixin):

@@ -17,10 +17,14 @@ class ContextMixin(object):
     A default context mixin that passes the keyword arguments received by
     get_context_data as the template context.
     """
+    def add_context(self):
+        """Convenience method; may be overridden to add context by returning a dictionary."""
+        return {}
 
     def get_context_data(self, **kwargs):
         if 'view' not in kwargs:
             kwargs['view'] = self
+        kwargs.update(self.add_context())
         return kwargs
 
 
@@ -147,37 +151,18 @@ class TemplateResponseMixin(object):
 
     def get(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
+        args    = [request] + list(args)
+        update  = context.update
 
-        if isinstance(self, DetailView):
-            self.detail_object = self.get_detail_object()
-            cdata              = self.get_detail_context_data(detail_object=self.detail_object)
-            context.update(cdata)
+        from detail import DetailView
+        from edit import FormView, CreateView, UpdateView
+        from list import ListView
 
-        if isinstance(self, (BaseFormView, CreateView, UpdateView, DeleteView)):
-            self.modelform_object = self.get_modelform_object()
-            form, modelform       = self.get_forms()
-            cdata                 = self.get_modelform_context_data(form=form, modelform=modelform)
-            context.update(cdata)
-
-        if isinstance(self, ListView):
-            self.object_list = self.get_list_queryset()
-            allow_empty      = self.get_allow_empty()
-
-            if not allow_empty:
-                # When pagination is enabled and object_list is a queryset,
-                # it's better to do a cheap query than to load the unpaginated
-                # queryset in memory.
-                if (self.get_paginate_by(self.object_list) is not None
-                    and hasattr(self.object_list, 'exists')):
-                    is_empty = not self.object_list.exists()
-                else:
-                    is_empty = len(self.object_list) == 0
-                if is_empty:
-                    raise Http404(_("Empty list and '%(class_name)s.allow_empty' is False.")
-                            % {'class_name': self.__class__.__name__})
-            cdata = self.get_list_context_data(object_list=self.object_list)
-
-            context.update(cdata)
+        if isinstance(self, DetailView) : update( self.detail_get(*args, **kwargs) )
+        if isinstance(self, FormView)   : update( self.form_get(*args, **kwargs) )
+        if isinstance(self, CreateView) : update( self.create_get(*args, **kwargs) )
+        if isinstance(self, UpdateView) : update( self.update_get(*args, **kwargs) )
+        if isinstance(self, ListView)   : update( self.list_get(*args, **kwargs) )
 
         return self.render_to_response(context)
 

@@ -5,9 +5,9 @@
     <table border="0" cellpadding="2" cellspacing="2">
         {% for quest in questionnaires %}
             <tr>
-                <td> <a href="{% url questionnaire quest.pk %}">{{ quest.name }}</a> </td>
-                <td> <a href="{% url user_questionnaires quest.pk %}">Results</a> </td>
-                <td> <a href="{% url quest_stats pk=quest.pk %}">Stats</a> </td>
+                <td> <a href="{% url 'questionnaire' quest.pk %}">{{ quest.name }}</a> </td>
+                <td> <a href="{% url 'user_questionnaires' quest.pk %}">Results</a> </td>
+                <td> <a href="{% url 'quest_stats' dpk=quest.pk %}">Stats</a> </td>
             </tr>
         {% endfor %}
     </table>
