@@ -5,33 +5,38 @@ from calendar import month_name
 from dbe.blog.models import *
 from dbe.blog.forms import *
 from dbe.shared.utils import *
-from dbe.classviews.list import DetailListCreateView, ListView
+
+from dbe.generic.list import ListView
+from dbe.cbv.list_custom import DetailListCreateView
 # }}}
 
 
 class PostView(DetailListCreateView):
     """Show post, associated comments and an 'add comment' form."""
-    main_model          = Post
-    list_model          = Comment
-    form_class          = CommentForm
-    related_name        = "comments"
-    context_object_name = "post"
-    template_name       = "post.html"
+    detail_model               = Post
+    list_model                 = Comment
+    modelform_class            = CommentForm
+    related_name               = "comments"
+    fk_attr                    = "post"
+    detail_context_object_name = "post"
+    list_context_object_name   = "comments"
+    template_name              = "blog/post.html"
 
-    def get_form_kwargs(self):
-        kwargs = super(PostView, self).get_form_kwargs()
-        return updated(kwargs, dict( instance = Comment(post=self.get_mainobj()) ))
+    def get_modelform_kwargs(self):
+        kwargs  = super(PostView, self).get_modelform_kwargs()
+        comment = Comment(post=self.get_detail_object())
+        return dict(kwargs, instance=comment)
 
 
 class Main(ListView):
     """Main listing."""
-    model         = Post
+    list_model    = Post
     paginate_by   = 10
-    template_name = "list.html"
+    template_name = "blog/list.html"
 
     def mkmonth_lst(self):
         """Make a list of months to show archive links."""
-        if not Post.objects.count(): return []
+        if not Post.obj.count(): return []
 
         # set up variables
         current_year, current_month = time.localtime()[:2]
@@ -50,22 +55,22 @@ class Main(ListView):
                 months.append((year, month, month_name[month]))
         return months
 
-    def get_context_data(self, **kwargs):
-        c = super(Main, self).get_context_data(**kwargs)
-        return updated(c, dict(months=self.mkmonth_lst()))
+    def get_list_context_data(self, **kwargs):
+        context = super(Main, self).get_list_context_data(**kwargs)
+        return dict(context, months=self.mkmonth_lst())
 
 
 class ArchiveMonth(Main):
     """Monthly archive."""
     paginate_by = None
 
-    def get_queryset(self):
+    def get_list_queryset(self):
         year, month = self.args
-        return Post.objects.filter(created__year=year, created__month=month)
+        return Post.obj.filter(created__year=year, created__month=month)
 
-    def get_context_data(self, **kwargs):
-        c = super(ArchiveMonth, self).get_context_data(**kwargs)
-        return updated(c, dict(archive=True))
+    def get_list_context_data(self, **kwargs):
+        context = super(ArchiveMonth, self).get_list_context_data(**kwargs)
+        return dict(context, archive=True)
 
 
 def delete_comment(request, post_pk, pk=None):
@@ -73,5 +78,5 @@ def delete_comment(request, post_pk, pk=None):
     if request.user.is_staff:
         pklst = [pk] if pk else request.POST.getlist("delete")
         for pk in pklst:
-            Comment.objects.get(pk=pk).delete()
+            Comment.obj.get(pk=pk).delete()
     return redir("post", pk=post_pk)

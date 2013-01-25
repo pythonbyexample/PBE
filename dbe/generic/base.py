@@ -150,13 +150,13 @@ class TemplateResponseMixin(object):
             return [self.template_name]
 
     def get(self, request, *args, **kwargs):
-        context = self.get_context_data(**kwargs)
-        args    = [request] + list(args)
-        update  = context.update
-
         from detail import DetailView
         from edit import FormView, CreateView, UpdateView
         from list import ListView
+
+        args    = [request] + list(args)
+        context = dict()
+        update  = context.update
 
         if isinstance(self, DetailView) : update( self.detail_get(*args, **kwargs) )
         if isinstance(self, FormView)   : update( self.form_get(*args, **kwargs) )
@@ -164,6 +164,7 @@ class TemplateResponseMixin(object):
         if isinstance(self, UpdateView) : update( self.update_get(*args, **kwargs) )
         if isinstance(self, ListView)   : update( self.list_get(*args, **kwargs) )
 
+        update(self.get_context_data(**kwargs))
         return self.render_to_response(context)
 
 

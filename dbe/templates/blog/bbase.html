@@ -5,6 +5,8 @@
 <head>
     <title>{% block title %}Blog{% endblock %}</title>
     {% block extrahead %}{% endblock %}
+    <link rel="stylesheet" href="/media/css/blog.css" type="text/css" media="screen" charset="utf-8" />
+
 </head>
 
 <body>
@@ -21,8 +23,8 @@
 
                 <h3>MyBlog</h3>
                 {% if user.is_staff %}
-                    <a href="{% url admin:index %}">Admin</a>
-                    <a href="{% url admin:blog_post_add %}">Add post</a>
+                    <a href="{% url 'admin:index' %}">Admin</a>
+                    <a href="{% url 'admin:blog_post_add' %}">Add post</a>
                 {% endif %}
 
             {% endblock %}

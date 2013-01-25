@@ -141,6 +141,7 @@ class ModelFormMixin(FormMixin, SingleObjectMixin):
     """
     form_model                    = None
     modelform_class               = None
+    modelform_queryset            = None
     modelform_context_object_name = None
     modelform_pk_url_kwarg        = 'mfpk'
 
@@ -159,7 +160,7 @@ class ModelFormMixin(FormMixin, SingleObjectMixin):
             else:
                 # Try to get a queryset and extract the model class
                 # from that
-                model = self.get_queryset().model
+                model = self.get_modelform_queryset().model
             return model_forms.modelform_factory(model)
 
     def get_modelform(self, form_class=None):
@@ -185,10 +186,10 @@ class ModelFormMixin(FormMixin, SingleObjectMixin):
                     " a get_absolute_url method on the Model.")
         return url
 
-    def modelform_valid(self, form):
+    def modelform_valid(self, modelform):
         """If the form is valid, save the associated model."""
-        self.modelform_object = form.save()
-        return super(ModelFormMixin, self).form_valid(form)
+        self.modelform_object = modelform.save()
+        return super(ModelFormMixin, self).form_valid(f, modelform, _)
 
     def get_modelform_context_data(self, **kwargs):
         """
@@ -224,14 +225,13 @@ class ProcessFormView(View):
         """
         Handles GET requests and instantiates a blank version of the form.
         """
-        print "in ProcessFormView.form_get()"
         return self.get_context_data( form=self.get_form() )
 
     def modelform_get(self, request, *args, **kwargs):
         """
         Handles GET requests and instantiates a blank version of the form.
         """
-        return self.get_context_data( modelform=self.get_modelform() )
+        return self.get_modelform_context_data( modelform=self.get_modelform() )
 
     def post(self, request, *args, **kwargs):
         """
@@ -247,15 +247,15 @@ class ProcessFormView(View):
             formset = self.get_formset()
 
         if isinstance(self, UpdateView):
-            self.update_post()
+            self.update_post(request, *args, **kwargs)
             modelform = self.get_modelform()
 
         if isinstance(self, CreateView):
-            self.create_post()
+            self.create_post(request, *args, **kwargs)
             modelform = self.get_modelform()
 
-        if (not form or form and form.is_valid()) or \
-           (not modelform or modelform and modelform.is_valid()) or \
+        if (not form or form and form.is_valid()) and \
+           (not modelform or modelform and modelform.is_valid()) and \
            (not formset or formset and formset.is_valid()):
 
             if isinstance(self, FormSetView):
@@ -263,7 +263,7 @@ class ProcessFormView(View):
                     if form.has_changed():
                         form.save()
             if isinstance(self, (UpdateView, CreateView)):
-                form.save()
+                self.modelform_object = modelform.save()
 
             return self.form_valid(form, modelform, formset)
 
@@ -315,6 +315,9 @@ class CreateView(SingleObjectTemplateResponseMixin, BaseCreateView):
     """
     template_name_suffix = '_modelform'
 
+    def get_template_names(self):
+        return self._get_template_names(self.modelform_object, self.form_model)
+
 
 class BaseUpdateView(ModelFormMixin, ProcessFormView):
     """
@@ -337,6 +340,9 @@ class UpdateView(SingleObjectTemplateResponseMixin, BaseUpdateView):
     with a response rendered by template.
     """
     template_name_suffix = '_modelform'
+
+    def get_template_names(self):
+        return self._get_template_names(self.modelform_object, self.form_model)
 
 
 class DeletionMixin(object):

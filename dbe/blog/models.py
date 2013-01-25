@@ -3,16 +3,20 @@ from django.contrib.auth.models import User
 from django.contrib import admin
 from django.core.mail import send_mail
 
+from dbe.shared.utils import *
 
-class Post(Model):
+class Post(BasicModel):
     title   = CharField(max_length=60)
     body    = TextField()
     created = DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ["-created"]
+
     def __unicode__(self):
         return self.title
 
-class Comment(Model):
+class Comment(BasicModel):
     author  = CharField(max_length=60, blank=True)
     body    = TextField()
     post    = ForeignKey(Post, related_name="comments")

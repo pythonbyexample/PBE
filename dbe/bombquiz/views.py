@@ -15,10 +15,10 @@ lose_question = 20
 
 class NewPlayer(CreateView):
     """Create new player & add data to session."""
-    modelform_model               = PlayerRecord
-    modelform_form_class          = NewPlayerForm
+    form_model                    = PlayerRecord
+    modelform_class               = NewPlayerForm
     modelform_context_object_name = "new_player"
-    template_name                 = "question.html"
+    template_name                 = "newplayer.html"
     success_url                   = reverse_lazy("question")
 
     def form_valid(self, form, modelform, _):
@@ -78,7 +78,7 @@ class QuestionView(FormView):
         # redirect to the next question or to 'done' page
         if self.qn >= self.questions.count() or left <= 0:
             self.player.update( passed=bool(left > 0) )
-            return redir("done")
+            return redir("bqdone")
         else:
             session["question"] = session.get("question", 1) + 1
             return redir("question")

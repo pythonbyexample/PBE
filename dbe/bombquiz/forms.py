@@ -5,9 +5,10 @@ from dbe.bombquiz.models import *
 null_choice = [("---", "---")]
 choices = [(c,c) for c in "yes no pass".split()]
 
+
 class NewPlayerForm(f.ModelForm):
     class Meta:
-        model = PlayerRecord
+        model   = PlayerRecord
         exclude = ["passed"]
 
 class QuestionForm(f.Form):

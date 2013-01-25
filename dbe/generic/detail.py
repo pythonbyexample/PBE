@@ -125,6 +125,9 @@ class SingleObjectTemplateResponseMixin(TemplateResponseMixin):
     template_name_suffix = '_detail'
 
     def get_template_names(self):
+        return self._get_template_names(self.detail_object, self.detail_model)
+
+    def _get_template_names(self, object=None, model=None):
         """
         Return a list of template names to be used for the request. May not be
         called if render_to_response is overridden. Returns the following list:
@@ -144,23 +147,23 @@ class SingleObjectTemplateResponseMixin(TemplateResponseMixin):
         # If self.template_name_field is set, grab the value of the field
         # of that name from the object; this is the most specific template
         # name, if given.
-        if self.detail_object and self.template_name_field:
+        if object and self.template_name_field:
             name = getattr(self.detail_object, self.template_name_field, None)
             if name:
                 names.insert(0, name)
 
         # The least-specific option is the default <app>/<model>_detail.html;
         # only use this if the object in question is a model.
-        if isinstance(self.detail_object, models.Model):
+        if isinstance(object, models.Model):
             names.append("%s/%s%s.html" % (
-                self.detail_object._meta.app_label,
-                self.detail_object._meta.object_name.lower(),
+                object._meta.app_label,
+                object._meta.object_name.lower(),
                 self.template_name_suffix
             ))
-        elif hasattr(self, 'detail_model') and self.detail_model is not None and issubclass(self.detail_model, models.Model):
+        elif model is not None and issubclass(model, models.Model):
             names.append("%s/%s%s.html" % (
-                self.detail_model._meta.app_label,
-                self.detail_model._meta.object_name.lower(),
+                model._meta.app_label,
+                model._meta.object_name.lower(),
                 self.template_name_suffix
             ))
         return names
