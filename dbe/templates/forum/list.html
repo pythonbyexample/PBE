@@ -17,11 +17,11 @@
             {% for forum in forums %}
             <tr {% if forloop.last %}class="last"{% endif %}>
                 <td>
-                    <div class="title"><a href="{% url forum pk=forum.pk %}">{{ forum.title }}</a></div>
+                    <div class="title"><a href="{% url 'forum' dpk=forum.pk %}">{{ forum.title }}</a></div>
                 </td>
                 <td>{{ forum.num_posts }}</td>
                 <td>{{ forum.last_post.short|linebreaksbr }}</td>
-                <td><a class="button" href="{% url forum pk=forum.pk %}">VIEW</a></td>
+                <td><a class="button" href="{% url 'forum' dpk=forum.pk %}">VIEW</a></td>
             </tr>
 
             {% endfor %}

@@ -129,7 +129,7 @@
 
             <!-- EDIT LINK -->
             {% if user.is_staff %}
-                <div class="right"> <a href="{% url group pk=group.pk show='edit' %}">edit</a> </div>
+                <div class="right"> <a href="{% url 'group' dpk=group.pk show='edit' %}">edit</a> </div>
                 <br /> <br />
             {% endif %}
 

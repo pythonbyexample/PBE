@@ -7,14 +7,14 @@
 
         <div class="ttitle">{{ thread.title }}</div>
         <div id="back">
-            <a href="{% url forum pk=thread.forum.pk %}">&lt;&lt; back to list of topics</a>
+            <a href="{% url 'forum' thread.forum.pk %}">&lt;&lt; back to list of topics</a>
         </div>
 
 
         <!-- Posts  -->
 
         <div id="list">
-            {% for post in object_list %}
+            {% for post in posts %}
                 <div class="post">
 
                     <!-- Profile pic and info -->
@@ -46,7 +46,7 @@
 
         {% include "paginator.html" %}
         <br />
-        <a class="button" href="{% url reply pk %}">Reply</a>
+        <a class="button" href="{% url 'reply' thread.pk %}">Reply</a>
 
     </div>
 

@@ -2,9 +2,12 @@ from dbe.portfolio.models import *
 from dbe.portfolio.forms import *
 from settings import MEDIA_URL
 
-from dbe.generic.list import ListView
-from dbe.cbv.edit_custom import *
+from dbe.mcbv.detail import DetailView
+from dbe.mcbv.list import ListView
+from dbe.mcbv.list_custom import ListRelated, DetailListFormsetView
+from dbe.mcbv.edit_custom import FormSetView, UpdateView
 
+from dbe.shared.utils import *
 
 class Main(ListView):
     list_model               = Group
@@ -36,27 +39,29 @@ class AddImages(DetailView, FormSetView):
                 img = form.save(commit=False)
                 img.group = self.detail_object
                 img.save()
-        return HttpResponseRedirect(reverse2("group", pk=group.pk))
+        obj = self.get_detail_object()
+        return redir(reverse2("group", dpk=obj.pk))
 
 
 class GroupView(DetailListFormsetView):
     """List of images in an group, optionally with a formset to update image data."""
-    detail_model        = Group
-    formset_model       = Image
-    related_name        = "images"
-    context_object_name = "group"
-    formset_form_class  = ImageForm
-    paginate_by         = 25
-    template_name       = "group.html"
+    detail_model               = Group
+    formset_model              = Image
+    related_name               = "images"
+    detail_context_object_name = "group"
+    formset_form_class         = ImageForm
+    paginate_by                = 25
+    template_name              = "group.html"
 
-    def do_init(self):
+    def initsetup(self, request):
         self.show = self.kwargs.get("show", "thumbnails")
         if self.show == "edit" and not self.request.user.is_authenticated():
             self.show = "thumbnails"
 
     def formset_valid(self, formset):
         super(GroupView, self).formset_valid(formset)
-        url = reverse2("group", pk=self.detail_object.pk, show=self.show)
+        obj = self.get_detail_object()
+        url = reverse2("group", dpk=obj.pk, show=self.show)
 
         # keep page num
         url = "%s?%s" % (url, self.request.GET.urlencode())
@@ -67,15 +72,15 @@ class GroupView(DetailListFormsetView):
 
 
 class ImageView(UpdateView):
-    modelform_model               = Image
+    form_model                    = Image
     modelform_class               = ImageForm
     modelform_context_object_name = "image"
     template_name                 = "portfolio/image.html"
 
-    def get_context_data(self, **kwargs):
-        R = self.request
-        context = super(ImageView, self).get_context_data(**kwargs)
-        edit = R.GET.get("edit", False)
+    def get_modelform_context_data(self, **kwargs):
+        context = super(ImageView, self).get_modelform_context_data(**kwargs)
+        R       = self.request
+        edit    = R.GET.get("edit", False)
         if not R.user.is_authenticated():
             edit = False
         return dict(context, edit=edit)

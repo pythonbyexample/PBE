@@ -10,7 +10,7 @@
                 <div class="group">
                 <div class="header">
                     <div class="ltitle">
-                    <a href="{% url slideshow group.pk %}">{{ group.title }}</a> ({{ group.images.count }} slides)
+                    <a href="{% url 'slideshow' group.pk %}">{{ group.title }}</a> ({{ group.images.count }} slides)
                     {% if user.is_staff %}
                         <span class="edit"><a href="{{ group.get_absolute_url }}">edit</a></span>
                     {% endif %}

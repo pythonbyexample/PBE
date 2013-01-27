@@ -65,6 +65,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.request',
     'django.contrib.messages.context_processors.messages',
+    'dbe.forum.views.forum_context',
+    'dbe.portfolio.views.portfolio_context',
     # 'dbe.photo.views.photo_context',
 )
 

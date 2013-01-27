@@ -3,11 +3,11 @@
 {% block content %}
     <div class="main">
 
-    <a id="new_topic" class="buttont" href="{% url new_topic pk %}">Start New Topic</a>
+    <a id="new_topic" class="buttont" href="{% url 'new_topic' forum.pk %}">Start New Topic</a>
     <br /> <br />
 
     <div id="list">
-        {% if object_list %}
+        {% if threads %}
             <table border="0" cellpadding="4" width="100%">
               <tr>
                   <td>Topics</td>
@@ -18,14 +18,14 @@
 
               <!-- Threads  -->
 
-              {% for thread in object_list %}
+              {% for thread in threads %}
               <tr {% if forloop.last %}class="last"{% endif %}>
                   <td>
-                    <div class="title"><a href="{% url thread thread.pk %}">{{ thread.title }}</a></div>
+                    <div class="title"><a href="{% url 'thread' thread.pk %}">{{ thread.title }}</a></div>
                   </td>
                   <td>{{ thread.num_replies }}</td>
                   <td>{{ thread.last_post.short|linebreaksbr }}</td>
-                  <td><a class="button" href="{% url thread thread.pk %}">VIEW</a></td>
+                  <td><a class="button" href="{% url 'thread' thread.pk %}">VIEW</a></td>
               </tr>
               {% endfor %}
 

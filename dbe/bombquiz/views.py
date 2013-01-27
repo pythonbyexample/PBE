@@ -6,8 +6,8 @@ from dbe.shared.utils import *
 from dbe.bombquiz.models import *
 from dbe.bombquiz.forms import *
 
-from dbe.generic.base import TemplateView
-from dbe.generic.edit import CreateView, FormView
+from dbe.mcbv.base import TemplateView
+from dbe.mcbv.edit import CreateView, FormView
 
 seconds       = 30
 lose_question = 20

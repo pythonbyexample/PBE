@@ -3,12 +3,18 @@ from django.contrib.auth.models import User
 from django.contrib import admin
 from django.db.models.signals import post_save
 
+from dbe.shared.utils import *
 
-class Forum(Model):
+
+class Forum(BasicModel):
     title = CharField(max_length=60)
 
     def __unicode__(self):
         return self.title
+
+    @permalink
+    def get_absolute_url(self):
+        return ("forum", (), dict(dpk=self.pk))
 
     def num_posts(self):
         return sum([t.num_posts() for t in self.threads.all()])
@@ -25,7 +31,7 @@ class Forum(Model):
             return last
 
 
-class Thread(Model):
+class Thread(BasicModel):
     title   = CharField(max_length=60)
     created = DateTimeField(auto_now_add=True)
     creator = ForeignKey(User, blank=True, null=True)
@@ -36,6 +42,10 @@ class Thread(Model):
 
     def __unicode__(self):
         return unicode("%s - %s" % (self.creator, self.title))
+
+    @permalink
+    def get_absolute_url(self):
+        return ("thread", (), dict(dpk=self.pk))
 
     def num_posts(self):
         return self.posts.count()
@@ -49,7 +59,7 @@ class Thread(Model):
             return posts.order_by("created")[0]
 
 
-class Post(Model):
+class Post(BasicModel):
     title   = CharField(max_length=60)
     created = DateTimeField(auto_now_add=True)
     creator = ForeignKey(User, blank=True, null=True)
@@ -71,7 +81,7 @@ class Post(Model):
         return p.posts, p.avatar
 
 
-class UserProfile(Model):
+class UserProfile(BasicModel):
     avatar = ImageField("Profile Pic", upload_to="images/", blank=True, null=True)
     posts  = IntegerField(default=0)
     user   = OneToOneField(User, related_name="user_profile")

@@ -12,12 +12,12 @@
             <div class="title">{{ group.title }}</div>
                 <div class="right">
                 View:
-                <a href="{% url group pk=group.pk show='thumbnails' %}">thumbnails</a>
-                <a href="{% url group pk=group.pk show='thumbnails2' %}">small thumbnails</a>
-                <a href="{% url group pk=group.pk show='full' %}">full</a>
+                <a href="{% url 'group' dpk=group.pk show='thumbnails' %}">thumbnails</a>
+                <a href="{% url 'group' dpk=group.pk show='thumbnails2' %}">small thumbnails</a>
+                <a href="{% url 'group' dpk=group.pk show='full' %}">full</a>
                 {% if user.is_staff %}
-                    <a href="{% url group pk=group.pk show='edit' %}">edit</a> |
-                    <a href="{% url add_images pk=group.pk %}">add images</a>
+                    <a href="{% url 'group' dpk=group.pk show='edit' %}">edit</a> |
+                    <a href="{% url 'add_images' dpk=group.pk %}">add images</a>
                 {% endif %}
                 </div>
                 <br /> <br />
@@ -26,7 +26,7 @@
 
                 {% if show == "edit" %}
                     <form action="" method="POST">{% csrf_token %}
-                    {{ form.management_form }}
+                    {{ formset.management_form }}
                 {% endif %}
 
                 {% for form in formset %}

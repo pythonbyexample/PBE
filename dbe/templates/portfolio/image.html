@@ -22,20 +22,20 @@
                 <table id="update-form">
 
                     <tr>
-                    {% for field in form %}
+                    {% for field in modelform %}
                         <td>{{ field.label }}</td>
                     {% endfor %}
                     </tr>
 
                     <tr>
-                    {% for field in form %}
+                    {% for field in modelform %}
                         <td>{{ field }} {{ field.errors }}</td>
                     {% endfor %}
                     </tr>
                 </table>
                 <ul><input type="submit" value="Update" /></ul>
             {% else %}
-                <p>{{ form.instance.description }}</p>
+                <p>{{ modelform.instance.description }}</p>
             {% endif %}
             </form>
         </div>

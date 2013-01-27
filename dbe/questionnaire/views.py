@@ -5,10 +5,9 @@ from dbe.shared.utils import *
 from dbe.questionnaire.models import *
 from dbe.questionnaire.forms import *
 
-from dbe.generic.detail import *
-from dbe.generic.list import *
-from dbe.generic.edit import *
-from dbe.cbv.list_custom import ListRelated
+from dbe.mcbv.detail import DetailView
+from dbe.mcbv.edit import FormView
+from dbe.mcbv.list_custom import ListView, ListRelated
 
 
 class Questionnaires(ListView):

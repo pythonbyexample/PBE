@@ -5,8 +5,9 @@ from dbe.settings import MEDIA_ROOT, MEDIA_URL
 from dbe.forum.models import *
 from dbe.shared.utils import *
 
-from dbe.classviews.list_custom import ListView, ListRelated
-from dbe.classviews.edit_custom import CreateView, UpdateView2
+from dbe.mcbv.detail import DetailView
+from dbe.mcbv.list_custom import ListView, ListRelated
+from dbe.mcbv.edit_custom import CreateView, UpdateView
 
 from forms import ProfileForm, PostForm
 # }}}
@@ -14,93 +15,97 @@ from forms import ProfileForm, PostForm
 
 class Main(ListView):
     """Main listing."""
-    model               = Forum
-    context_object_name = "forums"
-    template_name       = "forum/list.html"
+    list_model               = Forum
+    list_context_object_name = "forums"
+    template_name            = "forum/list.html"
 
 
 class ForumView(ListRelated):
     """Listing of threads in a forum."""
-    model               = Thread
-    related_model       = Forum
-    foreign_key_field   = "forum"
-    context_object_name = "threads"
-    template_name       = "forum.html"
+    detail_model               = Forum
+    list_model                 = Thread
+    related_name               = "threads"
+    detail_context_object_name = "forum"
+    list_context_object_name   = "threads"
+    template_name              = "forum.html"
 
 
 class ThreadView(ListRelated):
     """Listing of posts in a thread."""
-    model               = Post
-    related_model       = Thread
-    foreign_key_field   = "thread"
-    context_object_name = "posts"
-    template_name       = "thread.html"
+    list_model                 = Post
+    detail_model               = Thread
+    related_name               = "posts"
+    detail_context_object_name = "thread"
+    list_context_object_name   = "posts"
+    template_name              = "thread.html"
 
 
-class EditProfile(UpdateView2):
-    model         = UserProfile
-    form_class    = ProfileForm
-    success_url   = '#'
-    template_name = "profile.html"
+class EditProfile(UpdateView):
+    form_model      = UserProfile
+    modelform_class = ProfileForm
+    success_url     = '#'
+    template_name   = "profile.html"
 
-    def form_valid(self, form):
+    def modelform_valid(self, modelform):
         """Resize and save profile image."""
         # remove old image if changed
-        name = form.cleaned_data.get("avatar", None)
-        old = UserProfile.objects.get( pk=self.kwargs.get("pk") ).avatar
+        name = modelform.cleaned_data.get("avatar", None)
+        pk   = self.kwargs.get("mfpk")
+        old  = UserProfile.obj.get(pk=pk).avatar
         if old.name and old.name != name:
             old.delete()
 
         # save new image to disk & resize new image
-        self.object = form.save()
-        if self.object.avatar:
-            img = PImage.open(self.object.avatar.path)
+        self.modelform_object = modelform.save()
+        if self.modelform_object.avatar:
+            img = PImage.open(self.modelform_object.avatar.path)
             img.thumbnail((160,160), PImage.ANTIALIAS)
             img.save(img.filename, "JPEG")
         return redir(self.success_url)
 
     def add_context(self):
-        img = ("/media/" + self.object.avatar.name) if self.object.avatar else None
+        obj = self.modelform_object
+        img = ("/media/" + obj.avatar.name) if obj.avatar else None
         return dict(img=img)
 
 
-class NewTopic(CreateView):
-    model         = Post
-    form_class    = PostForm
-    title         = "Start New Topic"
-    template_name = "forum/post.html"
+class NewTopic(DetailView, CreateView):
+    detail_model    = Forum
+    form_model      = Post
+    modelform_class = PostForm
+    title           = "Start New Topic"
+    template_name   = "forum/post.html"
 
     def increment_post_counter(self):
-        """Increment counter of user's posts."""
         profile = self.request.user.user_profile
         profile.posts += 1
         profile.save()
 
-    def get_thread(self, form):
-        data  = form.cleaned_data
-        forum = Forum.objects.get(pk=self.args[0])
-        return Thread.objects.create(forum=forum, title=data["title"], creator=self.request.user)
+    def get_thread(self, modelform):
+        title  = modelform.cleaned_data.get("title")
+        return Thread.obj.create(forum=self.get_detail_object(), title=title, creator=self.request.user)
 
-    def form_valid(self, form):
+    def modelform_valid(self, modelform):
         """Create new topic."""
-        data   = form.cleaned_data
-        thread = self.get_thread(form)
-        Post.objects.create(thread=thread, title=data["title"], body=data["body"], creator=self.request.user)
+        data   = modelform.cleaned_data
+        thread = self.get_thread(modelform)
+        Post.obj.create(thread=thread, title=data["title"], body=data["body"], creator=self.request.user)
         self.increment_post_counter()
-        return self.get_success_url()
+        return redir(self.get_success_url())
 
     def get_success_url(self):
-        return redir("forum", pk=self.args[0])
+        return self.get_detail_object().get_absolute_url()
 
 
 class Reply(NewTopic):
-    title = "Reply"
+    detail_model = Thread
+    title        = "Reply"
 
     def get_success_url(self):
-        return redir(reverse2("thread", pk=self.args[0]) + "?page=last")
+        return self.get_detail_object().get_absolute_url() + "?page=last"
 
-    def get_thread(self, form):
-        return Thread.objects.get(pk=self.args[0])
+    def get_thread(self, modelform):
+        return self.get_detail_object()
 
 
 def forum_context(request):

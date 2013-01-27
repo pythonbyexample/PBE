@@ -6,8 +6,8 @@ from dbe.blog.models import *
 from dbe.blog.forms import *
 from dbe.shared.utils import *
 
-from dbe.generic.list import ListView
-from dbe.cbv.list_custom import DetailListCreateView
+from dbe.mcbv.list import ListView
+from dbe.mcbv.list_custom import DetailListCreateView
 # }}}
 
 
@@ -52,7 +52,8 @@ class Main(ListView):
             if year == first_year   : end = first_month - 1
 
             for month in range(start, end, -1):
-                months.append((year, month, month_name[month]))
+                if Post.obj.filter(created__year=year, created__month=month):
+                    months.append((year, month, month_name[month]))
         return months
 
     def get_list_context_data(self, **kwargs):
@@ -66,7 +67,7 @@ class ArchiveMonth(Main):
 
     def get_list_queryset(self):
         year, month = self.args
-        return Post.obj.filter(created__year=year, created__month=month)
+        return Post.obj.filter(created__year=year, created__month=month).order_by("created")
 
     def get_list_context_data(self, **kwargs):
         context = super(ArchiveMonth, self).get_list_context_data(**kwargs)

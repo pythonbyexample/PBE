@@ -69,6 +69,7 @@ class View(object):
             self.request = request
             self.args = args
             self.kwargs = kwargs
+            # self.initsetup()
             return self.dispatch(request, *args, **kwargs)
 
         # take name and docstring from class
@@ -79,14 +80,20 @@ class View(object):
         update_wrapper(view, cls.dispatch, assigned=())
         return view
 
+    def initsetup(self, request):
+        pass
+
     def dispatch(self, request, *args, **kwargs):
         # Try to dispatch to the right method; if a method doesn't exist,
         # defer to the error handler. Also defer to the error handler if the
         # request method isn't on the approved list.
+
         if request.method.lower() in self.http_method_names:
             handler = getattr(self, request.method.lower(), self.http_method_not_allowed)
         else:
             handler = self.http_method_not_allowed
+
+        self.initsetup(request)
         return handler(request, *args, **kwargs)
 
     def http_method_not_allowed(self, request, *args, **kwargs):
@@ -151,18 +158,19 @@ class TemplateResponseMixin(object):
 
     def get(self, request, *args, **kwargs):
         from detail import DetailView
-        from edit import FormView, CreateView, UpdateView
+        from edit import FormView, FormSetView, CreateView, UpdateView
         from list import ListView
 
         args    = [request] + list(args)
         context = dict()
         update  = context.update
 
-        if isinstance(self, DetailView) : update( self.detail_get(*args, **kwargs) )
-        if isinstance(self, FormView)   : update( self.form_get(*args, **kwargs) )
-        if isinstance(self, CreateView) : update( self.create_get(*args, **kwargs) )
-        if isinstance(self, UpdateView) : update( self.update_get(*args, **kwargs) )
-        if isinstance(self, ListView)   : update( self.list_get(*args, **kwargs) )
+        if isinstance(self, DetailView)  : update( self.detail_get(*args, **kwargs) )
+        if isinstance(self, FormView)    : update( self.form_get(*args, **kwargs) )
+        if isinstance(self, FormSetView) : update( self.formset_get(*args, **kwargs) )
+        if isinstance(self, CreateView)  : update( self.create_get(*args, **kwargs) )
+        if isinstance(self, UpdateView)  : update( self.update_get(*args, **kwargs) )
+        if isinstance(self, ListView)    : update( self.list_get(*args, **kwargs) )
 
         update(self.get_context_data(**kwargs))
         return self.render_to_response(context)

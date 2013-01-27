@@ -9,9 +9,8 @@ from dbe.shared.utils import *
 from dbe.issues.models import *
 from dbe.issues.forms import *
 
-from dbe.generic.edit import *
-from dbe.generic.list import *
-from dbe.cbv.list import DetailListCreateView
+from dbe.mcbv.edit_custom import UpdateView, FormSetView
+from dbe.mcbv.list_custom import DetailListCreateView
 
 
 @staff_member_required
