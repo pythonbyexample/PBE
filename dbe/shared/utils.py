@@ -28,6 +28,11 @@ class AKModelForm(UserModelForm):
         for name in self.fields:
             if name!="id": yield self[name]
 
+class CleanFormMixin(object):
+    """Wrap form data in a container."""
+    def clean(self):
+        return Container(**self.cleaned_data)
+
 
 class BasicModel(Model):
     class Meta: abstract = True
@@ -37,6 +42,8 @@ class BasicModel(Model):
         for k, v in kwargs.items():
             setattr(self, k, v)
         self.save()
+
+BaseModel = BasicModel      # TODO: rename all views to BaseModel
 
 class BaseError(Exception):
     def __init__(self, e): self.e = e

@@ -9,7 +9,7 @@
 
 <div class="main">
     <form action="" method="POST">{% csrf_token %}
-        {{ form.body }}
+        {{ modelform.body }}
         <div id="submit"><input id="submit-btn" type="submit" value="Save"></div>
     </form>
 </div>

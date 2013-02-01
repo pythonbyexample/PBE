@@ -11,27 +11,23 @@ from dbe.mcbv.list_custom import ListView, ListRelated
 
 
 class Questionnaires(ListView):
-    list_model               = Questionnaire
-    list_context_object_name = "questionnaires"
-    template_name            = "questionnaires.html"
+    list_model    = Questionnaire
+    template_name = "questionnaires.html"
 
 class UserQuest(DetailView):
-    detail_model               = UserQuestionnaire
-    detail_context_object_name = "user_quest"
-    template_name              = "user-quest.html"
+    detail_model  = UserQuestionnaire
+    template_name = "user-quest.html"
 
 class UserQuests(ListRelated):
-    detail_model             = Questionnaire
-    list_model               = UserQuestionnaire
-    list_context_object_name = "user_quests"
-    related_name             = "user_questionnaires"
-    template_name            = "user-quests.html"
+    detail_model  = Questionnaire
+    list_model    = UserQuestionnaire
+    related_name  = "user_questionnaires"
+    template_name = "user-quests.html"
 
 
 class QuestStats(DetailView):
-    detail_model               = Questionnaire
-    detail_context_object_name = "quest_stats"
-    template_name              = "quest-stats.html"
+    detail_model  = Questionnaire
+    template_name = "quest-stats.html"
 
     def stats(self):
         user_quests = UserQuestionnaire.obj.filter(questionnaire=self.detail_object)
@@ -80,17 +76,15 @@ class ViewQuestionnaire(DetailView, FormView):
     def form_valid(self, form, *args):
         """Create user answer records from form data."""
         data   = form.cleaned_data
-        user   = self.request.user
         quest  = self.quest
-        uquest = UserQuestionnaire.obj.get_or_create(questionnaire=quest, user=user)[0]
+        stotal = self.sections.count()
+        uquest = UserQuestionnaire.obj.get_or_create(questionnaire=quest, user=self.user)[0]
 
         for order, value in data.items():
             question = self.section.questions.get(order=int(order))
-            answer = Answer.obj.get_or_create(user_questionnaire=uquest, question=question)[0]
+            answer   = Answer.obj.get_or_create(user_questionnaire=uquest, question=question)[0]
             answer.update(answer=value)
 
         # redirect to the next section or to 'done' page
-        if self.snum >= self.sections.count():
-            return redir("done")
-        else:
-            return redir("questionnaire", dpk=quest.pk, section=self.snum+1)
+        if self.snum >= stotal : return redir("done")
+        else                   : return redir( quest.get_absolute_url(self.snum+1) )

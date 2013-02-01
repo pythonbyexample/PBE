@@ -90,14 +90,14 @@ img { margin: 10px; padding: 5px; border: 1px solid #ccc; }
 table#update-form { margin-top: 5px; }
 table#update-form td { text-align: center; padding-left: 8px; }
 table#update-form ul { margin-left: -38px; }
-#edit-view { margin-left: 10px; }
+#edit-view { margin-left: 10px; margin-bottom: 10px; }
 
 form#image {
     border: 5px solid #eee;
     margin-top: 10px;
     -moz-border-radius: 15px;
     border-radius: 15px;
-    width: 550px;
+    width: 725px;
     margin: auto;
 }
 

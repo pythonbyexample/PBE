@@ -14,11 +14,11 @@
             <img border="0" alt="" src="{{ image.image_url }}" {% if image.width > 800 %} width="800" {% endif %} />
 
             <div id="edit-view">
-                {% if not edit and user.is_staff %} <a href="?edit=1">edit</a> {% endif %}
+                {% if not view.edit and user.is_staff %} <a href="?edit=1">edit</a> {% endif %}
             </div>
 
-            <form id="image" action="" method="post" accept-charset="utf-8">{% csrf_token %}
-                {% if edit %}
+            <form id="image" action="" method="post" accept-charset="utf-8" enctype="multipart/form-data">{% csrf_token %}
+                {% if view.edit %}
                 <table id="update-form">
 
                     <tr>

@@ -14,6 +14,10 @@ class Questionnaire(BasicModel):
     def __unicode__(self):
         return self.name
 
+    @permalink
+    def get_absolute_url(self, section=1):
+        return ("questionnaire", (), dict(dpk=self.pk, section=section))
+
     def section_links(self):
         section_url = "admin:questionnaire_section_change"
         lst         = [(c.pk, c.name) for c in self.sections.all()]

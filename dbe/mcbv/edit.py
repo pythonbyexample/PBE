@@ -2,10 +2,13 @@ from django.forms import models as model_forms
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponseRedirect
 from django.utils.encoding import force_text
+from django.db import models
+
+from django.utils.functional import curry
 from django.forms.formsets import formset_factory, BaseFormSet, all_valid
 
 from base import TemplateResponseMixin, ContextMixin, View
-from detail import (SingleObjectMixin, SingleObjectTemplateResponseMixin, BaseDetailView)
+from detail import SingleObjectMixin, SingleObjectTemplateResponseMixin, BaseDetailView
 
 
 class FormMixin(ContextMixin):
@@ -13,9 +16,9 @@ class FormMixin(ContextMixin):
     A mixin that provides a way to show and handle a form in a request.
     """
 
-    initial = {}
-    form_class = None
-    success_url = None
+    initial         = {}
+    form_class      = None
+    success_url     = None
     form_kwarg_user = False     # provide request user to form
 
     def get_initial(self):
@@ -87,6 +90,7 @@ class FormSetMixin(FormMixin):
     formset_initial    = {}
     formset_class      = BaseFormSet
     extra              = 3
+    formset_kwarg_user = False     # provide request user to form
     success_url        = None
 
     def get_formset_initial(self):
@@ -115,7 +119,8 @@ class FormSetMixin(FormMixin):
                   'formset_model' : self.formset_model,
                   }
 
-        # if self.form_kwarg_user: kwargs["user"] = self.request.user
+        if self.formset_kwarg_user:
+            kwargs["user"] = self.request.user
 
         if self.request.method in ('POST', 'PUT'):
             kwargs.update({
@@ -134,6 +139,9 @@ class FormSetMixin(FormMixin):
         return url
 
     def formset_valid(self, formset):
+        for form in formset:
+            if form.has_changed():
+                form.save()
         return HttpResponseRedirect(self.get_success_url())
 
     def formset_invalid(self, formset):
@@ -204,14 +212,15 @@ class ModelFormMixin(FormMixin, SingleObjectMixin):
         supplied modelform_context_object_name name.
         """
         context = {}
-        if self.modelform_object:
-            context['modelform_object'] = self.modelform_object
-            # context_object_name = self.get_context_object_name(self.modelform_object)
+        obj = self.modelform_object
+        if obj:
+            context['modelform_object'] = obj
             if self.modelform_context_object_name:
-                context[self.modelform_context_object_name] = self.modelform_object
+                context[self.modelform_context_object_name] = obj
+            elif isinstance(obj, models.Model):
+                context[obj._meta.object_name.lower()] = obj
         context.update(kwargs)
         return context
-        # return super(ModelFormMixin, self).get_context_data(**context)
 
     def get_modelform_object(self, queryset=None):
         return self.get_object( queryset or self.get_modelform_queryset(), self.modelform_pk_url_kwarg )
@@ -233,6 +242,9 @@ class ProcessFormView(View):
         Handles GET requests and instantiates a blank version of the form.
         """
         return self.get_context_data( form=self.get_form() )
+
+    def formset_get(self, request, *args, **kwargs):
+        return self.get_context_data( formset=self.get_formset() )
 
     def modelform_get(self, request, *args, **kwargs):
         """
@@ -276,7 +288,6 @@ class ProcessFormView(View):
             if isinstance(self, FormView)                 : update(self.form_invalid(form))
             if isinstance(self, FormSetView)              : update(self.formset_invalid(formset))
             if isinstance(self, (UpdateView, CreateView)) : update(self.modelform_invalid(modelform))
-
             return self.render_to_response(context)
 
     # PUT is a valid HTTP verb for creating (with a known URL) or editing an
@@ -298,9 +309,6 @@ class FormView(TemplateResponseMixin, BaseFormView):
 class BaseFormSetView(FormSetMixin, ProcessFormView):
     """A base view for displaying a form."""
 
-    def formset_get(self, request, *args, **kwargs):
-        return self.get_context_data( formset=self.get_formset() )
-
 class FormSetView(TemplateResponseMixin, BaseFormSetView):
     """A view for displaying a formset, and rendering a template response."""
 
@@ -314,7 +322,6 @@ class BaseCreateView(ModelFormMixin, ProcessFormView):
     def create_get(self, request, *args, **kwargs):
         self.modelform_object = None
         return self.modelform_get(request, *args, **kwargs)
-        # return super(BaseCreateView, self).get(request, *args, **kwargs)
 
     def create_post(self, request, *args, **kwargs):
         self.modelform_object = None
@@ -340,7 +347,6 @@ class BaseUpdateView(ModelFormMixin, ProcessFormView):
     def update_get(self, request, *args, **kwargs):
         self.modelform_object = self.get_modelform_object()
         return self.modelform_get(request, *args, **kwargs)
-        # return super(BaseUpdateView, self).get(request, *args, **kwargs)
 
     def update_post(self, request, *args, **kwargs):
         self.modelform_object = self.get_modelform_object()
@@ -355,6 +361,30 @@ class UpdateView(SingleObjectTemplateResponseMixin, BaseUpdateView):
 
     def get_template_names(self):
         return self._get_template_names(self.modelform_object, self.form_model)
+
+
+class CreateUpdateView(CreateView):
+    """Update object if self.modelform_pk_url_kwarg is in kwargs, otherwise create it."""
+    modelform_create_class = None
+
+    def get_modelform_class(self):
+        if self.modelform_pk_url_kwarg in self.kwargs:
+            return self.modelform_class
+        else:
+            return self.modelform_create_class
+
+    def create_get(self, request, *args, **kwargs):
+        if self.modelform_pk_url_kwarg in self.kwargs:
+            self.modelform_object = self.get_modelform_object()
+            return self.modelform_get(request, *args, **kwargs)
+        else:
+            return super(CreateUpdateView, self).create_get(request, *args, **kwargs)
+
+    def create_post(self, request, *args, **kwargs):
+        if self.modelform_pk_url_kwarg in self.kwargs:
+            self.modelform_object = self.get_modelform_object()
+        else:
+            super(CreateUpdateView, self).create_post(request, *args, **kwargs)
 
 
 class DeletionMixin(object):

@@ -15,14 +15,13 @@ lose_question = 20
 
 class NewPlayer(CreateView):
     """Create new player & add data to session."""
-    form_model                    = PlayerRecord
-    modelform_class               = NewPlayerForm
-    modelform_context_object_name = "new_player"
-    template_name                 = "newplayer.html"
-    success_url                   = reverse_lazy("question")
+    form_model      = PlayerRecord
+    modelform_class = NewPlayerForm
+    success_url     = reverse_lazy("question")
+    template_name   = "newplayer.html"
 
-    def form_valid(self, form, modelform, _):
-        resp = super(NewPlayer, self).form_valid(form, modelform, _)
+    def modelform_valid(self, modelform):
+        resp = super(NewPlayer, self).modelform_valid(modelform)
         data = dict(player_record=self.modelform_object, question=1, left=seconds)
         self.request.session.update(data)
         return resp
@@ -31,15 +30,12 @@ class NewPlayer(CreateView):
 class Done(TemplateView):
     template_name = "bombquiz/done.html"
 
-    def add_context(self):
-        return dict( left=self.request.session.get("left") )
-
-
 class Stats(TemplateView):
     template_name = "stats.html"
 
     def add_context(self):
-        answer    = PlayerRecord.obj.filter(passed=False).annotate( anum=Count("answers") )
+        records   = PlayerRecord.obj.filter(passed=False)
+        answer    = records.annotate(anum=Count("answers"))
         aggregate = answer.aggregate(avg=Avg("anum"))
         return dict(ans_failed=aggregate)
 
@@ -62,7 +58,7 @@ class QuestionView(FormView):
         self.question = self.questions[self.qn-1]
         return dict(kwargs, question=self.question)
 
-    def form_valid(self, form, *args):
+    def form_valid(self, form):
         """Create user answer records from form data."""
         session = self.request.session
         left    = session.get("left", seconds)
@@ -83,7 +79,6 @@ class QuestionView(FormView):
             session["question"] = session.get("question", 1) + 1
             return redir("question")
 
-    def get_context_data(self, **kwargs):
-        context = super(QuestionView, self).get_context_data(**kwargs)
+    def add_context(self):
         session = self.request.session
-        return dict(context, qnum=self.qn, total=self.questions.count(), left=session["left"])
+        return dict(qnum=self.qn, total=self.questions.count(), left=session["left"])

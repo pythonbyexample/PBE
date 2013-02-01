@@ -6,10 +6,19 @@ class ImageForm(AKModelForm):
     class Meta:
         model   = Image
         exclude = "image width height hidden group thumbnail1 thumbnail2".split()
-        widgets = dict(description=f.Textarea(attrs=dict(cols=70)))
+        attrs   = dict(cols=70)
+        widgets = dict( description=f.Textarea(attrs=attrs) )
+
+class ImageCreateForm(AKModelForm):
+    class Meta:
+        model   = Image
+        exclude = "width height hidden group thumbnail1 thumbnail2".split()
+        attrs   = dict(cols=70)
+        widgets = dict( description=f.Textarea(attrs=attrs) )
 
 class AddImageForm(AKModelForm):
     class Meta:
         model   = Image
         exclude = "width height hidden group thumbnail1 thumbnail2".split()
-        widgets = dict(description=f.Textarea(attrs=dict(cols=70, rows=2)))
+        attrs   = dict(cols=70, rows=2)
+        widgets = dict( description=f.Textarea(attrs=attrs) )

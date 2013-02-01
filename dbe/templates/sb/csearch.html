@@ -1,0 +1,20 @@
+{% extends "sbbase.html" %}
+{% block content %}
+    <div class="main">
+
+        <form action="" method="get" accept-charset="utf-8">
+        {{ form }}
+        <input type="submit" value="Search" />
+        </form>
+
+        {% for comment in comments %}
+            <ul>
+                <div class="time">{{ comment.author }}</div>
+                <div class="body">{{ comment.body|linebreaks }}</div>
+            </ul>
+        {% endfor %}
+
+    </div>
+
+    {% include "paginator.html" %}
+{% endblock %}

@@ -331,8 +331,8 @@ class BaseDateListView(MultipleObjectMixin, DateMixin, View):
 
     def get(self, request, *args, **kwargs):
         self.date_list, self.object_list, extra_context = self.get_dated_items()
-        context = self.get_context_data(object_list=self.object_list,
-                                        date_list=self.date_list)
+        context = self.get_list_context_data(object_list=self.object_list,
+                                             date_list=self.date_list)
         context.update(extra_context)
         return self.render_to_response(context)
 
@@ -628,7 +628,7 @@ class BaseDateDetailView(YearMixin, MonthMixin, DayMixin, DateMixin, BaseDetailV
     Detail view of a single object on a single date; this differs from the
     standard DetailView by accepting a year/month/day in the URL.
     """
-    def get_object(self, queryset=None):
+    def get_detail_object(self, queryset=None):
         """
         Get the object this request displays.
         """
@@ -640,7 +640,7 @@ class BaseDateDetailView(YearMixin, MonthMixin, DayMixin, DateMixin, BaseDetailV
                                  day, self.get_day_format())
 
         # Use a custom queryset if provided
-        qs = queryset or self.get_queryset()
+        qs = queryset or self.get_detail_queryset()
 
         if not self.get_allow_future() and date > datetime.date.today():
             raise Http404(_("Future %(verbose_name_plural)s not available because %(class_name)s.allow_future is False.") % {
@@ -654,7 +654,7 @@ class BaseDateDetailView(YearMixin, MonthMixin, DayMixin, DateMixin, BaseDetailV
         lookup_kwargs = self._make_single_date_lookup(date)
         qs = qs.filter(**lookup_kwargs)
 
-        return super(BaseDetailView, self).get_object(queryset=qs)
+        return super(BaseDetailView, self).get_detail_object(queryset=qs)
 
 
 class DateDetailView(SingleObjectTemplateResponseMixin, BaseDateDetailView):

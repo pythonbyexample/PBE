@@ -12,19 +12,15 @@ btn_tpl  = "<div class='%s' id='%s_%s'><img class='btn' src='%simg/admin/icon-%s
 namelink = "<a href='%s'>%s</a> <a style='float:right; font-size:0.6em;' href='%s'>edit</a>"
 dellink  = "<a href='%s'>Delete</a>"
 
-class IModel(Model):
-    class Meta: abstract = True
-    obj = objects = Manager()
 
-
-class Project(IModel):
+class Project(BaseModel):
     creator = ForeignKey(User, related_name="projects", blank=True, null=True)
     project = CharField(max_length=60)
 
     def __unicode__(self):
         return self.project
 
-class Tag(IModel):
+class Tag(BaseModel):
     creator = ForeignKey(User, related_name="tags", blank=True, null=True)
     tag     = CharField(max_length=30)
 
@@ -32,7 +28,7 @@ class Tag(IModel):
         return self.tag
 
 
-class Issue(IModel):
+class Issue(BaseModel):
     name       = CharField(max_length=60)
     creator    = ForeignKey(User, related_name="created_issues", blank=True, null=True)
     body       = TextField(max_length=3000, default='', blank=True)
@@ -47,13 +43,17 @@ class Issue(IModel):
     project    = ForeignKey(Project, related_name="issues", blank=True, null=True)
     tags       = ManyToManyField(Tag, related_name="issues", blank=True, null=True)
 
+    @permalink
+    def get_absolute_url(self):
+        return ("issue", (), dict(dpk=self.pk))
+
     def save(self):
         self.body_html = markdown(self.body)
         super(Issue, self).save()
 
     def name_(self):
-        link    = reverse2("issue", pk=self.pk)
-        editlnk = reverse2("update_issue_detail", pk=self.pk)
+        link    = reverse2("issue", dpk=self.pk)
+        editlnk = reverse2("update_issue_detail", mfpk=self.pk)
         return namelink % (link, self.name, editlnk)
     name_.allow_tags = True
 
@@ -85,7 +85,7 @@ class Issue(IModel):
     delete_.allow_tags = True
 
 
-class Comment(IModel):
+class Comment(BaseModel):
     creator   = ForeignKey(User, related_name="comments", blank=True, null=True)
     issue     = ForeignKey(Issue, related_name="comments", blank=True, null=True)
     created   = DateTimeField(auto_now_add=True)
@@ -97,4 +97,4 @@ class Comment(IModel):
         super(Comment, self).save()
 
     def __unicode__(self):
-        return self.project
+        return unicode(self.issue.name if self.issue else '') + " : " + self.body[:20]

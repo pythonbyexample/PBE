@@ -5,7 +5,7 @@ from django.core.mail import send_mail
 
 from dbe.shared.utils import *
 
-class Post(BasicModel):
+class Post(BaseModel):
     title   = CharField(max_length=60)
     body    = TextField()
     created = DateTimeField(auto_now_add=True)
@@ -16,7 +16,8 @@ class Post(BasicModel):
     def __unicode__(self):
         return self.title
 
-class Comment(BasicModel):
+
+class Comment(BaseModel):
     author  = CharField(max_length=60, blank=True)
     body    = TextField()
     post    = ForeignKey(Post, related_name="comments",  blank=True, null=True)

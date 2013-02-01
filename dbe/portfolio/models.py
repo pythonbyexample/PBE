@@ -29,8 +29,8 @@ class Group(BasicModel):
         return self.title
 
     @permalink
-    def get_absolute_url(self):
-        return ("group", (), dict(pk=self.pk))
+    def get_absolute_url(self, show="thumbnails"):
+        return ("group", (), dict(dpk=self.pk, show=show))
 
     def image_links(self):
         lst = [x.image.name for x in self.images.all()]
@@ -61,7 +61,7 @@ class Image(BasicModel):
 
     @permalink
     def get_absolute_url(self):
-        return ("image", (), dict(pk=self.pk))
+        return ("image", (), dict(mfpk=self.pk))
 
     def save(self, *args, **kwargs):
         """Save image dimensions."""

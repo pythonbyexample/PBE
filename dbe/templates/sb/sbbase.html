@@ -3,9 +3,10 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-    <title>{% block title %}IssuesApp{% endblock %}</title>
-    <link rel="stylesheet" href="/media/css/issues.css" type="text/css" media="screen" charset="utf-8" />
+    <title>{% block title %}SB{% endblock %}</title>
     {% block extrahead %}{% endblock %}
+    <link rel="stylesheet" href="/media/css/blog.css" type="text/css" media="screen" charset="utf-8" />
+
 </head>
 
 <body>
@@ -19,9 +20,13 @@
 
         <div id="menu">
             {% block nav-global %}
-                <h3>IssuesApp</h3>
-                <a href="{% url 'admin:issues_issue_changelist' %}">Issues</a>
-                <a href="{% url 'add_issues' %}">Add New Issues</a>
+
+                <h3>SB</h3>
+                {% if user.is_staff %}
+                    <a href="{% url 'admin:index' %}">Admin</a>
+                    <a href="{% url 'admin:sb_post_add' %}">Add post</a>
+                {% endif %}
+
             {% endblock %}
         </div>
 

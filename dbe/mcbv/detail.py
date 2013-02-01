@@ -107,7 +107,6 @@ class SingleObjectMixin(ContextMixin):
             context[context_object_name] = self.detail_object
         context.update(kwargs)
         return context
-        # return super(SingleObjectMixin, self).get_context_data(**context)
 
 
 class BaseDetailView(SingleObjectMixin, View):
@@ -117,7 +116,6 @@ class BaseDetailView(SingleObjectMixin, View):
     def detail_get(self, request, *args, **kwargs):
         self.detail_object = self.get_detail_object()
         return self.get_detail_context_data(detail_object=self.detail_object)
-        # return self.render_to_response(context)
 
 
 class SingleObjectTemplateResponseMixin(TemplateResponseMixin):

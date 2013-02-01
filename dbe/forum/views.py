@@ -15,29 +15,24 @@ from forms import ProfileForm, PostForm
 
 class Main(ListView):
     """Main listing."""
-    list_model               = Forum
-    list_context_object_name = "forums"
-    template_name            = "forum/list.html"
+    list_model    = Forum
+    template_name = "forum/list.html"
 
 
 class ForumView(ListRelated):
     """Listing of threads in a forum."""
-    detail_model               = Forum
-    list_model                 = Thread
-    related_name               = "threads"
-    detail_context_object_name = "forum"
-    list_context_object_name   = "threads"
-    template_name              = "forum.html"
+    detail_model  = Forum
+    list_model    = Thread
+    related_name  = "threads"
+    template_name = "forum.html"
 
 
 class ThreadView(ListRelated):
     """Listing of posts in a thread."""
-    list_model                 = Post
-    detail_model               = Thread
-    related_name               = "posts"
-    detail_context_object_name = "thread"
-    list_context_object_name   = "posts"
-    template_name              = "thread.html"
+    list_model    = Post
+    detail_model  = Thread
+    related_name  = "posts"
+    template_name = "thread.html"
 
 
 class EditProfile(UpdateView):
@@ -49,9 +44,10 @@ class EditProfile(UpdateView):
     def modelform_valid(self, modelform):
         """Resize and save profile image."""
         # remove old image if changed
-        name = modelform.cleaned_data.get("avatar", None)
+        name = modelform.cleaned_data.avatar
         pk   = self.kwargs.get("mfpk")
         old  = UserProfile.obj.get(pk=pk).avatar
+
         if old.name and old.name != name:
             old.delete()
 
@@ -77,32 +73,29 @@ class NewTopic(DetailView, CreateView):
     template_name   = "forum/post.html"
 
     def increment_post_counter(self):
-        profile = self.request.user.user_profile
-        profile.posts += 1
-        profile.save()
+        p = self.user.user_profile
+        p.update(posts=p.posts+1)
 
     def get_thread(self, modelform):
-        title  = modelform.cleaned_data.get("title")
-        return Thread.obj.create(forum=self.get_detail_object(), title=title, creator=self.request.user)
+        title = modelform.cleaned_data.title
+        return Thread.obj.create(forum=self.get_detail_object(), title=title, creator=self.user)
 
     def modelform_valid(self, modelform):
         """Create new topic."""
         data   = modelform.cleaned_data
         thread = self.get_thread(modelform)
-        Post.obj.create(thread=thread, title=data["title"], body=data["body"], creator=self.request.user)
+        Post.obj.create(thread=thread, title=data.title, body=data.body, creator=self.user)
         self.increment_post_counter()
         return redir(self.get_success_url())
 
     def get_success_url(self):
-        return self.get_detail_object().get_absolute_url()
+        # page=last is needed when called in Reply class
+        return self.get_detail_object().get_absolute_url() + "?page=last"
 
 
 class Reply(NewTopic):
     detail_model = Thread
     title        = "Reply"
-
-    def get_success_url(self):
-        return self.get_detail_object().get_absolute_url() + "?page=last"
 
     def get_thread(self, modelform):
         return self.get_detail_object()

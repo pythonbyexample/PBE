@@ -14,7 +14,7 @@
 
             <!-- List of forums -->
 
-            {% for forum in forums %}
+            {% for forum in forum_list %}
             <tr {% if forloop.last %}class="last"{% endif %}>
                 <td>
                     <div class="title"><a href="{% url 'forum' dpk=forum.pk %}">{{ forum.title }}</a></div>

@@ -4,7 +4,7 @@
 <div class="main">
     <table border="0" cellpadding="2" cellspacing="2">
 
-    {% for answer in user_quest.answers.all %}
+    {% for answer in userquestionnaire.answers.all %}
 
         {% with answer.question.question_container.title as title %}
             {% ifchanged title %}

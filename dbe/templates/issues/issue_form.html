@@ -7,8 +7,8 @@
 <div class="main">
     <form action="" method="POST">{% csrf_token %}
         <fieldset class="module aligned">
-        {% for name in form.fldorder %}
-            {% with form|get:name as fld %}
+        {% for name in modelform.fldorder %}
+            {% with modelform|get:name as fld %}
                 <div class="form-row">
                     <label class="{% if fld.field.required %} required {% endif %}">{{ fld.label }}</label>
                     {{ fld }}

@@ -7,7 +7,7 @@
     <br /> <br />
 
     <div id="list">
-        {% if threads %}
+        {% if thread_list %}
             <table border="0" cellpadding="4" width="100%">
               <tr>
                   <td>Topics</td>
@@ -18,7 +18,7 @@
 
               <!-- Threads  -->
 
-              {% for thread in threads %}
+              {% for thread in thread_list %}
               <tr {% if forloop.last %}class="last"{% endif %}>
                   <td>
                     <div class="title"><a href="{% url 'thread' thread.pk %}">{{ thread.title }}</a></div>

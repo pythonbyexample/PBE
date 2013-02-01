@@ -1,3 +1,4 @@
+from copy import copy
 from django.forms import formsets
 from django.contrib import messages
 from django.db.models import Q
@@ -8,28 +9,36 @@ from edit import *
 
 
 class SearchFormViewMixin(BaseFormView):
+    """TODO: this view needs to be fixed."""
     ignore_get_keys = ("page", )
 
     def get_form_kwargs(self):
         """Returns the keyword arguments for instantiating the form."""
-        r = self.request
+        print "in get_form_kwargs()"
+        req    = self.request
         kwargs = dict(initial=self.get_initial())
-        if r.method in ("POST", "PUT"):
-            kwargs.update(dict(data=r.POST, files=r.FILES))
-        elif r.GET:
+
+        if req.method in ("POST", "PUT"):
+            kwargs.update(dict(data=req.POST, files=req.FILES))
+        elif req.GET:
             # do get form processing if there's get data that's not in ignore list
-            if [k for k in r.GET.keys() if k not in self.ignore_get_keys]:
-                kwargs.update(dict(data=r.GET))
+            get = dict((k,v) for k,v in req.GET.items() if k not in self.ignore_get_keys)
+            if get:
+                kwargs = dict(kwargs, initial=get, data=get)
+        print "kwargs", kwargs
         return kwargs
 
-    def get(self, request):
-        form = self.get_form()
+    def form_get(self, request):
+        print "in form_get()"
+        form    = self.get_form()
+        context = self.get_context_data(form=form)
+
         if self.request.GET:
-            if form.is_valid():
-                self.process_form(form)
-            else:
-                return self.form_invalid(form)
-        return self.render_to_response(self.get_context_data(form=form))
+            if form.is_valid() :
+                print "form is valid"
+                context.update(self.form_valid(form))
+            else               : context.update(self.form_invalid(form))
+        return context
 
 
 class SearchFormView(FormView, SearchFormViewMixin):

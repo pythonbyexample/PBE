@@ -34,54 +34,52 @@ def delete_comment(request, pk):
 
 
 class UpdateIssue(UpdateView):
-    modelform_model = Issue
+    form_model      = Issue
     modelform_class = IssueForm
     msg_tpl         = "Issue '%s' was updated <%s%s>\n\n%s"
     item_name       = "issue"
+    template_name   = "issue_form.html"
 
-    def get_success_url(self):
-        return reverse2("issue", pk=self.object.pk)
-
-    def modelform_valid(self, form):
+    def modelform_valid(self, modelform):
         """ If form was changed, send notification email the (new) issue owner.
 
             Note: at the start of the function, FK relationships are already updated in `self.object`,
                   probably in form.is_valid()?
         """
-        if form.has_changed() and self.modelform_object.owner:
+        if modelform.has_changed() and self.modelform_object.owner:
             notify_owner(self.request, self.modelform_object, "Issue Updated", self.msg_tpl)
-        return super(UpdateIssue, self).modelform_valid(form)
+        return super(UpdateIssue, self).modelform_valid(modelform)
 
 
 class UpdateComment(UpdateView):
     """Update a comment."""
-    modelform_model = Comment
+    form_model      = Comment
     modelform_class = CommentForm
     item_name       = "comment"
+    template_name   = "issues/comment_form.html"
 
     def get_success_url(self):
-        return reverse2("issue", pk=self.object.issue.pk)
+        return self.modelform_object.issue.get_absolute_url()
 
 
 class ViewIssue(DetailListCreateView):
     """View issue, comments and new comment form."""
     detail_model               = Issue
+    detail_context_object_name = "issue"
     list_model                 = Comment
+    list_context_object_name   = "comments"
+
     modelform_class            = CommentForm
     related_name               = "comments"
-    detail_context_object_name = "issue"
+    fk_attr                    = "issue"
     msg_tpl                    = "Comment was added to the Issue '%s' <%s%s>\n\n%s"
     template_name              = "issue.html"
 
-    def get_modelform_kwargs(self):
-        kwargs  = super(ViewIssue, self).get_modelform_kwargs()
-        comment = Comment(issue=self.detail_object, creator=self.request.user)
-        return dict(kwargs, instance=comment)
-
-    def modelform_valid(self, form):
+    def modelform_valid(self, modelform):
         """Send notification email to the issue owner."""
-        resp    = super(ViewIssue, self).modelform_valid(form)
-        obj     = self.object
+        resp = super(ViewIssue, self).modelform_valid(modelform)
+        obj  = self.modelform_object
+        obj.update(issue=self.get_detail_object(), creator=self.request.user)
         notify_owner(self.request, obj.issue, "New Comment", self.msg_tpl, comment_body=obj.body)
         return resp
 
@@ -106,7 +104,7 @@ class AddIssues(FormSetView):
 
 def notify_owner(request, obj, title, msg_tpl, comment_body=''):
     serv_root = request.META["HTTP_ORIGIN"]
-    url       = reverse2("issue", pk=obj.pk)
+    url       = reverse2("issue", dpk=obj.pk)
     lst       = [obj.name, serv_root, url, comment_body]
     msg       = msg_tpl % tuple(lst)
 

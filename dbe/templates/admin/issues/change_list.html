@@ -1,5 +1,5 @@
 {% extends "admin/base_site.html" %}
-{% load adminmedia admin_list i18n %}
+{% load i18n admin_list admin_static %}
 
 {% block title %}{% trans 'IssuesApp' %}{% endblock %}
 {% block branding %}
@@ -8,12 +8,12 @@
 
 {% block extrastyle %}
   {{ block.super }}
-  <link rel="stylesheet" type="text/css" href="{% admin_media_prefix %}css/changelists.css" />
+  <link rel="stylesheet" type="text/css" href="{% static "admin/css/changelists.css" %}" />
   {% if cl.formset %}
-    <link rel="stylesheet" type="text/css" href="{% admin_media_prefix %}css/forms.css" />
+    <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />
   {% endif %}
   {% if cl.formset or action_form %}
-    {% url admin:jsi18n as jsi18nurl %}
+    {% url 'admin:jsi18n' as jsi18nurl %}
     <script type="text/javascript" src="{{ jsi18nurl|default:'../../jsi18n/' }}"></script>
     <style type="text/css">
         .btn { cursor: pointer; }
@@ -88,7 +88,7 @@
 
 
 {% block content %}
-<a href="{% url add_issues %}">Add New Issues</a>
+<a href="{% url 'add_issues' %}">Add New Issues</a>
   <div id="content-main">
     {% block object-tools %}
       {% if has_add_permission %}

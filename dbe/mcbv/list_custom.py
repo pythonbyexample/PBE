@@ -8,7 +8,7 @@ from list import *
 from edit_custom import *
 
 
-class ListFilterView(ListView, SearchFormViewMixin):
+class PaginatedSearch(ListView, SearchFormView):
     """ List Filter - filter list with a search form.
 
         as_view      : dispatch -> get or post
@@ -27,37 +27,39 @@ class ListFilterView(ListView, SearchFormViewMixin):
 
         form_valid, get_success_url, get_queryset, get_context_data
     """
-    context_object_name = None
-    success_url_name    = None
-    q                   = Q()
+    object_list = None
 
-    def get(self, request):
-        self.object_list = self.model.obj.all()
-        form             = self.get_form()
-        return self.form_valid(form) if form.is_valid() else self.form_invalid(form)
+    def get_list_queryset(self):
+        return self.object_list or []
 
-    def get_success_url(self):
-        return reverse(self.success_url_name) if self.success_url_name else None
+    def get_list_context_data(self, **kwargs):
+        context = super(PaginatedSearch, self).get_list_context_data(**kwargs)
+        get     = self.request.GET.copy()
+        get.pop("page", None)
+        extra = '&'+get.urlencode()
+        return dict(context, extra_vars=extra, form=self.get_form())
 
-    def get_queryset(self):
-        return self.model.objects.filter(self.q)
+
+class ListFilterView(PaginatedSearch):
+    """Filter a list view through a search."""
+    list_model   = None
+    search_field = 'q'
+    start_blank  = True     # start with full item listing or blank page
+
+    def get_list_queryset(self):
+        if self.object_list:
+            return self.object_list
+        else:
+            return list() if self.start_blank else self.list_model.objects.all()
+
+    def get_query(self, q):
+        return Q()
 
     def form_valid(self, form):
-        u = self.get_success_url()
-        if u: return HttpResponseRedirect(u)
-        return self.render_to_response(self.get_context_data(form=form))
-
-    def get_context_data(self, **kwargs):
-        # search query to be added to page links
-        get = self.request.GET.copy()
-        get.pop("page", None)
-        kwargs.update({"object_list"            : self.object_list,
-                       "extra_vars"             : '&'+get.urlencode(),
-                       self.context_object_name : self.object_list,
-                       })
-        c = super(ListFilterView, self).get_context_data(**kwargs)
-        c.update( dict(form=self.get_form()) )
-        return c
+        q                = form.cleaned_data[self.search_field].strip()
+        filter           = self.list_model.objects.filter
+        self.object_list = filter(self.get_query(q)) if q else None
+        return dict(form=form)
 
 
 class ListRelated(DetailView, ListView):
@@ -70,13 +72,18 @@ class ListRelated(DetailView, ListView):
 
 
 class DetailListCreateView(ListRelated, CreateView):
-    """DetailView of an object & listing of related objects and a form to create new related obj."""
-    success_url = '#'
-    fk_attr     = None  # modelform_obj.`fk_attr` -> detail_object
+    """ DetailView of an object & listing of related objects and a form to create new related obj.
 
-    def form_valid(self, form, modelform, _):
-        resp = super(DetailListCreateView, self).form_valid(_, modelform, _)
+        fk_attr : field of object to be created that points back to detail_object, e.g.:
+                    detail_model = Thread; fk_attr = "thread"; reply.thread = detail_object
+    """
+    success_url = '#'
+    fk_attr     = None
+
+    def modelform_valid(self, modelform):
+        resp = super(DetailListCreateView, self).modelform_valid(modelform)
         setattr(self.modelform_object, self.fk_attr, self.get_detail_object())
+        self.modelform_object.save()
         return resp
 
 

@@ -3,7 +3,7 @@
 
 <div class="main">
     <ul>
-        {% for quest in user_quests %}
+        {% for quest in userquestionnaire_list %}
             <li><a href="{% url 'user_questionnaire' quest.pk %}"
                         >{{ quest.user }} - {{ quest.questionnaire.name }}</a></li>
         {% endfor %}

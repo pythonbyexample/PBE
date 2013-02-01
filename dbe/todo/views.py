@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404
 
 from dbe.todo.models import *
 from dbe.todo.forms import *
-from dbe.classviews.edit_custom import *
+from dbe.mcbv.edit_custom import *
 
 
 class RemindersWrapper(object):
