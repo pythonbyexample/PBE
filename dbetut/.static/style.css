@@ -1,0 +1,20 @@
+body {
+    background: #cde;
+}
+#content {
+    width: 780px;
+    background: #eee;
+    border: 1px solid #999;
+    margin: auto;
+    padding: 10px;
+}
+#title {
+    font-size: 200%;
+    color: #338;
+    text-align: center;
+}
+#footer {
+    color: #666;
+    font-size: 85%;
+    text-align: center;
+}

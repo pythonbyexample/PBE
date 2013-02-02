@@ -81,10 +81,10 @@ class DetailListCreateView(ListRelated, CreateView):
     fk_attr     = None
 
     def modelform_valid(self, modelform):
-        resp = super(DetailListCreateView, self).modelform_valid(modelform)
+        self.modelform_object = modelform.save(commit=False)
         setattr(self.modelform_object, self.fk_attr, self.get_detail_object())
         self.modelform_object.save()
-        return resp
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class DetailListFormsetView(ListRelated, FormSetView):

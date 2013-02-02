@@ -10,9 +10,9 @@
     <div id="sidebar">
         Monthly Archive
         <p>
-        {% for month in view.months %}
-            {% ifchanged month.0 %} {{ month.0 }} <br /> {% endifchanged %}
-            <a href="{% url 'archive_month' month.0 month.1 %}">{{ month.2 }}</a> <br />
+        {% for ym in view.months %}
+            {% ifchanged ym.0 %} {{ ym.0 }} <br /> {% endifchanged %}
+            <a href="{% url 'archive_month' ym.0 ym.1 %}">{{ ym.2 }}</a> <br />
         {% endfor %}
         </p>
     </div>
