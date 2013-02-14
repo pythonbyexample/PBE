@@ -1,13 +1,13 @@
 from django.forms import ModelForm
 from dbe.forum.models import *
-from dbe.shared.utils import CleanFormMixin
+from dbe.shared.utils import ContainerFormMixin
 
-class ProfileForm(CleanFormMixin, ModelForm):
+class ProfileForm(ModelForm):
     class Meta:
         model   = UserProfile
         exclude = ["posts", "user"]
 
-class PostForm(CleanFormMixin, ModelForm):
+class PostForm(ContainerFormMixin, ModelForm):
     class Meta:
         model   = Post
         exclude = ["creator", "thread"]

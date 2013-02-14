@@ -1,5 +1,5 @@
 from pprint import pprint
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponse
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib.admin.views.decorators import staff_member_required
 from django.forms import forms
@@ -19,7 +19,7 @@ def update_issue(request, pk, mode=None, action=None):
     issue = Issue.obj.get(pk=pk)
     if mode == "delete":
         Issue.obj.filter(pk=pk).delete()
-        return HttpResponseRedirect( reverse("admin:issues_issue_changelist") )
+        return redir("admin:issues_issue_changelist")
     else:
         if mode == "progress" : val = int(action)
         else                  : val = bool(action=="on")
@@ -30,14 +30,13 @@ def update_issue(request, pk, mode=None, action=None):
 @staff_member_required
 def delete_comment(request, pk):
     Comment.obj.get(pk=pk).delete()
-    return HttpResponseRedirect(referer(request))
+    return redir(referer(request))
 
 
 class UpdateIssue(UpdateView):
     form_model      = Issue
     modelform_class = IssueForm
     msg_tpl         = "Issue '%s' was updated <%s%s>\n\n%s"
-    item_name       = "issue"
     template_name   = "issue_form.html"
 
     def modelform_valid(self, modelform):
@@ -55,7 +54,6 @@ class UpdateComment(UpdateView):
     """Update a comment."""
     form_model      = Comment
     modelform_class = CommentForm
-    item_name       = "comment"
     template_name   = "issues/comment_form.html"
 
     def get_success_url(self):
@@ -88,7 +86,6 @@ class AddIssues(FormSetView):
     """Create new issues."""
     formset_model      = Issue
     formset_form_class = IssueForm
-    item_name          = "issue"
     success_url        = reverse_lazy("admin:issues_issue_changelist")
     msg_tpl            = "New Issue '%s' was created <%s%s>\n\n%s"
     extra              = 2
@@ -99,7 +96,7 @@ class AddIssues(FormSetView):
             if form.has_changed():
                 form.save()
                 notify_owner(self.request, form.instance, "New Issue", self.msg_tpl)
-        return HttpResponseRedirect(self.success_url)
+        return redir(self.success_url)
 
 
 def notify_owner(request, obj, title, msg_tpl, comment_body=''):

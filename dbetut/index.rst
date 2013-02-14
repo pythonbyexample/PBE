@@ -12,6 +12,7 @@ Welcome to Django by Example
 .. toctree::
     :maxdepth: 2
 
+    libraries
     blog
     bombquiz
     forum

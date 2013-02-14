@@ -7,7 +7,12 @@ library.
 
 You can view or download the code here:
 
-https://github.com/akulakov/django/tree/master/dbe/
+`Browse source files <https://github.com/akulakov/django/tree/master/dbe/>`_
+
+`dbe.tar.gz <https://github.com/akulakov/django/tree/master/dbe.tar.gz>`_
+
+A few custom functions and classes and the MCBV library are used in the tutorials, please look
+through the `libraries page <libraries.html>`_ before continuing.
 
 I will focus on the important parts of code in the listings below; I recommend opening the
 source files in a separate window to see import lines and other details.
@@ -68,9 +73,7 @@ The archive listing is similar but the posts will be shown in order of creation 
 post on top), and will have no pagination because the number of posts per month isn't very
 large, hopefully!
 
-Finally the post view will show the post itself, a list of comments and a form to add a new comment.
-
-I'm inheriting all three views from mcbv class-based views: `ListView` and `DetailListCreateView.`
+Finally, the post view will show the post itself, a list of comments and a form to add a new comment.
 
 
 PostView
@@ -93,7 +96,7 @@ PostView
 The `DetailListCreateView` needs to specify the detail model, list model and the modelform used
 to create a new record, as well as relation field names.
 
-The `related_name` setting needs to be the same as in Comment.post model field.
+The `related_name` setting needs to be the same as in `Comment.post` model field.
 
 The `fk_attr` setting is used to save the detail object (Post) as the foreign key relation on the
 newly created comment.
@@ -133,15 +136,9 @@ Main
             return months
 
 
-
-The mcbv `ListView` is similar to generic `ListView` but the model is specified with `list_model`
-class attribute (to allow combining with other mcbv views).
-
-Note that I'll be using ModelClass.obj attribute to refer to the manager for convenience --
-this is inherited from `BaseModel.`
-
-The months method is used directly from the template; it needs to go over the years and months
+The `months()` method is used directly from the template; it needs to go over the years and months
 and assign posts to each month.
+
 
 CommentForm
 -----------
@@ -176,13 +173,13 @@ view arguments and override sorting direction:
             return Post.obj.filter(created__year=year, created__month=month).order_by("created")
 
 
-List template
+List Template
 -------------
 
 In the list template, I'll use the `ifchanged` tag to insert year labels in the sidebar; to show
 posts I'll iterate over `post_list` which is automatically created by `ListView.`
 
-.. sourcecode:: djangohtml
+.. sourcecode:: django
 
     <!-- SIDEBAR -->
 
@@ -218,16 +215,16 @@ posts I'll iterate over `post_list` which is automatically created by `ListView.
     {% endblock %}
 
 
-.. image:: _static/img/bl.png
+.. image:: _static/img/bl.gif
     :class: screenshot
 
-Post template
+Post Template
 -------------
 
 In post template I need to show the post, the list of comments and a form to add a new comment;
 note that mcbv `CreateView` form is named `modelform,` not `form.`
 
-.. sourcecode:: djangohtml
+.. sourcecode:: django
 
     {% block content %}
         <div class="main">
@@ -259,5 +256,5 @@ note that mcbv `CreateView` form is named `modelform,` not `form.`
         </div>
     {% endblock %}
 
-.. image:: _static/img/bp.png
+.. image:: _static/img/bp.gif
     :class: screenshot

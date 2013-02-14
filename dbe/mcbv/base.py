@@ -9,7 +9,6 @@ from django.template.response import TemplateResponse
 from django.utils.decorators import classonlymethod
 from django.utils import six
 
-__version__ = "0.3"
 
 logger = logging.getLogger('django.request')
 

@@ -3,35 +3,34 @@ from django.contrib.auth.models import User
 from django.contrib import admin
 from django.db.models.signals import post_save
 
+from dbe.settings import MEDIA_URL
 from dbe.shared.utils import *
 
 
-class Forum(BasicModel):
+class Forum(BaseModel):
     title = CharField(max_length=60)
 
     def __unicode__(self):
         return self.title
 
-    @permalink
     def get_absolute_url(self):
-        return ("forum", (), dict(dpk=self.pk))
+        return reverse2("forum", dpk=self.pk)
 
     def num_posts(self):
         return sum([t.num_posts() for t in self.threads.all()])
 
     def last_post(self):
+        """Go over the list of threads and find the most recent post."""
         threads = self.threads.all()
-        if threads:
-            last = None
-            for thread in threads:
-                lastp = thread.last_post()
-                if lastp:
-                    if not last or lastp.created > last.created:
-                        last = lastp
-            return last
+        last    = None
+        for thread in threads:
+            lastp = thread.last_post()
+            if lastp and (not last or lastp.created > last.created):
+                last = lastp
+        return last
 
 
-class Thread(BasicModel):
+class Thread(BaseModel):
     title   = CharField(max_length=60)
     created = DateTimeField(auto_now_add=True)
     creator = ForeignKey(User, blank=True, null=True)
@@ -43,23 +42,13 @@ class Thread(BasicModel):
     def __unicode__(self):
         return unicode("%s - %s" % (self.creator, self.title))
 
-    @permalink
-    def get_absolute_url(self):
-        return ("thread", (), dict(dpk=self.pk))
-
-    def num_posts(self):
-        return self.posts.count()
-
-    def num_replies(self):
-        return self.posts.count() - 1
-
-    def last_post(self):
-        posts = self.posts.all()
-        if posts:
-            return posts.order_by("created")[0]
+    def get_absolute_url(self) : return reverse2("thread", dpk=self.pk)
+    def last_post(self)        : return first(self.posts.all())
+    def num_posts(self)        : return self.posts.count()
+    def num_replies(self)      : return self.posts.count() - 1
 
 
-class Post(BasicModel):
+class Post(BaseModel):
     title   = CharField(max_length=60)
     created = DateTimeField(auto_now_add=True)
     creator = ForeignKey(User, blank=True, null=True)
@@ -73,18 +62,25 @@ class Post(BasicModel):
         return u"%s - %s - %s" % (self.creator, self.thread, self.title)
 
     def short(self):
-        return u"%s - %s\n%s" % (self.creator, self.title, self.created.strftime("%b %d, %I:%M %p"))
-    short.allow_tags = True
+        created = self.created.strftime("%b %d, %I:%M %p")
+        return u"%s - %s\n%s" % (self.creator, self.title, created)
 
     def profile_data(self):
-        p = self.creator.user_profile
+        p = self.creator.profile
         return p.posts, p.avatar
 
 
-class UserProfile(BasicModel):
+class UserProfile(BaseModel):
     avatar = ImageField("Profile Pic", upload_to="images/", blank=True, null=True)
     posts  = IntegerField(default=0)
-    user   = OneToOneField(User, related_name="user_profile")
+    user   = OneToOneField(User, related_name="profile")
 
     def __unicode__(self):
         return unicode(self.user)
+
+    def increment_posts(self):
+        self.posts += 1
+        self.save()
+
+    def avatar_image(self):
+        return (MEDIA_URL + self.avatar.name) if self.avatar else None

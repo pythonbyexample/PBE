@@ -1,4 +1,4 @@
-from django.core.urlresolvers import reverse, reverse_lazy
+from django.core.urlresolvers import reverse_lazy
 from django.db.models import Count, Avg
 from django.http import Http404
 
@@ -26,9 +26,6 @@ class NewPlayer(CreateView):
         self.request.session.update(data)
         return resp
 
-
-class Done(TemplateView):
-    template_name = "bombquiz/done.html"
 
 class Stats(TemplateView):
     template_name = "stats.html"
@@ -82,3 +79,7 @@ class QuestionView(FormView):
     def add_context(self):
         session = self.request.session
         return dict(qnum=self.qn, total=self.questions.count(), left=session["left"])
+
+
+class Done(TemplateView):
+    template_name = "bombquiz/done.html"

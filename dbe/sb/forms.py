@@ -1,12 +1,12 @@
 from dbe.sb.models import *
 from django.forms import *
 
-from dbe.shared.utils import CleanFormMixin
+from dbe.shared.utils import ContainerFormMixin
 
-class SearchForm(CleanFormMixin, Form):
+class SearchForm(ContainerFormMixin, Form):
     q = CharField(max_length=400, label="", help_text="", required=False)
 
-class CommentForm(CleanFormMixin, ModelForm):
+class CommentForm(ContainerFormMixin, ModelForm):
     class Meta:
         model = Comment
         exclude = ["post"]

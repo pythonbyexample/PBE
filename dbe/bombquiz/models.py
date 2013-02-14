@@ -2,7 +2,7 @@ from django.db.models import *
 from dbe.shared.utils import *
 
 
-class Question(BasicModel):
+class Question(BaseModel):
     question = CharField(max_length=200, unique=True)
     answer   = CharField(max_length=60)
     order    = IntegerField(unique=True)
@@ -14,7 +14,7 @@ class Question(BasicModel):
         ordering = ["order"]
 
 
-class PlayerRecord(BasicModel):
+class PlayerRecord(BaseModel):
     name    = CharField(max_length=60)
     email   = EmailField(max_length=120)
     created = DateTimeField(auto_now_add=True)
@@ -28,7 +28,7 @@ class PlayerRecord(BasicModel):
         unique_together = [["name", "email"]]
 
 
-class Answer(BasicModel):
+class Answer(BaseModel):
     answer        = CharField(max_length=60)
     player_record = ForeignKey(PlayerRecord, related_name="answers")
     question      = ForeignKey(Question, related_name="answers")
