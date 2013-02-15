@@ -1,5 +1,5 @@
 {% extends "issbase.html" %}
-{% load todo %}
+{% load issues %}
 {% block content %}
 <style type="text/css" media="screen">
     #id_body { width: 600px; height: 250px; }
@@ -7,6 +7,7 @@
 <div class="main">
     <form action="" method="POST">{% csrf_token %}
         <fieldset class="module aligned">
+
         {% for name in modelform.fldorder %}
             {% with modelform|get:name as fld %}
                 <div class="form-row">
@@ -15,6 +16,7 @@
                 </div>
             {% endwith %}
         {% endfor %}
+
         </fieldset>
         <div id="submit"><input id="submit-btn" type="submit" value="Save"></div>
     </form>

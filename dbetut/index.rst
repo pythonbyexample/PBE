@@ -16,3 +16,4 @@ Welcome to Django by Example
     blog
     bombquiz
     forum
+    issues

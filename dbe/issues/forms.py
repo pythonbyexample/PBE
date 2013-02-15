@@ -3,9 +3,87 @@ from django.forms import widgets
 from django.forms.widgets import *
 from django.utils.safestring import mark_safe
 
-from dbe.todo.forms import SelectOrCreateField, TagsSelectCreateField
 from dbe.issues.models import *
 
+
+class SelectAndTextInput(widgets.MultiWidget):
+    """A Widget with select and text input field."""
+    is_required = False
+    input_fields = 1
+
+    def __init__(self, choices=(), initial=None, attrs=None):
+        widgets = self.get_widgets(choices, initial, attrs)
+        super(SelectAndTextInput, self).__init__(widgets, attrs)
+
+    def get_widgets(self, c, i, attrs):
+        return [Select(attrs=attrs, choices=c), TextInput(attrs=attrs)]
+
+    def decompress(self, value):
+        return value or [None]*(self.input_fields+1)
+
+    def format_output(self, rendered_widgets):
+        return u' '.join(rendered_widgets)
+
+
+class MultiSelectCreate(SelectAndTextInput):
+    """Widget with multiple select and multiple input fields."""
+    input_fields = 6
+
+    def get_widgets(self, c, i, attrs):
+        return [SelectMultiple(attrs=attrs, choices=c)] + [TextInput(attrs=attrs) for _ in range(self.input_fields)]
+
+    def format_output(self, lst):
+        lst.insert(0, "<table border='0'><tr><td>")
+        lst.insert(2, "</td><td>")
+        lst.append("</td></tr></table>")
+        return u''.join(lst)
+
+
+#### Fields
+
+class SelectOrCreateField(f.MultiValueField):
+    """SelectAndTextField - select from a dropdown or add new using text inputs."""
+    widgetcls    = SelectAndTextInput
+    extra_inputs = 1
+
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop("choices", ())
+        initial = kwargs.pop("initial", {})
+        fields = self.get_fields(choices, initial)
+        super(SelectOrCreateField, self).__init__(fields, *args, **kwargs)
+        self.widget = self.widgetcls(choices, initial)
+        self.initial = [initial] + [u'']*self.extra_inputs
+        self.required = False
+
+    def get_fields(self, choices, initial):
+        return [f.ChoiceField(choices=choices, initial=initial), f.CharField()]
+
+    def to_python(self, value):
+        return value
+
+    def set_choices(self, choices):
+        self.fields[0].choices = self.widget.widgets[0].choices = choices
+        initial = choices[0][0]
+        self.fields[0].initial = choices[0][0]
+        self.widget.widgets[0].initial = choices[0][0]
+
+    def compress(self, lst):
+        choice, new = lst[0], lst[1].strip()
+        return (new, True) if new else (choice, False)
+
+class TagsSelectCreateField(SelectOrCreateField):
+    widgetcls    = MultiSelectCreate
+    extra_inputs = 6
+
+    def get_fields(self, c, i):
+        return [f.MultipleChoiceField(choices=c, initial=i)] + \
+                [f.CharField() for _ in range(self.extra_inputs)]
+
+    def compress(self, lst):
+        return [lst[0]] + [x.strip() for x in lst[1:] if x.strip()] if lst else None
+
+
+# FORMS
 
 class CommentForm(f.ModelForm):
     class Meta:
@@ -72,6 +150,7 @@ class CreateIssueForm(f.ModelForm):
 
     fldorder   = "name body owner priority difficulty progress closed project_ tags_".split()
     s3widget   = f.TextInput(attrs=dict(size=3))
+
     priority   = f.IntegerField(widget=s3widget, required=False, initial=0)
     difficulty = f.IntegerField(widget=s3widget, required=False, initial=0)
     project_   = SelectOrCreateField()

@@ -11,19 +11,17 @@ from dbe.shared.utils import *
 
 
 class Main(ListView):
-    list_model               = Group
-    list_context_object_name = "groups"
-    paginate_by              = 10
-    template_name            = "portfolio/list.html"
+    list_model    = Group
+    paginate_by   = 10
+    template_name = "portfolio/list.html"
 
 
 class SlideshowView(ListRelated):
     """Show images in a group."""
-    list_model               = Image
-    detail_model             = Group
-    related_name             = "images"
-    list_context_object_name = "images"
-    template_name            = "slideshow.html"
+    list_model    = Image
+    detail_model  = Group
+    related_name  = "images"
+    template_name = "slideshow.html"
 
 
 class AddImages(DetailView, FormSetView):
@@ -46,9 +44,7 @@ class AddImages(DetailView, FormSetView):
 
 class GroupView(DetailListFormsetView):
     """List of images in an group, optionally with a formset to update image data."""
-    detail_model               = Group
-    detail_context_object_name = "group"
-
+    detail_model       = Group
     formset_model      = Image
     formset_form_class = ImageForm
     related_name       = "images"

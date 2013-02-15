@@ -15,11 +15,13 @@ imgtag = "<img border='0' alt='' src='%s' />"
 
 class PhotoManager(Manager):
     def get_or_none(self, **kwargs):
-        try: return self.get(**kwargs)
-        except self.model.DoesNotExist: return None
+        try:
+            return self.get(**kwargs)
+        except self.model.DoesNotExist:
+            return None
 
 
-class Group(BasicModel):
+class Group(BaseModel):
     title       = CharField(max_length=60)
     description = TextField(blank=True, null=True)
     link        = URLField(blank=True, null=True)
@@ -28,9 +30,8 @@ class Group(BasicModel):
     def __unicode__(self):
         return self.title
 
-    @permalink
     def get_absolute_url(self, show="thumbnails"):
-        return ("group", (), dict(dpk=self.pk, show=show))
+        return reverse2("group", dpk=self.pk, show=show)
 
     def image_links(self):
         lst = [x.image.name for x in self.images.all()]
@@ -39,7 +40,7 @@ class Group(BasicModel):
     image_links.allow_tags = True
 
 
-class Image(BasicModel):
+class Image(BaseModel):
     obj         = objects = PhotoManager()
     title       = CharField(max_length=60, blank=True, null=True)
     description = TextField(blank=True, null=True)
@@ -59,9 +60,8 @@ class Image(BasicModel):
     def __unicode__(self):
         return self.image.name
 
-    @permalink
     def get_absolute_url(self):
-        return ("image", (), dict(mfpk=self.pk))
+        return reverse2("image", mfpk=self.pk)
 
     def save(self, *args, **kwargs):
         """Save image dimensions."""

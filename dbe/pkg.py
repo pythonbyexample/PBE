@@ -10,7 +10,7 @@ akdjango = expanduser("~/win-projects/akdjango/")
 
 def main():
     # apps = "blog bombquiz forum issues portfolio questionnaire".split()
-    apps = "blog bombquiz forum".split()
+    apps = "blog bombquiz forum issues".split()
     totpl = apps
     files = "index.html paginator.html".split()
     todbe = apps + "mcbv shared".split()

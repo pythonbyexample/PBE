@@ -33,6 +33,7 @@ class Issue(BaseModel):
     creator    = ForeignKey(User, related_name="created_issues", blank=True, null=True)
     body       = TextField(max_length=3000, default='', blank=True)
     body_html  = TextField(blank=True, null=True)
+
     owner      = ForeignKey(User, related_name="issues", blank=True, null=True)
     priority   = IntegerField(default=0, blank=True, null=True)
     difficulty = IntegerField(default=0, blank=True, null=True)
@@ -43,9 +44,8 @@ class Issue(BaseModel):
     project    = ForeignKey(Project, related_name="issues", blank=True, null=True)
     tags       = ManyToManyField(Tag, related_name="issues", blank=True, null=True)
 
-    @permalink
     def get_absolute_url(self):
-        return ("issue", (), dict(dpk=self.pk))
+        return reverse2("issue", dpk=self.pk)
 
     def save(self):
         self.body_html = markdown(self.body)
@@ -73,15 +73,15 @@ class Issue(BaseModel):
     created_.admin_order_field = "created"
 
     def owner_(self):
-        return self.owner if self.owner else ''
+        return self.owner or ''
     owner_.admin_order_field = "owner"
 
     def project_(self):
-        return self.project if self.project else ''
+        return self.project or ''
     project_.admin_order_field = "project"
 
     def delete_(self):
-        return dellink % reverse( "update_issue", args=[self.pk, "delete"] )
+        return dellink % reverse2("update_issue", self.pk, "delete")
     delete_.allow_tags = True
 
 

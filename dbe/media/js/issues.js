@@ -1,6 +1,4 @@
 $(document).ready( function() {
-    $update_url  = "/issues/update-issue/";
-    $action_type = "closed/";
 
     $.ajaxSetup({
         beforeSend: function(xhr, settings) {
@@ -25,6 +23,9 @@ $(document).ready( function() {
             }
         }
     });
+
+    $update_url  = "/issues/update-issue/";
+    $action_type = "closed/";
 
     // hover
     $(".progress_btns li").hover(function() {

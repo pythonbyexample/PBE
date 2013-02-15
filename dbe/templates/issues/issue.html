@@ -27,9 +27,9 @@
 
         <!-- LIST OF COMMENTS -->
 
-        {% if comments %} <p>Comments:</p> {% endif %}
+        {% if comment_list %} <p>Comments:</p> {% endif %}
 
-        {% for comment in comments %}
+        {% for comment in comment_list %}
             <div class="comment">
                 <div class="time">{{ comment.created }} | {{ comment.creator }}
                 {% if request.user.is_staff %}

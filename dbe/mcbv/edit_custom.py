@@ -9,7 +9,7 @@ from edit import *
 
 
 class SearchFormViewMixin(BaseFormView):
-    ignore_get_keys = ("page", )
+    ignore_get_keys = ("page", )    # TODO this should be ignored in search form?
 
     def get_form_kwargs(self):
         """Returns the keyword arguments for instantiating the form."""
