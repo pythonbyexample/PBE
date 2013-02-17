@@ -31,8 +31,8 @@ SITE_ID                 = 1
 USE_I18N                = True
 USE_L10N                = True
 ACCOUNT_ACTIVATION_DAYS = 2
-SITE_ROOT               = '/media/Main/Home/Projects/pytut/dbe/'
-MEDIA_ROOT              = '/media/Main/Home/Projects/pytut/dbe/media/'
+SITE_ROOT               = '~/pytut/dbe/'
+MEDIA_ROOT              = '/home/ak/pytut/dbe/media/'
 MEDIA_URL               = 'http://localhost:8001/media/'
 STATIC_ROOT             = '/home/ak/Downloads/Django-1.5c1/django/contrib/admin/static/'
 STATIC_URL              = 'http://localhost:8001/static/'
@@ -81,5 +81,9 @@ INSTALLED_APPS = [
     'registration',
 ]
 
-try: from local_settings import *
-except Exception, e: pass
+try:
+    from local_settings import *
+    print "DONE"
+except Exception, e:
+    print e
+    pass

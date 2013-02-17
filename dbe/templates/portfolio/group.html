@@ -12,12 +12,12 @@
             <div class="title">{{ group.title }}</div>
                 <div class="right">
                 View:
-                <a href="{% url 'group' dpk=group.pk show='thumbnails' %}">thumbnails</a>
-                <a href="{% url 'group' dpk=group.pk show='thumbnails2' %}">small thumbnails</a>
-                <a href="{% url 'group' dpk=group.pk show='full' %}">full</a>
-                {% if user.is_staff %}
-                    <a href="{% url 'group' dpk=group.pk show='edit' %}">edit</a> |
-                    <a href="{% url 'add_images' dpk=group.pk %}">add images</a>
+                <a href="{% url 'group' group.pk 'thumbnails' %}">thumbnails</a>
+                <a href="{% url 'group' group.pk 'thumbnails2' %}">small thumbnails</a>
+                <a href="{% url 'group' group.pk 'full' %}">full</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'group' group.pk 'edit' %}">edit</a> |
+                    <a href="{% url 'add_images' group.pk %}">add images</a>
                 {% endif %}
                 </div>
                 <br /> <br />

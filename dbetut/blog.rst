@@ -93,13 +93,11 @@ PostView
         template_name   = "blog/post.html"
 
 
-The `DetailListCreateView` needs to specify the detail model, list model and the modelform used
+`DetailListCreateView` needs to specify the detail model, list model and the modelform used
 to create a new record, as well as relation field names.
 
-The `related_name` setting needs to be the same as in `Comment.post` model field.
-
-The `fk_attr` setting is used to save the detail object (Post) as the foreign key relation on the
-newly created comment.
+The `related_name` setting needs to be the same as in `Comment.post` model field; `fk_attr` is
+used to save the detail object (`Post`) as the foreign key relation on the newly created comment.
 
 Main
 ----
@@ -136,8 +134,8 @@ Main
             return months
 
 
-The `months()` method is used directly from the template; it needs to go over the years and months
-and assign posts to each month.
+I will use `months()` directly from the template; it needs to go over the years and months and
+assign posts to each month.
 
 
 CommentForm
@@ -160,8 +158,8 @@ the author field is not filled in:
 ArchiveMonth
 ------------
 
-The only two things we need in `ArchiveMonth` is to disable pagination and to get year/month from
-view arguments and override sorting direction:
+`ArchiveMonth` is almost entirely the same as Main; we only need to disable pagination and to
+get year/month from view arguments and override sorting direction:
 
 .. sourcecode:: python
 
@@ -221,8 +219,8 @@ posts I'll iterate over `post_list` which is automatically created by `ListView.
 Post Template
 -------------
 
-In post template I need to show the post, the list of comments and a form to add a new comment;
-note that mcbv `CreateView` form is named `modelform,` not `form.`
+In `Post` template I need to show the post, the list of comments and a form to add a new
+comment; note that mcbv `CreateView` form is named `modelform,` not `form.`
 
 .. sourcecode:: django
 
@@ -258,3 +256,5 @@ note that mcbv `CreateView` form is named `modelform,` not `form.`
 
 .. image:: _static/img/bp.gif
     :class: screenshot
+
+And that's that!

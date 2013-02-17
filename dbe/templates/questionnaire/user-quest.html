@@ -6,7 +6,7 @@
 
     {% for answer in userquestionnaire.answers.all %}
 
-        {% with answer.question.question_container.title as title %}
+        {% with answer.question.section.title as title %}
             {% ifchanged title %}
                 <tr><td colspan="2"><p class="title">{{ title }}</p></td></tr>
             {% endifchanged %}

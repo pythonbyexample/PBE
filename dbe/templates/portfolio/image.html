@@ -3,8 +3,6 @@
 
 {% block content %}
     <div class="main">
-        {% include "messages.html" %}
-
         <!-- Image -->
         {% if image.title %}
             <div class="title">{{ image.title }}</div>
@@ -14,10 +12,10 @@
             <img border="0" alt="" src="{{ image.image_url }}" {% if image.width > 800 %} width="800" {% endif %} />
 
             <div id="edit-view">
-                {% if not view.edit and user.is_staff %} <a href="?edit=1">edit</a> {% endif %}
+                {% if not view.edit and user.is_authenticated %} <a href="?edit=1">edit</a> {% endif %}
             </div>
 
-            <form id="image" action="" method="post" accept-charset="utf-8" enctype="multipart/form-data">{% csrf_token %}
+            <form id="image" action="" method="post" accept-charset="utf-8">{% csrf_token %}
                 {% if view.edit %}
                 <table id="update-form">
 
@@ -35,7 +33,7 @@
                 </table>
                 <ul><input type="submit" value="Update" /></ul>
             {% else %}
-                <p>{{ modelform.instance.description }}</p>
+                <p>{{ image.description }}</p>
             {% endif %}
             </form>
         </div>

@@ -14,15 +14,15 @@ class Questionnaires(ListView):
     list_model    = Questionnaire
     template_name = "questionnaires.html"
 
-class UserQuest(DetailView):
-    detail_model  = UserQuestionnaire
-    template_name = "user-quest.html"
-
 class UserQuests(ListRelated):
     detail_model  = Questionnaire
     list_model    = UserQuestionnaire
     related_name  = "user_questionnaires"
     template_name = "user-quests.html"
+
+class UserQuest(DetailView):
+    detail_model  = UserQuestionnaire
+    template_name = "user-quest.html"
 
 
 class QuestStats(DetailView):
@@ -57,31 +57,30 @@ class QuestStats(DetailView):
         return defdict_to_odict(quests)
 
 
-class ViewQuestionnaire(DetailView, FormView):
-    form_class    = SectionForm
+class ViewQuestionnaire(ListRelated, FormView):
     detail_model  = Questionnaire
+    list_model    = Section
+    related_name  = "sections"
+    form_class    = SectionForm
     template_name = "quest.html"
 
+    def get_section(self):
+        self.snum = int(self.kwargs.get("section", 1))
+        return self.get_list_queryset()[self.snum-1]
+
     def get_form_kwargs(self):
-        """Get current section (container), add it to kwargs; init some view instance vars."""
-        kwargs        = super(ViewQuestionnaire, self).get_form_kwargs()
-        object        = self.get_detail_object()
-        sn            = int(self.kwargs.get("section", 1))
-        self.sections = Section.obj.filter(questionnaire=object)
-        section       = self.sections[sn-1]
+        kwargs = super(ViewQuestionnaire, self).get_form_kwargs()
+        return dict(kwargs, section=self.get_section())
 
-        self.snum, self.quest, self.section = sn, object, section
-        return dict(kwargs, section=section)
+    def form_valid(self, form):
+        """Create user answer records using form data."""
+        stotal  = self.get_list_queryset().count()
+        quest   = self.get_detail_object()
+        uquest  = UserQuestionnaire.obj.get_or_create(questionnaire=quest, user=self.user)[0]
+        section = self.get_section()
 
-    def form_valid(self, form, *args):
-        """Create user answer records from form data."""
-        data   = form.cleaned_data
-        quest  = self.quest
-        stotal = self.sections.count()
-        uquest = UserQuestionnaire.obj.get_or_create(questionnaire=quest, user=self.user)[0]
-
-        for order, value in data.items():
-            question = self.section.questions.get(order=int(order))
+        for order, value in form.cleaned_data.items():
+            question = section.questions.get(order=int(order))
             answer   = Answer.obj.get_or_create(user_questionnaire=uquest, question=question)[0]
             answer.update(answer=value)
 

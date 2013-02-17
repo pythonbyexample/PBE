@@ -15,31 +15,11 @@ class Main(ListView):
     paginate_by   = 10
     template_name = "portfolio/list.html"
 
-
 class SlideshowView(ListRelated):
-    """Show images in a group."""
     list_model    = Image
     detail_model  = Group
     related_name  = "images"
     template_name = "slideshow.html"
-
-
-class AddImages(DetailView, FormSetView):
-    """Add images to a group view."""
-    detail_model       = Group
-    formset_model      = Image
-    formset_form_class = AddImageForm
-    template_name      = "add_images.html"
-    extra              = 10
-
-    def formset_valid(self, formset):
-        obj = self.get_detail_object()
-        for form in formset:
-            if form.has_changed():
-                img = form.save(commit=False)
-                img.group = obj
-                img.save()
-        return redir(obj.get_absolute_url())
 
 
 class GroupView(DetailListFormsetView):
@@ -52,14 +32,28 @@ class GroupView(DetailListFormsetView):
     template_name      = "group.html"
 
     def add_context(self):
-        show = self.kwargs.get("show", "thumbnails")
-        if show == "edit" and not self.user.is_authenticated():
-            show = "thumbnails"
-        return dict(show=show)
+        return dict( show=self.kwargs.get("show", "thumbnails") )
+
+    def process_form(self, form):
+        if self.user.is_authenticated(): form.save()
 
     def get_success_url(self):
-        url = self.get_detail_object().get_absolute_url()
-        return "%s?%s" % (url, self.request.GET.urlencode())    # keep page num
+        return "%s?%s" % (self.detail_absolute_url(), self.request.GET.urlencode()) # keep page num
+
+
+class AddImages(DetailView, FormSetView):
+    """Add images to a group view."""
+    detail_model       = Group
+    formset_model      = Image
+    formset_form_class = AddImageForm
+    template_name      = "add_images.html"
+    extra              = 10
+
+    def process_form(self, form):
+        form.instance.update( group=self.get_detail_object() )
+
+    def get_success_url(self):
+        return self.detail_absolute_url()
 
 
 class ImageView(UpdateView):
@@ -67,8 +61,8 @@ class ImageView(UpdateView):
     modelform_class = ImageForm
     template_name   = "portfolio/image.html"
 
-    def edit(self):
-        return self.user.is_authenticated() and self.request.GET.get("edit")
+    def form_valid(self, form):
+        if self.user.is_authenticated(): form.save()
 
 
 def portfolio_context(request):

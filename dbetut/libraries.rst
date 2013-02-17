@@ -89,7 +89,7 @@ ones you would normally want to override; look in the source files to get the fu
 `FormSetMixin`
 
     * formset_model, formset_form_class, formset_class=BaseFormSet, extra=3
-    * get_formset(), get_formset_kwargs(), formset_valid(), formset_invalid()
+    * get_formset(), get_formset_kwargs(), formset_valid(), formset_invalid(), process_form()
 
 `ModelFormMixin`
 

@@ -2,21 +2,14 @@ from django import forms as f
 from dbe.portfolio.models import *
 from dbe.shared.utils import *
 
-class ImageForm(AKModelForm):
+class ImageForm(FormsetModelForm):
     class Meta:
         model   = Image
         exclude = "image width height hidden group thumbnail1 thumbnail2".split()
         attrs   = dict(cols=70)
         widgets = dict( description=f.Textarea(attrs=attrs) )
 
-class ImageCreateForm(AKModelForm):
-    class Meta:
-        model   = Image
-        exclude = "width height hidden group thumbnail1 thumbnail2".split()
-        attrs   = dict(cols=70)
-        widgets = dict( description=f.Textarea(attrs=attrs) )
-
-class AddImageForm(AKModelForm):
+class AddImageForm(f.ModelForm):
     class Meta:
         model   = Image
         exclude = "width height hidden group thumbnail1 thumbnail2".split()

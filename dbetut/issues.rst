@@ -172,21 +172,17 @@ AddIssues View
         extra              = 2
         template_name      = "add_issues.html"
 
-        def form_valid(self, formset):
-            for form in formset:
-                if form.has_changed():
-                    form.save()
-                    notify_owner(self.request, form.instance, "New Issue", self.msg_tpl)
-            return redir(self.success_url)
+        def process_form(self, form):
+            form.save()
+            notify_owner(self.request, form.instance, "New Issue", self.msg_tpl)
 
-It's a very basic view, but I want to highlight two details: you shouldn't confuse the
-`formset_form_class` with `formset_class` -- the former is what the formset uses to create
-individual forms and the latter is a class that is used to create the formset itself, by
-default it is set to `BaseFormSet.`
 
-Note also that you have to explicitly check if the form has changed, otherwise the formset will
-try to create a new record for each unfilled extra form.
+Note that you shouldn't confuse the `formset_form_class` with `formset_class` -- the former is
+what the formset uses to create individual forms and the latter is a class that is used to
+create the formset itself, by default it is set to `BaseFormSet.`
 
+FormSetView will run process_form() on each form that was changed by the user -- by default
+this method will simply save the form.
 
 ViewIssue
 ---------

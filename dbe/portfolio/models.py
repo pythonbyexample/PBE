@@ -13,14 +13,6 @@ link   = "<a href='%s'>%s</a>"
 imgtag = "<img border='0' alt='' src='%s' />"
 
 
-class PhotoManager(Manager):
-    def get_or_none(self, **kwargs):
-        try:
-            return self.get(**kwargs)
-        except self.model.DoesNotExist:
-            return None
-
-
 class Group(BaseModel):
     title       = CharField(max_length=60)
     description = TextField(blank=True, null=True)
@@ -34,14 +26,13 @@ class Group(BaseModel):
         return reverse2("group", dpk=self.pk, show=show)
 
     def image_links(self):
-        lst = [x.image.name for x in self.images.all()]
-        lst = [link % ( "/media/"+x, basename(x) ) for x in lst]
+        lst = [img.image.name for img in self.images.all()]
+        lst = [link % ( MEDIA_URL+img, basename(img) ) for img in lst]
         return ", ".join(lst)
     image_links.allow_tags = True
 
 
 class Image(BaseModel):
-    obj         = objects = PhotoManager()
     title       = CharField(max_length=60, blank=True, null=True)
     description = TextField(blank=True, null=True)
     image       = ImageField(upload_to="images/")

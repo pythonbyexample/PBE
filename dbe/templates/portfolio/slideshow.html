@@ -128,8 +128,8 @@
         <div class="title">{{ group.title }}</div>
 
             <!-- EDIT LINK -->
-            {% if user.is_staff %}
-                <div class="right"> <a href="{% url 'group' dpk=group.pk show='edit' %}">edit</a> </div>
+            {% if user.is_authenticated %}
+                <div class="right"> <a href="{% url 'group' group.pk 'edit' %}">edit</a> </div>
                 <br /> <br />
             {% endif %}
 

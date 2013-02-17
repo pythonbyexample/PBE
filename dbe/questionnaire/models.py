@@ -8,25 +8,24 @@ from dbe.shared.utils import *
 link = "<a href='%s'>%s</a>"
 
 
-class Questionnaire(BasicModel):
+class Questionnaire(BaseModel):
     name = CharField(max_length=60, unique=True)
 
     def __unicode__(self):
         return self.name
 
-    @permalink
     def get_absolute_url(self, section=1):
-        return ("questionnaire", (), dict(dpk=self.pk, section=section))
+        return reverse2("questionnaire", self.pk, section)
 
     def section_links(self):
         section_url = "admin:questionnaire_section_change"
         lst         = [(c.pk, c.name) for c in self.sections.all()]
         lst         = [ (reverse2(section_url, pk), name) for pk, name in lst ]
-        return join([link % c for c in lst], ', ')
+        return ", ".join( [link % c for c in lst] )
     section_links.allow_tags = True
 
 
-class UserQuestionnaire(BasicModel):
+class UserQuestionnaire(BaseModel):
     user          = ForeignKey(User, related_name="questionnaires", blank=True, null=True)
     questionnaire = ForeignKey(Questionnaire, related_name="user_questionnaires", blank=True, null=True)
     created       = DateTimeField(auto_now_add=True)
@@ -38,7 +37,7 @@ class UserQuestionnaire(BasicModel):
         ordering = ["user", "created"]
 
 
-class Section(BasicModel):
+class Section(BaseModel):
     """Container for a few questions, shown on a single page."""
     name          = CharField(max_length=60, blank=True, null=True)
     questionnaire = ForeignKey(Questionnaire, related_name="sections", blank=True, null=True)
@@ -49,16 +48,14 @@ class Section(BasicModel):
         unique_together = [["questionnaire", "order"]]
 
     def __unicode__(self):
-        n = (' ' + self.name) if self.name else ''
-        return "[%s] (%s)%s" % (self.questionnaire, self.order, n)
+        return "[%s] (%s) %s" % (self.questionnaire, self.order, self.name or '')
 
     def title(self):
-        n = self.name
-        return "(%s)%s" % (self.order, (' ' + n) if n else '')
+        return "(%s) %s" % (self.order, self.name or '')
 
 
 
-class Question(BasicModel):
+class Question(BaseModel):
     question    = CharField(max_length=200)
     choices     = CharField(max_length=500, blank=True, null=True)
     answer_type = CharField(max_length=6, choices=(("str", "str"), ("int", "int")))
@@ -73,7 +70,7 @@ class Question(BasicModel):
         return "%s: %s" % (self.section, self.question)
 
 
-class Answer(BasicModel):
+class Answer(BaseModel):
     answer             = CharField(max_length=200)
     question           = ForeignKey(Question, related_name="answers", blank=True, null=True)
     user_questionnaire = ForeignKey(UserQuestionnaire, related_name="answers", blank=True, null=True)

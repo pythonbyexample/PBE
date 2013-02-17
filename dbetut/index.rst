@@ -17,3 +17,6 @@ Welcome to Django by Example
     bombquiz
     forum
     issues
+    portfolio
+    questionnaire
+    contact
