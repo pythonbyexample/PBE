@@ -21,8 +21,8 @@
     </style>
 
     <div class="main">
-    <a href= "{% url cal.views.month year month "prev" %}">&lt;&lt; Prev</a>
-    <a href= "{% url cal.views.month year month "next" %}">Next &gt;&gt;</a>
+    <a href= "{% url 'month' year month "-1" %}">&lt;&lt; Prev</a>
+    <a href= "{% url 'month' year month "1" %}">Next &gt;&gt;</a>
 
     <h4>{{ mname }} {{ year }}</h4>
 

@@ -13,8 +13,9 @@
     <div class="main">
     <h4>Settings</h4>
     <form action="" method="POST"> {% csrf_token %}
-    Show other users' entries:
-        <input type="checkbox" name="show_users" {% if show_users %}checked{% endif %} />
+    <table>
+        {{ formset.as_table }}
+    </table>
     <input type="submit" value="Save" />
     </form>
     </div>

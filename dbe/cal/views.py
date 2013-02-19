@@ -2,19 +2,12 @@ import time
 import calendar
 from datetime import date, datetime, timedelta
 
-from django.core.urlresolvers import reverse
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import get_object_or_404, render_to_response
-from django.core.context_processors import csrf
-from django.forms.models import modelformset_factory
-from django.template import RequestContext
 from django.contrib.auth.models import User
 
 from dbe.cal.models import *
 from dbe.cal.forms import *
-from dbe.mcbv.edit import FormView
 from dbe.mcbv.base import TemplateView
+from dbe.mcbv.edit_custom import FormView, FormSetView, UpdateRelatedView
 
 month_names = list(calendar.month_name)
 
@@ -72,7 +65,7 @@ class MonthView(TemplateView, CalMixin):
     template_name = "cal/month.html"
 
     def add_context(self):
-        """Listing of day tuples in current month."""
+        """Listing of weeks / days in a month."""
         year, month = self.args
         change      = self.kwargs.get("change")
 
@@ -83,14 +76,11 @@ class MonthView(TemplateView, CalMixin):
             year, month = newdate.timetuple()[:2]
 
         # init variables
-        # month_days = cal.itermonthdays(year, month)
-        # week       = 0
         month_days = calendar.Calendar().monthdayscalendar(year, month)
         weeks      = []
 
         cur_year, cur_month, cur_day = time.localtime()[:3]
 
-        # make month lists containing list of days for each week
         # each day tuple will contain list of entries and 'current' indicator
         for week in month_days:
             days = []
@@ -129,7 +119,6 @@ class DayView(FormSetView, CalMixin):
         return reverse2("month", self.args[0], self.args[1])
 
     def add_context(request):
-        """Entries for the day."""
         y, m, d       = self.args
         other_entries = []
         if self.show_other_users():

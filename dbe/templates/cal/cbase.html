@@ -47,12 +47,12 @@
             {% block nav-global %}
 
                 <!-- MENU -->
-                <h3><a href="{% url cal.views.main %}">CalApp</a></h3>
+                <h3><a href="{% url 'main' %}">CalApp</a></h3>
 
                 {% if user.is_staff %} <a href="/admin/cal/">Admin</a> {% endif %}
 
                 {% if user.is_authenticated %}
-                    <a href="{% url cal.views.settings %}">Settings</a> {% endif %}
+                    <a href="{% url 'settings' %}">Settings</a> {% endif %}
 
             {% endblock %}
         </div>
@@ -68,7 +68,7 @@
 
             <div class="reminders">
                 <div class="gr">Alerts</div>
-                {% for reminder in reminders %}<p class="red"> {{ reminder.short }}</p>
+                {% for reminder in view.reminders %}<p class="red"> {{ reminder.short }}</p>
                 {% empty %}<p>no alerts</p>
                 {% endfor %}
             </div>

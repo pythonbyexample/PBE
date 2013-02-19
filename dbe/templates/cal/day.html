@@ -21,11 +21,11 @@
     {% endfor %} <br />
 
     <h4>My Entries</h4>
-    <form action="{% url cal.views.day year month day %}" method="POST"> {% csrf_token %}
+    <form action="{% url day year month day %}" method="POST"> {% csrf_token %}
 
-    {{ entries.management_form }}
+    {{ formset.management_form }}
 
-    {% for entry in entries.forms %}
+    {% for entry in formset.forms %}
         {{ entry.id }}
         <div class="entry">
             <div class="del">Delete {{ entry.DELETE }}</div>
