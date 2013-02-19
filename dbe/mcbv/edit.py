@@ -83,13 +83,15 @@ class FormMixin(ContextMixin):
 
 class FormSetMixin(FormMixin):
     """A mixin that provides a way to show and handle a formset in a request."""
-
     formset_model      = None
     formset_queryset   = None
     formset_form_class = None
     formset_initial    = {}
     formset_class      = BaseFormSet
     extra              = 3
+    can_delete         = False
+    formset_queryset   = None
+
     formset_kwarg_user = False     # provide request user to form
     success_url        = None
 
@@ -102,13 +104,27 @@ class FormSetMixin(FormMixin):
     def get_formset_form_class(self):
         return self.formset_form_class
 
+    def get_formset_queryset(self):
+        if self.formset_queryset is not None:
+            queryset = self.formset_queryset
+            if hasattr(queryset, '_clone'):
+                queryset = queryset._clone()
+        elif self.formset_model is not None:
+            queryset = self.formset_model._default_manager.all()
+        else:
+            raise ImproperlyConfigured("'%s' must define 'formset_queryset' or 'formset_model'"
+                                        % self.__class__.__name__)
+        return queryset
+
     def get_formset(self, form_class=None):
         form_class   = form_class or self.formset_form_class
-        Formset      = formset_factory(form_class, extra=self.extra)
+        Formset      = formset_factory(form_class, extra=self.extra, can_delete=self.can_delete,
+                                       queryset=self.get_formset_queryset())
+
         kwargs       = dict(user=self.request.user) if self.form_kwarg_user else dict()
         Formset.form = staticmethod(curry(form_class, **kwargs))
 
-        return Formset(**self.get_form_kwargs())
+        return Formset(**self.get_formset_kwargs())
 
     def get_formset_kwargs(self):
         kwargs = {
