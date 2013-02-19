@@ -1,0 +1,30 @@
+{% extends "rbase.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} | Ratings {% trans "SaS" %}{% endblock %}
+{% block branding %}
+<h1 id="site-name">{% trans "RateEverything" %} </h1>
+{% endblock %}
+
+{% block nav-global %}
+    <!-- MENU -->
+    <div class="menu">
+
+    <b>Ratings</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    {% if user.is_staff %}
+    <a href="/admin/">Admin</a> <a href="/ratev/updsim_secret/">Update similarity</a>
+    <a href="/ratev/mkrec_secret/">Update recommendations</a>
+    <a href="/ratev/stats/">Stats</a>
+    {% endif %}{% if user.is_authenticated %}<a href="/ratev/search/">Search</a><a href=
+    "/ratev/recommendations/">My Recommendations</a>{% endif %}
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+    {% if not user.is_authenticated %}<a href="/accounts/login/?next=/ratev/">login</a> | <a
+        href="/accounts/register/">register</a>{% endif %}
+
+    {% if user.is_authenticated %}<a href="/accounts/logout/?next=/ratev/">logout</a>{% endif %}
+    <a href="/ratev/help/">help!</a>
+    <!-- <a href="/ratev/test/">(test)</a> -->
+
+    </div>
+{% endblock %}

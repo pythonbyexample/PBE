@@ -91,22 +91,23 @@ class MonthView(TemplateView):
             year, month = newdate.timetuple()[:2]
 
         # init variables
-        cal = calendar.Calendar()
+        cal        = calendar.Calendar()
         month_days = cal.itermonthdays(year, month)
+        week       = 0
+        days       = [[]]
+
         cur_year, cur_month, cur_day = time.localtime()[:3]
-        days = [[]]
-        week = 0
 
         # make month lists containing list of days for each week
         # each day tuple will contain list of entries and 'current' indicator
         for day in month_days:
-            entries = current = False   # are there entries for this day; current day?
+            entries = False
+            current = bool(day == cur_day and year == cur_year and month == cur_month)
+
             if day:
                 entries = Entry.obj.filter(date__year=year, date__month=month, date__day=day)
                 if not _show_users(self.request):
                     entries = entries.filter(creator=self.user)
-                if day == cur_day and year == cur_year and month == cur_month:
-                    current = True
 
             days[week].append((day, entries, current))
             if len(days[week]) == 7:

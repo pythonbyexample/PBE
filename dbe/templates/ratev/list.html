@@ -1,0 +1,68 @@
+{% extends "rbsite.html" %}
+{% block title %}List{% endblock %}
+
+{% block content %}
+    <style type="text/css">
+        #submit { margin-left: 5px; }
+        .rating { width: 40px; }
+        .main { margin-left: 25px; margin-top: 50px; }
+        .messages { margin-left: 20px; }
+        .indent { margin-left: 40px; }
+
+        a, .item { font-size: 1.2em; }
+        h3 { margin-left: 50px; }
+        td.itemcell { border: 0px solid #ddd; }
+        td.itemcell2 { border: 0px solid #ddd; text-align: center; }
+        input { margin-top: 0px; margin-bottom: 0px; }
+    </style>
+    <div class="main">
+        <h3>{{ name|title }}</h3>
+
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+        <ul>
+            <form action="/ratev/{{ ltype }}/{{ id }}/" method="POST">{% csrf_token %}
+            <table cellpadding="4" cellspacing="1">
+
+            {% if results %}
+            <tr><td>{{ itemtype|capfirst }}</td><td>Rating (0-100)</td><td>Rec. Score</td></tr>
+            {% endif %}
+
+            {% for item in results %}
+            <tr style="background: #{% cycle "f5f5f5" "fff" %};"> <td class="itemcell">
+                    {% if itemtype == "album" %}
+                        <a href="/ratev/{{ itemtype }}/{{ item.0 }}/">{{ item.1|title }}</a>
+                    {% else %}
+                        <span class="item">{{ item.1|title }}</p>
+                    {% endif %}
+                </td>
+            <td class="itemcell2">
+                <input type="text" class="rating" name="id_{{ item.0 }}" value="{{ item.2 }}"
+                  maxlength="3"/>
+            </td>
+            <td class="itemcell2">{{ item.3.1 }}</td>
+            </tr>
+            {% endfor %}
+
+            {% if results %}
+            <tr><td></td><td><input id="submit" type="submit" value="Save"></td><td></td></tr>
+            {% endif %}
+
+            </table>
+            <br />
+            </form>
+        </ul>
+
+        {% if not no_add %}
+        <a href="/ratev/add/{{ itemtype }}/{{ id }}/" class="indent"
+            >+ add {{ itemtype|title }}(s) to "{{ name|title }}"</a>
+        {% endif %}
+    </div>
+
+{% endblock %}

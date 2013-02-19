@@ -1,0 +1,36 @@
+{% extends "rbsite.html" %}
+{% block title %}Added {{ ltype|title }}(s){% endblock %}
+
+{% block content %}
+    <style type="text/css">
+        a, .item { font-size: 1.2em; }
+        .main { margin-left: 25px; margin-top: 50px; }
+        .messages { margin-left: 20px; }
+        h3 { margin-left: 45px; }
+        td.itemcell { border: 0px solid #ddd; }
+        td.itemcell2 { border: 0px solid #ddd; text-align: center; }
+        .indent { margin-left: 40px; }
+    </style>
+    <div class="main">
+        <h3>Added {{ ltype|title }}(s)</h3>
+
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+        <ul>
+            <table cellpadding="4" cellspacing="1">
+                {% for item in list_added %}
+                <tr><td>
+                    <a href="/ratev/{{ ltype }}/{{ item.id }}/">{{ item.name|title }}</a></td>
+                </tr>
+                {% endfor %}
+            </table>
+        </ul>
+
+    </div>
+{% endblock %}

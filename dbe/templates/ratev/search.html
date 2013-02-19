@@ -1,0 +1,68 @@
+{% extends "rbsite.html" %}
+{% block title %}Search{% endblock %}
+
+{% block content %}
+    <style type="text/css">
+        hr { height: 1px; color: #fafafa; margin-top: 55px; }
+    </style>
+
+    <div style="margin-left: 25px;">
+
+    <p style="margin-top: 50px;">
+        <form action="/ratev/search/" method="GET">
+            <input size="42" maxlength="150" type="text" name="q" value="{{ q }}"/>
+            <select name="stype">
+                <option value="artist" {% if stype == "artist" %}selected{% endif %}>
+                    Artists / Bands</option>
+                <option value="author" {% if stype == "author" %}selected{% endif %}>
+                    Book Authors</option>
+                <option value="director" {% if stype == "director" %}selected{% endif %}>
+                    Film Directors</option>
+            </select>
+            <input type="submit" value="Search" style="margin-left: 0px; width: 82px;">
+
+        </form>
+    </p>
+
+    {% if q %}
+        <ul>
+        {% with results.object_list.count as count %}
+            {% if count %}
+            <p><I>{{ count }} result{{ count|pluralize:" was,s were" }} found</I>
+                <br /></p>
+            {% endif %}
+        {% endwith %}
+        {% for item in results.object_list %}
+        <li><a href="/ratev/{{ stype }}/{{ item.id }}/">{{ item.name|title }}</a></li>
+        {% empty %}
+             <i>Your search returned no results.</i>
+        {% endfor %}
+
+        {% if results.object_list and results.paginator.num_pages > 1 %}
+        <div class="pagination" style="margin-top: 20px; margin-left: -20px; ">
+            <span class="step-links">
+                {% if results.has_previous %}
+                <a href="?page={{ results.previous_page_number }}&q={{ q }}&stype={{ stype }}"
+                    >previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ results.number }} of {{ results.paginator.num_pages }}.
+                </span>
+
+                {% if results.has_next %}
+                <a href="?page={{ results.next_page_number }}&q={{ q }}&stype={{ stype }}"
+                    >next</a>
+                {% endif %}
+            </span>
+        </div>
+        {% endif %}
+
+        </ul>
+    {% endif %}
+    <hr />
+    Add new: <a href="/ratev/add/artist/">Artists / Bands</a> |
+    <a href="/ratev/add/author/">Book Authors</a> |
+    <a href="/ratev/add/director/">Directors</a>
+
+{% endblock %}

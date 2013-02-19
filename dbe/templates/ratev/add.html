@@ -1,0 +1,52 @@
+{% extends "rbsite.html" %}
+{% block title %}Add{% endblock %}
+
+{% block content %}
+    <style type="text/css">
+        .rating { width: 40px; }
+        .name { width: 200px; }
+        #submit { margin-left: 5px; }
+        a, .item { font-size: 1.2em; }
+        .main { margin-left: 25px; margin-top: 50px; }
+        .messages { margin-left: 20px; }
+        h3 { margin-left: 50px; }
+        td.itemcell { border: 0px solid #ddd; }
+        td.itemcell2 { border: 0px solid #ddd; text-align: center; }
+        input { margin-top: 0px; margin-bottom: 0px; }
+    </style>
+    <div class="main">
+        <h3>Add {{ ltype|title }}(s)</h3>
+
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+        <ul>
+            <form action="/ratev/add/{{ ltype }}/{% if not noparent %}{{ id }}/{% endif %}"
+                method="POST">{% csrf_token %}
+            <table cellpadding="4" cellspacing="1">
+
+                <tr><td>Name</td>
+                    {# only need to rate items that have a parent (e.g. author) #}
+                    {% if not noparent %}<td>Rating<br />(optional)<br />0-100</td>
+                        {% endif %}</tr>
+                {% for n in fields %}
+                <tr>
+                    <td style="border-top: 1px solid #ccc;">
+                        <input class="name" type="text" name="name_{{ n }}" maxlength="80"></td>
+                    {% if not noparent %}<td style="border-top: 1px solid #ccc;">
+                        <input class="rating" type="text" name="rating_{{ n }}" maxlength="3">
+                    </td>{% endif %}
+                </tr>
+                {% endfor %}
+                <tr><td></td><td><input type="submit" value="Add"></td></tr>
+            </table>
+            </form>
+        </ul>
+    </div>
+
+{% endblock %}

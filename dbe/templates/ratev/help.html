@@ -1,0 +1,69 @@
+{% extends "rbsite.html" %}
+{% block title %}Help{% endblock %}
+
+{% block content %}
+    <style type="text/css">
+        a, .item { font-size: 1.2em; }
+        .main { margin-left: 25px; margin-top: 50px; }
+        h3 { margin-left: 50px; font-size: 2em; }
+    </style>
+    <div class="main">
+        <h3>Help</h3>
+
+        <ul>
+
+            <p>The Ratings site will create recommendations for you based on comparing your
+            ratings of music, books and movies with other users' ratings. Ratings are
+            cross-referenced across categories: if other users have book ratings similar to yours,
+            this will affect your film and music recommendations and vice versa.</p>
+
+            <h4>Quickstart</h4>
+
+            <p>You need to register to be able to rate items and get recommendations.</p>
+
+            <p>Search for the artist or band name you want to rate. If an album you want to rate
+            is not listed, you can add it using the link on the bottom and then add a list of
+            tracks with ratings. If it is listed, you can click on it and rate tracks / songs.</p>
+
+            <p>There are no books or films in the database yet (21,000+ albums are already
+            included). To rate books or films, you will first need to add them.</p>
+
+            <p>On the bottom of search page, pick the type you want to add: artist / band,
+            book author or director. You will see the add page with 15 rows of entry boxes where
+            you can add 1-15 new authors at a time. After clicking "Add" button, you will see the
+            list of links of authors you added. Clicking on a link will land you on a page where
+            you can add books or movies. When you click on the add button you will again
+            see 15 rows where you can enter names and ratings (0-100) of items.</p>
+
+            <p>After adding a number of items and rating them, the site will calculate
+            recommendations based on ratings by other users. This calculation is performed about
+            once a day so you will need to check back on the next day to see updated
+            recommendations. As more and more users add their ratings, the recommendations will
+            become more accurate; to see them, click "My Recommendations" link on top of page.</p>
+
+            <h4>Misc. Notes</h4>
+
+            <p>If you add an item that's already present in the DB, it won't create a duplicate,
+            as long as the name is exactly the same. When adding items, makes sure not to add
+            an alternate spelling to the one that already there.</p>
+
+            <p>Recommendation scores can be shown for all items, including the ones you rated.
+            This will show how close the recommendation algorithm is to your own ratings.</p>
+
+            <p>When calculating recommendations, the algorithm counts albums and films as being
+            10 times weightier than tracks and books are 4 times weightier than albums / films.
+            If user A has the same rating for a movie as you do and user B has the same ratings
+            for 10 songs as you, the algorithm will consider their ratings to be equally important
+            for your recommendations.</p>
+
+            <p>The search page currently searches for Artists / Bands, Authors and
+            Directors. You can't search for film, book, album or track names. This will probably
+            be added soon.</p>
+
+            <p>You can add animation series or TV series as "films". More categories of items
+            will be added at a later time: websites, manga, web and paper comics, audiobooks,
+            etc.</p>
+
+    </ul> </div>
+
+{% endblock %}
