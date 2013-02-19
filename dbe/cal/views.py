@@ -9,19 +9,18 @@ from django.shortcuts import get_object_or_404, render_to_response
 from django.core.context_processors import csrf
 from django.forms.models import modelformset_factory
 from django.template import RequestContext
+from django.contrib.auth.models import User
 
 from dbe.cal.models import *
+from dbe.cal.forms import *
+from dbe.mcbv.edit import FormView
+from dbe.mcbv.base import TemplateView
 
-mnames = "January February March April May June July August September October November December"
-mnames = mnames.split()
+month_names = list(calendar.month_name)
 
 
 def _show_users(request):
-    """Return show_users setting; if it does not exist, initialize it."""
-    s = request.session
-    if not "show_users" in s:
-        s["show_users"] = True
-    return s["show_users"]
+    return request.session.setdefault("show_users", True)
 
 @login_required
 def settings(request):
@@ -31,6 +30,15 @@ def settings(request):
     if request.method == "POST":
         s["show_users"] = (True if "show_users" in request.POST else False)
     return render_to_response("cal/settings.html", add_csrf(request, show_users=s["show_users"]))
+
+class SettingsView(UpdateRelatedView):
+    detail_model  = User
+    form_model    = Settings
+    form_class    = SettingsForm
+    related_name  = "settings"
+    fk_attr       = "user"
+    template_name = "settings.html"
+
 
 def reminders(request):
     """Return the list of reminders for today and tomorrow."""
@@ -42,73 +50,71 @@ def reminders(request):
     return list(reminders) + list(Entry.objects.filter(date__year=year, date__month=month,
                                    date__day=day, creator=request.user, remind=True))
 
-@login_required
-def main(request, year=None):
+class MainView(TemplateView):
     """Main listing, years and months; three years per page."""
-    # prev / next years
-    if year: year = int(year)
-    else:    year = time.localtime()[0]
+    template_name = "cal/main.html"
 
-    nowy, nowm = time.localtime()[:2]
-    lst = []
+    def add_context(self):
+        localtime = time.localtime()
+        start_year = first(self.args, default=localtime[0])
 
-    # create a list of months for each year, indicating ones that contain entries and current
-    for y in [year, year+1, year+2]:
-        mlst = []
-        for n, month in enumerate(mnames):
-            entry = current = False   # are there entry(s) for this month; current month?
-            entries = Entry.objects.filter(date__year=y, date__month=n+1)
-            if not _show_users(request):
-                entries = entries.filter(creator=request.user)
+        nowy, nowm = localtime[:2]
+        years = []
 
-            if entries:
-                entry = True
-            if y == nowy and n+1 == nowm:
-                current = True
-            mlst.append(dict(n=n+1, name=month, entry=entry, current=current))
-        lst.append((y, mlst))
+        # create a list of months for each year, indicating ones that contain entries and current
+        for year in (start_year, start_year+1, start_year+2):
+            months = []
+            for n, month in enumerate(month_names)[1:]:
+                entries = Entry.obj.filter(date__year=year, date__month=n)
+                if not _show_users(self.request):
+                    entries = entries.filter(creator=self.user)
 
-    return render_to_response("cal/main.html", dict(years=lst, user=request.user, year=year,
-                                                   reminders=reminders(request)))
+                current = bool(y == nowy and n == nowm)   # current month
+                months.append(dict(n=n, name=month, entries=enties, current=current))
+            years.append((year, months))
 
-@login_required
-def month(request, year, month, change=None):
-    """Listing of days in `month`."""
-    year, month = int(year), int(month)
+        return dict(years=years, year=start_year, reminders=reminders(request))
 
-    # apply next / previous change
-    if change in ("next", "prev"):
-        now, mdelta = date(year, month, 15), timedelta(days=31)
-        if change == "next":   mod = mdelta
-        elif change == "prev": mod = -mdelta
 
-        year, month = (now+mod).timetuple()[:2]
+class MonthView(TemplateView):
+    template_name = "cal/month.html"
 
-    # init variables
-    cal = calendar.Calendar()
-    month_days = cal.itermonthdays(year, month)
-    nyear, nmonth, nday = time.localtime()[:3]
-    lst = [[]]
-    week = 0
+    def month(self):
+        """Listing of days in `month`."""
+        year, month = self.args
+        change      = self.kwargs.get("change")
 
-    # make month lists containing list of days for each week
-    # each day tuple will contain list of entries and 'current' indicator
-    for day in month_days:
-        entries = current = False   # are there entries for this day; current day?
-        if day:
-            entries = Entry.objects.filter(date__year=year, date__month=month, date__day=day)
-            if not _show_users(request):
-                entries = entries.filter(creator=request.user)
-            if day == nday and year == nyear and month == nmonth:
-                current = True
+        # apply next / previous change
+        if change:
+            now, mdelta = date(year, month, 15), timedelta(days=30)
+            newdate     = now + change*mdelta
+            year, month = newdate.timetuple()[:2]
 
-        lst[week].append((day, entries, current))
-        if len(lst[week]) == 7:
-            lst.append([])
-            week += 1
+        # init variables
+        cal = calendar.Calendar()
+        month_days = cal.itermonthdays(year, month)
+        cur_year, cur_month, cur_day = time.localtime()[:3]
+        days = [[]]
+        week = 0
 
-    return render_to_response("cal/month.html", dict(year=year, month=month, user=request.user,
-                        month_days=lst, mname=mnames[month-1], reminders=reminders(request)))
+        # make month lists containing list of days for each week
+        # each day tuple will contain list of entries and 'current' indicator
+        for day in month_days:
+            entries = current = False   # are there entries for this day; current day?
+            if day:
+                entries = Entry.obj.filter(date__year=year, date__month=month, date__day=day)
+                if not _show_users(self.request):
+                    entries = entries.filter(creator=self.user)
+                if day == cur_day and year == cur_year and month == cur_month:
+                    current = True
+
+            days[week].append((day, entries, current))
+            if len(days[week]) == 7:
+                days.append([])
+                week += 1
+
+        return dict(year=year, month=month, month_days=days, mname=month_names[month],
+                    reminders=reminders(self.request))
 
 @login_required
 def day(request, year, month, day):

@@ -67,6 +67,22 @@ class UpdateOwnObjView(OwnObjMixin, UpdateView):
     """Update object, checking that it belongs to current user."""
 
 
+class UpdateRelatedView(DetailView, UpdateView):
+    """Update object related to detail object; create if does not exist."""
+    detail_model = None
+    form_model   = None
+    fk_attr      = None
+    related_name = None
+
+    def get_modelform_object(self, queryset=None):
+        """ Get related object: detail_model.<related_name>
+            If does not exist, create: form_model.<fk_attr>
+        """
+        obj    = self.get_detail_object()
+        kwargs = {self.fk_attr: obj}
+        return getattr(obj, self.related_name, self.form_model(**kwargs))
+
+
 class SearchEditFormset(SearchFormView):
     """Search form filtering a formset of items to be updated."""
     model         = None
