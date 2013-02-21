@@ -30,9 +30,7 @@ class SearchFormViewMixin(BaseFormView):
         context = self.get_context_data(form=form)
 
         if self.request.GET:
-            if form.is_valid() :
-                print "form is valid"
-                context.update(self.form_valid(form))
+            if form.is_valid() : context.update(self.form_valid(form))
             else               : context.update(self.form_invalid(form))
         return context
 
@@ -80,7 +78,12 @@ class UpdateRelatedView(DetailView, UpdateView):
         """
         obj    = self.get_detail_object()
         kwargs = {self.fk_attr: obj}
-        return getattr(obj, self.related_name, self.form_model(**kwargs))
+        try:
+            related_obj = getattr(obj, self.related_name)
+        except self.form_model.DoesNotExist:
+            related_obj = self.form_model.obj.create(**kwargs)
+            setattr(obj, self.related_name, related_obj)
+        return related_obj
 
 
 class SearchEditFormset(SearchFormView):

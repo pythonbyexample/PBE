@@ -15,6 +15,7 @@ urlpatterns = patterns('',
     (r'^blog/'           , include('dbe.blog.urls')),
     (r'^sb/'             , include('dbe.sb.urls')),
     (r'^issues/'         , include('dbe.issues.urls')),
+    (r'^cal/'            , include('dbe.cal.urls')),
 
     # (r''                     , 'django.views.generic.simple.redirect_to', {'url': '/questionnaires/'}),
 

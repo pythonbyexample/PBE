@@ -6,4 +6,8 @@ class EntryAdmin(admin.ModelAdmin):
     search_fields = ["title", "snippet"]
     list_filter   = ["creator"]
 
+class SettingsAdmin(admin.ModelAdmin):
+    pass
+
 admin.site.register(Entry, EntryAdmin)
+admin.site.register(Settings, SettingsAdmin)

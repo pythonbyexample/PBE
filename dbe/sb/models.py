@@ -5,6 +5,7 @@ from django.core.mail import send_mail
 
 from dbe.shared.utils import *
 
+
 class Post(BaseModel):
     title   = CharField(max_length=60)
     body    = TextField()
@@ -34,3 +35,21 @@ class Comment(BaseModel):
             recipient_list = ["myemail@mydomain.com"]
             send_mail("New comment added", message, from_addr, recipient_list)
         super(Comment, self).save(*args, **kwargs)
+
+
+class Message(BaseModel):
+    sender     = ForeignKey(User, related_name="messages")
+    recipient  = ForeignKey(User, blank=True, null=True)
+    created    = DateTimeField(auto_now_add=True)
+    body       = TextField(max_length=10000, blank=True, null=True)
+
+    class Meta:
+        ordering = ["-created"]
+
+    def __unicode__(self):
+        b = self.body if len(self.body) < 50 else self.body[:50] + "..."
+        return u"%s - %s" % (self.sender, b)
+
+class SBProfile(BaseModel):
+    user                = OneToOneField(User, related_name="sbprofile")
+    last_viewed_message = ForeignKey(Message, blank=True, null=True)

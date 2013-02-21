@@ -7,7 +7,7 @@
         <input type="submit" value="Search" />
         </form>
 
-        {% for comment in comments %}
+        {% for comment in comment_list %}
             <ul>
                 <div class="time">{{ comment.author }}</div>
                 <div class="body">{{ comment.body|linebreaks }}</div>

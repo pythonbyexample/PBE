@@ -210,6 +210,9 @@ As we process each image form, we need to set instance's group appropriately.
         def form_valid(self, form):
             if self.user.is_authenticated(): form.save()
 
+        def edit(self):
+            return self.user.is_authenticated() and self.request.GET.get("edit")
+
 A context processor is used to add a couple of objects to template context:
 
 .. sourcecode:: python

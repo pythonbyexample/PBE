@@ -6,6 +6,7 @@ from dbe.shared.utils import ContainerFormMixin
 class SearchForm(ContainerFormMixin, Form):
     q = CharField(max_length=400, label="", help_text="", required=False)
 
+
 class CommentForm(ContainerFormMixin, ModelForm):
     class Meta:
         model = Comment
@@ -13,3 +14,9 @@ class CommentForm(ContainerFormMixin, ModelForm):
 
     def clean_author(self):
         return self.cleaned_data.get("author") or "Anonymous"
+
+
+class MessageForm(ContainerFormMixin, ModelForm):
+    class Meta:
+        model   = Message
+        exclude = ["sender", "recipient", "created"]

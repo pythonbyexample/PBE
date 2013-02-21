@@ -1,40 +1,28 @@
-{% extends "cal/base.html" %}
-
-{% block sidebar %} <style type="text/css"> </style> {% endblock %}
+{% extends "cal/cbase.html" %}
 
 {% block content %}
-    <style type="text/css">
-        .main { margin-left: 25px; margin-top: 30px; width: 600px; }
-        .month { width: 80px; float: left; border: 1px solid #ccc; margin: 2px; padding: 3px; }
-        .current {
-            width: 80px; float: left; border: 1px solid #ccc; margin: 2px; padding: 3px;
-            background: #eeeec8;
-            }
-        .month a { text-decoration: none; margin: 4px; }
-        .clear { clear: both; }
-        h4 { text-align: center; margin-left: -50px; }
-    </style>
-
     <div class="main">
 
     <div class="clear"></div>
 
-    <a href="{% url cal.views.main year|add:'-3' %}">&lt;&lt; Prev</a>
-    <a href="{% url cal.views.main year|add:'3' %}">Next &gt;&gt;</a>
+    <a href="{% url 'main' year|add:'-3' %}">&lt;&lt; Prev</a>
+    <a href="{% url 'main' year|add:'3' %}" style="margin-left: 450px;">Next &gt;&gt;</a>
 
         {% for year, months in years %}
             <div class="clear"></div>
+
             <h4>{{ year }}</h4>
             {% for month in months %}
+
                 <div class=
                 {% if month.current %}"current"{% endif %}
                 {% if not month.current %}"month"{% endif %} >
                     {% if month.entry %}<b>{% endif %}
-                    <a href="{% url cal.views.month year month.n %}">{{ month.name }}</a>
+                        <a href="{% url 'month' year month.n %}">{{ month.name }}</a>
                     {% if month.entry %}</b>{% endif %}
                 </div>
 
-                {% if month.n == 6 %}<br />{% endif %}
+                {% if month.n == 6 %}<div class="clear"></div>{% endif %}
             {% endfor %}
         {% endfor %}
 

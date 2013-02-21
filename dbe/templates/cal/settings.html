@@ -1,21 +1,17 @@
-{% extends "cal/base.html" %}
-
-{% block sidebar %} <style type="text/css"> </style> {% endblock %}
+{% extends "cal/cbase.html" %}
 
 {% block content %}
-    <style type="text/css">
-        .main { margin-left: 25px; margin-top: 30px; width: 700px; }
-        .entry { border: 3px solid #eee; padding: 10px; width: 400px; }
-        .del { float: right; }
-        h4 { text-align: left; margin-left: 50px; }
-    </style>
 
     <div class="main">
     <h4>Settings</h4>
+    {{ modelform.errors }}
     <form action="" method="POST"> {% csrf_token %}
     <table>
-        {{ formset.as_table }}
+        {{ modelform.as_table }}
+        {# modelform.show_other_users.label #}
+        {# modelform.show_other_users #}
     </table>
+    <br />
     <input type="submit" value="Save" />
     </form>
     </div>

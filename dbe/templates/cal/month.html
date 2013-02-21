@@ -1,42 +1,19 @@
-{% extends "cal/base.html" %}
-
-{% block sidebar %} <style type="text/css"> </style> {% endblock %}
+{% extends "cal/cbase.html" %}
 
 {% block content %}
-    <style type="text/css">
-        .main { margin-left: 25px; margin-top: 30px; width: 700px; }
-        .current {
-            width: 86px; border: 1px solid #ccc; margin: 2px; padding: 3px;
-            height: 50px; background: #eeeec8; cursor: pointer;
-            }
-        .day {
-            width: 86px; border: 1px solid #ccc; margin: 2px; padding: 3px;
-            height: 50px; cursor: pointer;
-            }
-        .empty { width: 86px; border: 1px solid #fff; margin: 2px; padding: 3px; }
-        .day a { text-decoration: none; margin: 4px; }
-        .clear { clear: both; }
-        .month { border: 3px solid #eee; padding: 8px; }
-        h4 { text-align: center; margin-left: -50px; }
-    </style>
 
     <div class="main">
     <a href= "{% url 'month' year month "-1" %}">&lt;&lt; Prev</a>
-    <a href= "{% url 'month' year month "1" %}">Next &gt;&gt;</a>
+    <a href= "{% url 'month' year month "1" %}" style="margin-left: 600px;">Next &gt;&gt;</a>
+
 
     <h4>{{ mname }} {{ year }}</h4>
 
-    <div class="month">
-        <table>
+    <div class="month-table">
+        <table border=0>
 
         <tr>
-            <td class="empty">Mon</td>
-            <td class="empty">Tue</td>
-            <td class="empty">Wed</td>
-            <td class="empty">Thu</td>
-            <td class="empty">Fri</td>
-            <td class="empty">Sat</td>
-            <td class="empty">Sun</td>
+        {% for d in daynames %} <td class="empty">{{ d }}</td> {% endfor %}
         </tr>
 
         {% for week in month_days %}
@@ -45,10 +22,11 @@
 
                 <!-- TD style: empty | day | current; onClick handler and highlight  -->
                 <td class= {% if day == 0 %}"empty"{% endif %}
-                {% if day != 0 and not current %}"day"{% endif %} 
-                {% if day != 0 and current %}"current"{% endif %}
+                "{% if day != 0 %}day{% endif %}
+                 {% if current %}dcurrent{% endif %}"
+
                 {% if day != 0 %}
-                    onClick="parent.location='{% url cal.views.day year month day %}'"
+                    onClick="parent.location='{% url 'day' year month day %}'"
                     onMouseOver="this.bgColor='#eeeeee';"
                     onMouseOut="this.bgColor='white';"
                 {% endif %} >

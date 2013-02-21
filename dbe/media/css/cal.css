@@ -1,0 +1,76 @@
+* {
+    color: #555;
+    font-size: 0.95em;
+}
+
+#menu a {
+    text-decoration: none;
+    background: #eee;
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    border-right: 2px solid #fff;
+    padding-right: 3px;
+    padding-left: 3px;
+    color: #777;
+    font-size: 0.9em;
+}
+
+a:hover {
+    background: #eeebeb;
+    border-top: 1px solid #aaa;
+    border-bottom: 1px solid #aaa;
+    color: #555;
+}
+
+#container { margin: auto; width: 940px; border: 0px solid; }
+
+p { font-size: 1.1em; }
+h3 { margin-right: 30px; display: inline; }
+h4 { margin-left: 250px; margin-top: 20px; font-size: 20px; }
+.main { margin-left: 25px; margin-top: 30px; width: 700px; }
+
+.current {
+    width: 80px; float: left; border: 1px solid #ccc; margin: 2px; padding: 3px;
+    background: #eeeec8; height: 80px;
+    }
+.clear { clear: both; }
+.entry { border: 3px solid #eee; padding: 10px; width: 400px; margin: 9px; }
+
+
+/* day */
+
+.del { float: right; }
+#inp1 { text-align: right; width: 250px; }
+
+
+/* main */
+
+.month { width: 80px; float: left; border: 1px solid #ccc; margin: 2px; padding: 3px; height: 80px; }
+.month a { text-decoration: none; margin: 4px; }
+
+
+/* month */
+
+.day {
+    width: 86px; border: 1px solid #ccc; margin: 2px; padding: 3px;
+    height: 86px; cursor: pointer; vertical-align: top;
+    }
+.dcurrent { background: #eeeec8; }
+
+.empty { width: 86px; border: 1px solid #fff; margin: 2px; padding: 3px; }
+.day a { text-decoration: none; margin: 4px; }
+.month-table { border: 3px solid #eee; padding: 8px; margin-top: 30px; }
+
+
+/* settings */
+
+.del { float: right; }
+
+
+/* reminders */
+
+.reminders { float: right; padding: 0px; border: 2px solid #ddd; width: 130px; 
+    margin-right: 50px; }
+.gr { background: #ddd; padding: 2px; }
+.reminders p { padding-left: 5px; }
+.reminders p.red { color: #c55; }

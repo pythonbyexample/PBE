@@ -2,11 +2,11 @@ from django.db.models import *
 from django.contrib.auth.models import User
 from django.contrib import admin
 
-from dbe.shared.utils import BaseModel
+from dbe.shared.utils import BaseModel, reverse2
 
 class EntryManager(Manager):
-    def date_filter(self, year, month, day=None):
-        entries = self.filter(date__year=year, date__month=month)
+    def date_filter(self, year, month, day=None, **kwargs):
+        entries = self.filter(date__year=year, date__month=month, **kwargs)
         if day: entries = entries.filter(date__day=day)
         return entries
 
@@ -24,7 +24,7 @@ class Entry(BaseModel):
         verbose_name_plural = "entries"
 
     def __unicode__(self):
-        return self.creator + u" - " + (self.title if self.title else self.snippet[:40])
+        return str(self.creator) + u" - " + (self.title if self.title else self.snippet[:40])
 
     def short(self):
         tpl = "<i>%s</i> - %s"
@@ -35,3 +35,6 @@ class Entry(BaseModel):
 class Settings(BaseModel):
     user             = OneToOneField(User, related_name="settings")
     show_other_users = BooleanField(default=False)
+
+    def get_absolute_url(self):
+        return reverse2("settings", self.user.pk)

@@ -5,43 +5,13 @@
 <head>
     <title>{% block title %}CalApp{% endblock %}</title>
     <!-- <meta http-equiv="refresh" content="2">  -->
-    <link rel="stylesheet" href="/media/style.css" type="text/css" media="screen" charset="utf-8" />
-
-    <style type="text/css">
-        * {
-            color: #555;
-            font-size: 0.95em;
-        }
-
-        #menu a {
-            text-decoration: none;
-            background: #eee;
-            border-top: 1px solid #ccc;
-            border-bottom: 1px solid #ccc;
-            border-right: 2px solid #fff;
-            padding-right: 3px;
-            padding-left: 3px;
-            color: #777;
-            font-size: 0.9em;
-        }
-
-        a:hover {
-            background: #eeebeb;
-            border-top: 1px solid #aaa;
-            border-bottom: 1px solid #aaa;
-            color: #555;
-        }
-
-        #container { margin: auto; width: 800px; border: 0px solid; }
-
-        p { font-size: 1.1em; }
-        h3 { margin-right: 30px; display: inline; }
-    </style>
+    <link rel="stylesheet" href="{{ MEDIA_URL }}css/cal.css" type="text/css" media="screen" charset="utf-8" />
 
 </head>
 
 <body>
     <div id="sidebar"> {% block sidebar %} {% endblock %} </div>
+
     <div id="container">
         <div id="menu">
             {% block nav-global %}
@@ -52,23 +22,18 @@
                 {% if user.is_staff %} <a href="/admin/cal/">Admin</a> {% endif %}
 
                 {% if user.is_authenticated %}
-                    <a href="{% url 'settings' %}">Settings</a> {% endif %}
+                    <a href="{% url 'settings' user.pk %}">Settings</a> {% endif %}
 
             {% endblock %}
         </div>
 
         <div id="content">
             <style type="text/css">
-                .reminders { float: right; padding: 0px; border: 2px solid #ddd; width: 130px; 
-                    margin-right: 50px; }
-                .gr { background: #ddd; padding: 2px; }
-                .reminders p { padding-left: 5px; }
-                .reminders p.red { color: #c55; }
             </style>
 
             <div class="reminders">
                 <div class="gr">Alerts</div>
-                {% for reminder in view.reminders %}<p class="red"> {{ reminder.short }}</p>
+                {% for reminder in view.reminders %}<p class="red"> {{ reminder.short|safe }}</p>
                 {% empty %}<p>no alerts</p>
                 {% endfor %}
             </div>

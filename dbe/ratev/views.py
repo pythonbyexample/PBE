@@ -14,41 +14,44 @@ from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.contrib import messages
 from django.template import RequestContext
 
-from ratev.ratev.models import *
-from ratev.settings import ROOT_URL
+from dbe.ratev.models import *
+from dbe.settings import ROOT_URL
+
+from dbe.mcbv.base import TemplateView
 
 _avg_sim = 70.0     # average similarity for similarity calculations
 
-@login_required
-def stats(request):
-    """Show statistics: users, artists, albums, tracks, authors, books, directors, films."""
-    return HttpResponse(""" <table>
-    <tr><td>users: <td>%s</td></tr>
-    <tr><td>artists: <td>%s</td></tr>
-    <tr><td>albums: <td>%s</td></tr>
-    <tr><td>tracks: <td>%s</td></tr>
-    <tr><td>authors: <td>%s</td></tr>
-    <tr><td>books: <td>%s</td></tr>
-    <tr><td>directors: <td>%s</td></tr>
-    <tr><td>films: <td>%s</td></tr>
-    </table> """ % (User.objects.count(), Artist.objects.count(),
-           Album.objects.count(), Track.objects.count(), Author.objects.count(),
-           Book.objects.count(), Director.objects.count(), Film.objects.count(), ))
+modeldict = dict(
+                 artist   = (Artist, Album, AlbumRating),
+                 album    = (Album, Track, TrackRating),
+                 author   = (Author, Book, BookRating),
+                 director = (Director, Film, FilmRating),
+                 )
+
+
+class Stats(TemplateView):
+    template_name = "ratev/stats.html"
+
+    def add_context(self):
+        # show obj.count()
+        return dict(models=(User, Artist, Album, Track, Author, Book, Director, Film))
+
 
 @login_required
 def add(request, ltype, id=None):
     """Add item(s). ltype: track|album|book|film"""
     p, u = request.POST, request.user
-    noparent = False
-    if ltype == "film": cls = Director; itemcls = Film; ratecls = FilmRating
-    elif ltype == "book": cls = Author; itemcls = Book; ratecls = BookRating
-    elif ltype == "album": cls = Artist; itemcls = Album; ratecls = AlbumRating
-    elif ltype == "track": cls = Album; itemcls = Track; ratecls = TrackRating
-    elif ltype == "artist": itemcls = Artist
-    elif ltype == "author": itemcls = Author
-    elif ltype == "director": itemcls = Director
-    if ltype in "artist author director".split():
-        noparent = True     # to keep things simple we only rate items not authors
+
+    for name, (main, contained, ratecls) in modeldict.items():
+        if name == ltype:
+            itemcls = cls
+        elif contained.__class__.lower() == ltype:
+            itemcls   = contained
+            ratingcls = ratecls
+            cls       = main
+            clsname   = cls.__name__.lower()
+
+    noparent = bool(ltype in ["artist", "author", "director"])
 
     if request.method == "POST":
         add = defaultdict(dict)
@@ -65,169 +68,146 @@ def add(request, ltype, id=None):
             name = item["name"].strip()
             if name:
                 if noparent:
-                    items = itemcls.objects.filter(name__iexact=name)
+                    items = itemcls.obj.filter(name__iexact=name)
                     if items:
                         list_added.append(items[0])
-                        print "skipping", name
                         continue
                 else:
-                    lkupdict = {"name__iexact": name, cls.__name__.lower(): id, }
-                    if itemcls.objects.filter(**lkupdict):
-                        print "skipping", name
+                    lkupdict = {"name__iexact": name, clsname: id }
+                    if itemcls.obj.filter(**lkupdict):
                         continue
 
                 # track can only belong to one album, other items can belong to multiple
                 # parents
                 if ltype == "track":
-                    album = Album.objects.get(pk=int(id))
-                    mkdict = {"name": name, "added_by": u, cls.__name__.lower(): album, }
-                    obj = itemcls.objects.create(**mkdict)
+                    album = Album.obj.get(pk=int(id))
+                    mkdict = {"name": name, "added_by": u, clsname: album}
+                    obj = itemcls.obj.create(**mkdict)
                     for artist in album.artist.all():
                         obj.artist.add(artist)
                 elif ltype in "album book film".split():
-                    mkdict = {"name": name, "added_by": u}
-                    obj = itemcls.objects.create(**mkdict)
-                    getattr(obj, cls.__name__.lower()).add(id)
+                    obj = itemcls.obj.create(**dict(name=name, added_by=u))
+                    getattr(obj, clsname).add(id)
                 else:
-                    obj = itemcls.objects.create(name=name, added_by=u)
+                    obj = itemcls.obj.create(name=name, added_by=u)
                     list_added.append(obj)
 
                 if "rating" in item.keys():
                     rating = item["rating"].strip()
                     if rating:
                         mkdict = {str(ltype): obj, "rating": int(rating), "user": u}
-                        ratecls.objects.create(**mkdict)
+                        ratecls.obj.create(**mkdict)
 
         if noparent:
-            # return HttpResponseRedirect("/ratev/")
-            d = {"user": request.user, "ltype": ltype, "list_added": list_added}
+            d = dict(user=u, ltype=ltype, list_added=list_added)
             d.update(csrf(request))
             return render_to_response("ratev/added.html", d)
         else:
             # Added items that belong to a parent, redir to page of parent
-            return HttpResponseRedirect("/ratev/%s/%s/" % (cls.__name__.lower(), id))
-    d = {"user": request.user, "ltype": ltype, "id": id, "fields": range(15),
-      "noparent": noparent}
+            return HttpResponseRedirect("/ratev/%s/%s/" % (clsname, id))
+    d = dict(user=request.user, ltype=ltype, id=id, fields=range(15), noparent=noparent)
     d.update(csrf(request))
     return render_to_response("ratev/add.html", d)
 
 @login_required
 def listitems(request, ltype="artist", id='1'):
     """List items: artists / bands, tracks, books, films."""
-    no_add = False      # don't show add item link
-    if ltype == "artist":
-        cls = Artist; listcls = Album; listlkup = "album"; ratecls = AlbumRating
-    elif ltype == "album":
-        cls = Album; listcls = Track; listlkup = "track"; ratecls = TrackRating
-    elif ltype == "author":
-        cls = Author;  listcls = Book; listlkup = "book"; ratecls = BookRating
-    elif ltype == "director":
-        cls = Director; listcls = Film; listlkup = "film"; ratecls = FilmRating
+    cls, listcls, ratingcls = modeldict[ltype]
+    listlkup = listcls.__name__.lower()
 
     # update ratings
     if request.method == "POST":
         updated = False
         for k, v in request.POST.items():
             if k.startswith("id_") and v.strip():
-                obj = listcls.objects.get(pk=int(k[3:]))
-                try: newrating = int(v.strip())
-                except: return HttpResponse("Error parsing score: '%s'" % v)
+                obj = listcls.obj.get(pk=int(k[3:]))
+                try    : newrating = int(v.strip())
+                except : return HttpResponse("Error parsing score: '%s'" % v)
 
                 # get or create a rating object and update the score if it's different
                 lookup_dict = {"user": request.user, listlkup: obj}
-                arating = ratecls.objects.get_or_create(**lookup_dict)[0]
+                arating = ratecls.obj.get_or_create(**lookup_dict)[0]
                 if arating.rating != newrating:
-                    arating.rating = newrating
-                    arating.save()
-                    if not obj.rated:
-                        obj.rated = True
-                        obj.save()
+                    arating.update(rating=newrating)
+                    obj.update(rated=True)
                     updated = True
         if updated:
             messages.info(request, "Score(s) updated.")
 
     # make a list of all items that belong to current object
-    obj = cls.objects.get(pk=int(id))
+    obj         = cls.obj.get(pk=int(id))
     lookup_dict = {str(ltype): obj}
-    results = listcls.objects.filter(**lookup_dict)
-    if ltype == "album" and obj.added_by != request.user:
-        no_add = True
+    results     = listcls.obj.filter(**lookup_dict)
+    no_add      = bool(ltype == "album" and obj.added_by != request.user)
 
     # lookup ratings
     lst = []
     for res in results:
         rating = ''
         lookup_dict = {"user": request.user, listlkup: res}
-        try: rating = ratecls.objects.get(**lookup_dict).rating
-        except: pass
+        try    : rating = ratecls.obj.get(**lookup_dict).rating
+        except : pass
         lst.append((res.id, res.name, rating, recommend(request.user, listlkup, res)))
 
-    d = {"results": lst, "id": id, "ltype": ltype, "itemtype": listlkup, "name": obj.name,
-        "user": request.user, "no_add": no_add}
+    d = dict(results=lst, id=id, ltype=ltype, itemtype=listlkup, name=obj.name, user=request.user, no_add=no_add)
     d.update(csrf(request))
     return render_to_response("ratev/list.html", d, context_instance=RequestContext(request))
 
 @login_required
 def make_recommendations(request):
     """Create recommendations for all users."""
-    start = time()
-    debug = []
+    start  = time()
+    debug  = []
     cursor = connection.cursor()
+
     for u in User.objects.all():
-        Recommendations.objects.filter(user=u).delete()     # delete stale recommendations
+        Recommendations.obj.filter(user=u).delete()     # delete stale recommendations
         # find ratings by users who are similar enough (75+) to the user we're looping over
         q = """SELECT sim.similarity, r.rating FROM ratev_similarity as sim,
           ratev_%srating as r WHERE (sim.user1_id=%%s OR sim.user2_id=%%s) AND
           (r.user_id=sim.user1_id OR r.user_id=sim.user2_id) AND r.user_id != %%s AND
           r.%s_id=%%s AND sim.similarity >= 70"""
-        for itype in "album track book film".split():
-            itemcls = eval(itype.capitalize())      # e.g. Album
-            for item in itemcls.objects.all():
-                item_rate_cls = eval(itype.capitalize() + "Rating")     # e.g. AlbumRating
 
+        for _, itemcls, ratingcls in modeldict.values():
+            for item in itemcls.obj.all():
+                itype = itemcls.__name__.lower()
                 # proceed only if user does not have rating for this item
                 lookup_dict = {"user": u, itype: item}
-                if not item_rate_cls.objects.filter(**lookup_dict):
+                if not ratingcls.objects.filter(**lookup_dict):
                     cursor.execute(q % (itype, itype), [u.pk, u.pk, u.pk, item.id])
                     rows = cursor.fetchall()
                     if rows:
                         # calculate an average rating
-                        sum = 0
-                        for sim, rating in rows:
-                            sum += sim * rating
-                        rec_rating = int(round(sum / (len(rows)*_avg_sim)))
+                        total      = sum(sim*rating for sim, rating in rows)
+                        rec_rating = int(round(total / (len(rows)*_avg_sim)))
 
                         # save recommendation to the DB
                         if rec_rating > 70:
-                            obj = Recommendations.objects.create(user=u, itype=itype,
-                              itemid=item.id, rating=rec_rating)
+                            obj = Recommendations.obj.create(user=u, itype=itype, itemid=item.id, rating=rec_rating)
     debug.append("%ss total." % int(time()-start))
     return HttpResponse("%s<br /> <h2>Recommendations Update Done</h2>" % join(debug, "<br />"))
 
-def recommendations(request):
-    """My recommendations listing for current user."""
-    u = request.user
-    recs = Recommendations.objects.filter(user=u)
-    rec_dict = defaultdict(list)
-    for rec in recs:
-        cls = eval(rec.itype.capitalize())
-        item = cls.objects.get(pk=rec.itemid)
-        rec_dict[rec.itype].append((rec.rating, item))
-    for lst in rec_dict.values():
-        lst.sort(reverse=True)
-    newlst = []
-    for itype, lst in rec_dict.items():
-        for rating, item in lst:
-            newlst.append((itype, rating, item))
 
-    # paginate results
-    paginator = Paginator(newlst, 70)
-    try: page = int(request.GET.get("page", '1'))
-    except ValueError: page = 1
+class RecommendationsView(ListView):
+    list_model    = Recommendations
+    paginate_by   = 70
+    template_name = "recommendations.html"
 
-    try: r = paginator.page(page)
-    except: r = paginator.page(paginator.num_pages)
-    return render_to_response("recommendations.html", {"recommendations": r, "user": u})
+    def get_list_queryset(self):
+        recs     = Recommendations.obj.filter(user=self.user)
+        rec_dict = defaultdict(list)
+
+        for rec in recs:
+            cls  = rec.itype.__class__
+            item = cls.obj.get(pk=rec.itemid)
+            rec_dict[rec.itype].append((rec.rating, item))
+
+        newlst = []
+        for itype, lst in rec_dict.items():
+            for rating, item in lst:
+                newlst.append((itype, rating, item))
+        return newlst
+
 
 def recommend(u, itype, item):
     """Return recommendation score for specified user and item."""
@@ -236,40 +216,25 @@ def recommend(u, itype, item):
       ratev_%srating as r WHERE (sim.user1_id=%%s OR sim.user2_id=%%s) AND
       (r.user_id=sim.user1_id OR r.user_id=sim.user2_id) AND r.user_id != %%s AND
       r.%s_id=%%s""" % (itype, itype)
-    cursor.execute(q, [u.pk, u.pk, u.pk, item.id])
-    rows = cursor.fetchall()
-    sum = 0
-    for sim, rating in rows:
-        sum += sim * rating
 
-    if not rows: rec_rating = ''
-    else: rec_rating = int(round(sum / (len(rows)*_avg_sim)))
+    cursor.execute(q, [u.pk, u.pk, u.pk, item.id])
+    rows       = cursor.fetchall()
+    total      = sum(sim*rating for sim, rating in rows)
+    rec_rating = int(round(total / (len(rows)*_avg_sim))) if rows else ''
     return rows, rec_rating
 
-@login_required
-def search(request):
-    """Search items."""
-    get = request.GET
-    results = []
-    if request.method == "GET" and 'q' in get:
-        q = get.get('q').strip()
-        if q:
-            stype = get.get("stype", "artist")
 
-            cls = Artist
-            if stype == "author": cls = Author
-            elif stype == "director": cls = Director
-            elif stype == "film": cls = Film
-            r = cls.objects.filter(name__icontains=q)
+class SearchView(PaginatedSearch):
+    template_name = "ratev/search.html"
+    paginate_by   = 20
 
-            # paginate results
-            paginator = Paginator(r, 20)
-            try: page = int(get.get("page", '1'))
-            except ValueError: page = 1
+    def get_list_queryset(self):
+        return self.cls.obj.filter(name__icontains=self.data.q)
 
-            try: r = paginator.page(page)
-            except: r = paginator.page(paginator.num_pages)
+    def form_valid(self, form):
+        self.data = form.cleaned_data
+        self.cls  = modeldict[self.data.stype][0]
 
-            return render_to_response("ratev/search.html", {"results": r, 'q': q,
-                'stype': stype, "user": request.user})
-    return render_to_response("ratev/search.html", {"user": request.user})
+
+def ratev_context(request):
+    return dict(user=request.user)

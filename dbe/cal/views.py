@@ -1,38 +1,41 @@
 import time
 import calendar
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 
 from django.contrib.auth.models import User
 
+from dbe.settings import MEDIA_URL
 from dbe.cal.models import *
 from dbe.cal.forms import *
+from dbe.shared.utils import first, getitem, reverse2
 from dbe.mcbv.base import TemplateView
-from dbe.mcbv.edit_custom import FormView, FormSetView, UpdateRelatedView
+from dbe.mcbv.edit_custom import FormView, ModelFormSetView, UpdateRelatedView, UpdateView
 
 month_names = list(calendar.month_name)
 
 
 class CalMixin(object):
     def show_other_users(self):
-        s = first(Settings.obj.all())
-        return s.show_other_users if s else False
+        return Settings.obj.get_or_create(user=self.user)[0].show_other_users
 
     def reminders(self):
         """Return the list of reminders for today and tomorrow."""
         today     = time.localtime()[:3]
-        tomorrow  = datetime.now() + timedelta(days=1)
+        tomorrow  = datetime.datetime.now() + timedelta(days=1)
         tomorrow  = tomorrow.timetuple()[:3]
+
         for y,m,d in (today, tomorrow):
-            yield Entry.obj.date_filter(y, m, d).filter(creator=self.user, remind=True)
+            for entry in Entry.obj.date_filter(y, m, d, creator=self.user, remind=True):
+                yield entry
 
 
 class SettingsView(UpdateRelatedView):
-    detail_model  = User
-    form_model    = Settings
-    form_class    = SettingsForm
-    related_name  = "settings"
-    fk_attr       = "user"
-    template_name = "settings.html"
+    detail_model    = User
+    form_model      = Settings
+    modelform_class = SettingsForm
+    related_name    = "settings"
+    fk_attr         = "user"
+    template_name   = "settings.html"
 
 
 class MainView(TemplateView, CalMixin):
@@ -40,22 +43,22 @@ class MainView(TemplateView, CalMixin):
     template_name = "cal/main.html"
 
     def add_context(self):
-        localtime = time.localtime()
-        start_year = first(self.args, default=localtime[0])
+        localtime  = time.localtime()
+        start_year = int(first(self.args, default=localtime[0]))
 
         nowy, nowm = localtime[:2]
-        years = []
+        years      = []
 
         # create a list of months for each year, indicating ones that contain entries and current
         for year in (start_year, start_year+1, start_year+2):
             months = []
-            for n, month in enumerate(month_names)[1:]:
+            for n, month in list(enumerate(month_names))[1:]:
                 entries = Entry.obj.filter(date__year=year, date__month=n)
                 if not self.show_other_users():
                     entries = entries.filter(creator=self.user)
 
-                current = bool(y == nowy and n == nowm)   # current month
-                months.append(dict(n=n, name=month, entries=enties, current=current))
+                current = bool(year == nowy and n == nowm)   # current month
+                months.append(dict(n=n, name=month, entries=entries, current=current))
             years.append((year, months))
 
         return dict(years=years, year=start_year)
@@ -66,8 +69,8 @@ class MonthView(TemplateView, CalMixin):
 
     def add_context(self):
         """Listing of weeks / days in a month."""
-        year, month = self.args
-        change      = self.kwargs.get("change")
+        args = map(int, self.args)
+        year, month, change = args[0], args[1], getitem(args, 2)
 
         # apply next / previous change
         if change:
@@ -96,10 +99,11 @@ class MonthView(TemplateView, CalMixin):
                 days.append((day, entries, current))
             weeks.append(days)
 
-        return dict(year=year, month=month, month_days=weeks, mname=month_names[month])
+        daynames = calendar.day_abbr
+        return dict(year=year, month=month, month_days=weeks, mname=month_names[month], daynames=daynames)
 
 
-class DayView(FormSetView, CalMixin):
+class DayView(ModelFormSetView, CalMixin):
     """ Day View
         self.args: year, month, day
     """
@@ -109,18 +113,25 @@ class DayView(FormSetView, CalMixin):
     can_delete         = True
     template_name      = "cal/day.html"
 
+    def getdate(self):
+        return map(int, self.args)
+
     def get_formset_queryset(self):
-        return self.formset_model.obj.date_filter(*self.args).filter(creator=self.user)
+        return Entry.obj.date_filter(*self.getdate(), creator=self.user)
 
     def process_form(self, form):
-        form.instance.update( creator=self.user, date=date(*self.args) )
+        form.instance.update( creator=self.user, date=date(*self.getdate()) )
 
     def get_success_url(self):
         return reverse2("month", self.args[0], self.args[1])
 
-    def add_context(request):
-        y, m, d       = self.args
+    def add_context(self):
+        y, m, d       = self.getdate()
         other_entries = []
         if self.show_other_users():
-            other_entries = Entry.obj.date_filter(y, m, d).exclude(creator=request.user)
+            other_entries = Entry.obj.date_filter(y, m, d).exclude(creator=self.user)
         return dict(year=y, month=m, day=d, other_entries=other_entries)
+
+
+def cal_context(request):
+    return dict(MEDIA_URL=MEDIA_URL)

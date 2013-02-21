@@ -1,177 +1,132 @@
 from string import join
-from django.db import models
+from django.db.models import *
 from django.contrib.auth.models import User
 from django.contrib import admin
 
+from dbe.shared.utils import *
 
-class Artist(models.Model):
-    name = models.CharField(max_length=80)
-    added_by = models.ForeignKey(User, blank=True, null=True)
+href = "<a href='%s'>%s</a>"
+
+
+class Artist(BaseModel):
+    name     = CharField(max_length=80)
+    added_by = ForeignKey(User, blank=True, null=True)
 
     def __unicode__(self):
         return self.name
 
     def url(self):
-        return "<a href='/ratev/artist/%s/'>artist page</a>" % self.id
+        return href % (reverse2("artist", self.pk), "artist page")
     url.allow_tags = True
 
-class Album(models.Model):
-    name = models.CharField(max_length=140)
-    genre = models.CharField(max_length=80, blank=True)
-    added = models.DateField(auto_now_add=True)
-    added_by = models.ForeignKey(User, blank=True, null=True)
-    year = models.CharField(max_length=4, blank=True)
-    artist = models.ManyToManyField(Artist)
-    rated = models.BooleanField(default=False)
+class Album(BaseModel):
+    name     = CharField(max_length=140)
+    genre    = CharField(max_length=80, blank=True)
+    added    = DateField(auto_now_add=True)
+    added_by = ForeignKey(User, related_name="albums", blank=True, null=True)
+    year     = CharField(max_length=4, blank=True)
+    artist   = ManyToManyField(Artist, related_name="albums")
+    rated    = BooleanField(default=False)
 
     def __unicode__(self):
         return self.name
 
     def artists(self):
-        names = [a.name for a in self.artist.all()]
-        return join(names, ', ')
+        return cjoin([a.name for a in self.artist.all()])
 
-class Track(models.Model):
-    name = models.CharField(max_length=140)
-    album = models.ForeignKey(Album, blank=True)
-    artist = models.ManyToManyField(Artist, blank=True)
-    length = models.CharField(max_length=6, blank=True)
-    added_by = models.ForeignKey(User, blank=True, null=True)
-    rated = models.BooleanField(default=False)
+class Track(BaseModel):
+    name     = CharField(max_length=140)
+    album    = ForeignKey(Album, related_name="tracks", blank=True)
+    artist   = ManyToManyField(Artist, related_name="tracks", blank=True)
+    length   = CharField(max_length=6, blank=True)
+    added_by = ForeignKey(User, related_name="tracks", blank=True, null=True)
+    rated    = BooleanField(default=False)
+
     def __unicode__(self):
-        # return "%s - %s - %s" % (self.artist, self.album, self.name)
         return "%s - %s" % (unicode(self.album), unicode(self.name))
 
     def artists(self):
-        names = [a.name for a in self.artist.all()]
-        return join(names, ', ')
+        return cjoin([a.name for a in self.artist.all()])
 
-class Author(models.Model):
-    name = models.CharField(max_length=80)
-    added_by = models.ForeignKey(User, blank=True, null=True)
+class Author(BaseModel):
+    name     = CharField(max_length=80)
+    added_by = ForeignKey(User, related_name="authors", blank=True, null=True)
+
     def __unicode__(self):
         return self.name
 
-class Book(models.Model):
-    name = models.CharField(max_length=80)
-    genre = models.CharField(max_length=80, blank=True)
-    added = models.DateField(auto_now_add=True)
-    added_by = models.ForeignKey(User, blank=True, null=True)
-    year = models.CharField(max_length=4, blank=True)
-    author = models.ManyToManyField(Author)
-    rated = models.BooleanField(default=False)
+class Book(BaseModel):
+    name     = CharField(max_length=80)
+    genre    = CharField(max_length=80, blank=True)
+    added    = DateField(auto_now_add=True)
+    added_by = ForeignKey(User, related_name="books", blank=True, null=True)
+    year     = CharField(max_length=4, blank=True)
+    author   = ManyToManyField(Author, related_name="books")
+    rated    = BooleanField(default=False)
 
     def __unicode__(self):
         return self.name
 
     def authors(self):
-        names = [a.name for a in self.author.all()]
-        return join(names, ', ')
+        return cjoin([a.name for a in self.author.all()])
 
-class Director(models.Model):
-    name = models.CharField(max_length=80)
-    added_by = models.ForeignKey(User, blank=True, null=True)
+def cjoin(seq):
+    return ", ".join(seq)
+
+class Director(BaseModel):
+    name     = CharField(max_length=80)
+    added_by = ForeignKey(User, related_name="directors", blank=True, null=True)
+
     def __unicode__(self):
         return self.name
 
-class Film(models.Model):
-    name = models.CharField(max_length=80)
-    genre = models.CharField(max_length=80, blank=True)
-    added = models.DateField(auto_now_add=True)
-    added_by = models.ForeignKey(User, blank=True, null=True)
-    year = models.CharField(max_length=4, blank=True)
-    director = models.ManyToManyField(Director)
-    rated = models.BooleanField(default=False)
+class Film(BaseModel):
+    name     = CharField(max_length=80)
+    genre    = CharField(max_length=80, blank=True)
+    added    = DateField(auto_now_add=True)
+    added_by = ForeignKey(User, related_name="films", blank=True, null=True)
+    year     = CharField(max_length=4, blank=True)
+    director = ManyToManyField(Director, related_name="films")
+    rated    = BooleanField(default=False)
 
     def __unicode__(self):
         return self.name
 
     def directors(self):
-        names = [a.name for a in self.director.all()]
-        return join(names, ', ')
+        return cjoin([a.name for a in self.director.all()])
 
-class AlbumRating(models.Model):
-    album = models.ForeignKey(Album)
-    user = models.ForeignKey(User)
+class AlbumRating(BaseModel):
+    album = ForeignKey(Album, related_name="ratings")
+    user  = ForeignKey(User, related_name="album_ratings")
     # setting blank=True as a workaround to be able to get_or_create the rating and then setting
     # rating afterwards, but it should never be blank.
-    rating = models.PositiveSmallIntegerField(blank=True, null=True)
+    rating = PositiveSmallIntegerField(blank=True, null=True)
 
-class TrackRating(models.Model):
-    track = models.ForeignKey(Track)
-    user = models.ForeignKey(User)
-    rating = models.PositiveSmallIntegerField(blank=True, null=True)
+class TrackRating(BaseModel):
+    track  = ForeignKey(Track, related_name="ratings")
+    user   = ForeignKey(User, related_name="track_ratings")
+    rating = PositiveSmallIntegerField(blank=True, null=True)
 
     def __unicode__(self):
         return "%s - %s - %s" % (self.track, self.user, self.rating)
 
-class BookRating(models.Model):
-    book = models.ForeignKey(Book)
-    user = models.ForeignKey(User)
-    rating = models.PositiveSmallIntegerField(blank=True, null=True)
+class BookRating(BaseModel):
+    book   = ForeignKey(Book, related_name="ratings")
+    user   = ForeignKey(User, related_name="book_ratings")
+    rating = PositiveSmallIntegerField(blank=True, null=True)
 
-class FilmRating(models.Model):
-    film = models.ForeignKey(Film)
-    user = models.ForeignKey(User)
-    rating = models.PositiveSmallIntegerField(blank=True, null=True)
+class FilmRating(BaseModel):
+    film   = ForeignKey(Film, related_name="ratings")
+    user   = ForeignKey(User, related_name="film_ratings")
+    rating = PositiveSmallIntegerField(blank=True, null=True)
 
-class Similarity(models.Model):
-    user1 = models.ForeignKey(User, related_name="user1")
-    user2 = models.ForeignKey(User, related_name="user2")
-    similarity = models.PositiveSmallIntegerField(blank=True)
+class Similarity(BaseModel):
+    user1      = ForeignKey(User, related_name="user1")
+    user2      = ForeignKey(User, related_name="user2")
+    similarity = PositiveSmallIntegerField(blank=True)
 
-class Recommendations(models.Model):
-    user = models.ForeignKey(User)
-    itype = models.CharField(max_length=20)
-    itemid = models.PositiveIntegerField()
-    rating = models.PositiveSmallIntegerField()
-
-
-# --ADMINS--------------------------------------------------------------------------------------
-
-class ArtistAdmin(admin.ModelAdmin):
-    list_display = ("name", "url")
-    search_fields = ["name"]
-
-class AlbumAdmin(admin.ModelAdmin):
-    list_display = ("name", "artists", "genre", "added", "added_by")
-    raw_id_fields = ("artist", "added_by")
-
-class TrackAdmin(admin.ModelAdmin):
-    list_display = ("name", "album", "artists")
-
-class AuthorAdmin(admin.ModelAdmin):
-    list_display = ("name",)
-
-class BookAdmin(admin.ModelAdmin):
-    raw_id_fields = ("author", "added_by")
-    list_display = ("name", "genre", "added", "added_by", "year")
-
-class DirectorAdmin(admin.ModelAdmin):
-    list_display = ("name",)
-
-class FilmAdmin(admin.ModelAdmin):
-    list_display = ("name", "genre", "added", "added_by", "year")
-    raw_id_fields = ("director", "added_by")
-
-class AlbumRatingAdmin(admin.ModelAdmin):
-    raw_id_fields = ("album",)
-    list_display = ("album", "rating")
-
-class TrackRatingAdmin(admin.ModelAdmin):
-    list_display = ("user", "track", "rating")
-    raw_id_fields = ("track",)
-
-class BookRatingAdmin(admin.ModelAdmin):
-    list_display = ("book", "rating")
-    raw_id_fields = ("book",)
-
-class FilmRatingAdmin(admin.ModelAdmin):
-    list_display = ("film", "rating")
-    raw_id_fields = ("film",)
-
-class SimilarityAdmin(admin.ModelAdmin):
-    list_display = ("user1", "user2", "similarity")
-
-class RecommendationsAdmin(admin.ModelAdmin):
-    list_display = ("user", "itype", "itemid", "rating")
+class Recommendations(BaseModel):
+    user   = ForeignKey(User, related_name="recommendations")
+    itype  = CharField(max_length=20)
+    itemid = PositiveIntegerField()
+    rating = PositiveSmallIntegerField()

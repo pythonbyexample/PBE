@@ -1,15 +1,6 @@
-{% extends "cal/base.html" %}
-
-{% block sidebar %} <style type="text/css"> </style> {% endblock %}
+{% extends "cal/cbase.html" %}
 
 {% block content %}
-    <style type="text/css">
-        .main { margin-left: 25px; margin-top: 30px; width: 700px; }
-        .entry { border: 3px solid #eee; padding: 10px; width: 400px; margin: 9px; }
-        .del { float: right; }
-        #inp1 { text-align: right; width: 250px; }
-        h4 { text-align: left; margin-left: 50px; }
-    </style>
 
     <div class="main">
     {% for entry in other_entries %}
@@ -21,7 +12,9 @@
     {% endfor %} <br />
 
     <h4>My Entries</h4>
-    <form action="{% url day year month day %}" method="POST"> {% csrf_token %}
+    <form action="{% url 'day' year month day %}" method="POST"> {% csrf_token %}
+
+    <input type="submit" value="Save" />
 
     {{ formset.management_form }}
 
@@ -38,7 +31,8 @@
         </div>
     {% endfor %}
 
-    <input type="submit" value="Save" /> </form>
+    <input type="submit" value="Save" />
+    </form>
     </div>
 
 {% endblock %}

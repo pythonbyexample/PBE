@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <title>{% block title %}Ratev{% endblock %}</title>
+    <!-- <meta http-equiv="refresh" content="2">  -->
+    <link rel="stylesheet" href="{{ MEDIA_URL }}css/ratev.css" type="text/css" media="screen" charset="utf-8" />
+
+</head>
+
+<body>
+    <div id="sidebar"> {% block sidebar %} {% endblock %} </div>
+
+    <div id="container">
+        <div id="menu">
+            {% block nav-global %}
+
+                <!-- MENU -->
+                <div class="menu">
+
+                <b>Ratings</b>
+                {% if user.is_staff %}
+                    <a href="/admin/">Admin</a> <a href="/ratev/updsim_secret/">Update similarity</a>
+                    <a href="/ratev/mkrec_secret/">Update recommendations</a>
+                    <a href="/ratev/stats/">Stats</a>
+                {% endif %}
+
+                {% if user.is_authenticated %}
+                <a href="/ratev/search/">Search</a> <a href="/ratev/recommendations/">My Recommendations</a>
+                {% endif %}
+
+                {% if not user.is_authenticated %}
+                    <a href="/accounts/login/?next=/ratev/">login</a> |
+                    <a href="/accounts/register/">register</a>
+                {% endif %}
+
+                {% if user.is_authenticated %}
+                    <a href="/accounts/logout/?next=/ratev/">logout</a>
+                {% endif %}
+                <a href="/ratev/help/">help!</a>
+                </div>
+
+            {% endblock %}
+        </div>
+
+        <div id="content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+</body>
+</html>
+

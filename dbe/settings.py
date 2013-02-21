@@ -67,6 +67,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.messages.context_processors.messages',
     'dbe.forum.views.forum_context',
     'dbe.portfolio.views.portfolio_context',
+    'dbe.cal.views.cal_context',
     # 'dbe.photo.views.photo_context',
 )
 
@@ -83,7 +84,6 @@ INSTALLED_APPS = [
 
 try:
     from local_settings import *
-    print "DONE"
 except Exception, e:
     print e
     pass
