@@ -1,0 +1,6 @@
+{# CONSIDER: switch to the forms.py approach #}
+<form action="/protein/search/" method="get" class="search_form">
+	{% if errors %}<p class="error">{{ errors }}</p>{% endif %}
+	<div class="search_label">What are you looking for?</div>
+	<div class="search_controls"><input type="text" size="60" name="q" value="{{ q }}" /> <input type="submit" value="Search" /></div>
+</form>

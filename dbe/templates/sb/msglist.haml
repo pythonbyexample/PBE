@@ -1,0 +1,50 @@
+- extends "sbbase.html"
+- block content
+    %br
+    %p
+    - if view.inbox
+        %h4 Inbox
+    - else
+        %h4 Sent Folder
+
+    .main
+        - if not formset.forms
+            No messages
+        - else
+
+            %form{"action": '', "method": "post", "accept-charset": "utf-8"}
+                - csrf_token
+                = formset.management_form
+
+                %table.msglist
+                    %tr
+                        %th
+                            - if view.inbox
+                                From
+                            - else
+                                To
+                        %th Subject
+                        %th Date
+                        %th Delete
+
+
+                    - for form in formset
+                        = form.id
+
+                        - with form.instance as message
+                            %tr{ "class": "{% if message in unread %}unread{% endif %}" }
+
+                                %td
+                                    - if view.inbox
+                                        ={message.sender}
+                                    - else
+                                        ={message.recipient}
+                              %td
+                                  %a{'href': '{% url "msg" message.pk %}'}= message.subject
+
+                              %td= message.created
+                              %td= form.DELETE
+
+                %input#del{"type":"submit", "value":"Delete"}
+
+      - include "paginator.html"

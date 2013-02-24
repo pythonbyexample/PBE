@@ -1,0 +1,67 @@
+/* store.css, Aug 2010 */
+
+.body {
+    background-color: white;
+}
+
+#logo {
+    font: 3em "Times New Roman", Times, serif;
+}
+
+#logo a, #logo a:link, #logo a:visited {
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    margin-bottom: 6px;
+    text-decoration: none;
+    color: white;
+    background-color: #03a;
+    border:2px solid #03a;
+    overflow: hidden;
+}
+
+#logo a:hover {
+    color: #03a;
+    background-color: white;
+    border:2px solid #03a;
+}
+
+.tagline {
+    font: italic 1.5em "Times New Roman", Times, serif;
+    padding-left: 10px;
+    border: 0px solid;
+    overflow: hidden;
+}
+
+.user_or_login {
+    float: right;
+    border: 0px solid;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+th {
+    border:1px solid #777;
+    padding: 2px;
+}
+
+tr.centered td {
+    text-align: center;
+}
+
+tr.centered td.left {
+    text-align: left;
+}
+
+.main_separator {
+    border-bottom: 4px solid #070;
+    margin-top: 2px;
+}
+
+#notes { width: 500px; height: 200px; }
+#confirm { width: 200px; margin-left: 300px; }
+#update { width: 125px; margin-left: 185px; }
+.save { width: 125px; margin-left: 10px; margin-bottom: 75px; margin-top: 15px; }
+
+.required { font-weight: bold; }

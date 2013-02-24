@@ -3,6 +3,7 @@ import calendar
 from datetime import date, timedelta
 
 from django.contrib.auth.models import User
+from django.contrib import messages
 
 from dbe.settings import MEDIA_URL
 from dbe.cal.models import *
@@ -30,12 +31,13 @@ class CalMixin(object):
 
 
 class SettingsView(UpdateRelatedView):
-    detail_model    = User
-    form_model      = Settings
-    modelform_class = SettingsForm
-    related_name    = "settings"
-    fk_attr         = "user"
-    template_name   = "settings.html"
+    detail_model        = User
+    form_model          = Settings
+    modelform_class     = SettingsForm
+    related_name        = "settings"
+    fk_attr             = "user"
+    modelform_valid_msg = "Setting updated"
+    template_name       = "settings.html"
 
 
 class MainView(TemplateView, CalMixin):

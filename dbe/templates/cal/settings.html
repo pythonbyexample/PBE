@@ -4,6 +4,11 @@
 
     <div class="main">
     <h4>Settings</h4>
+
+    {% for m in messages %}
+        <div class="message"> {{ m }} </div>
+    {% endfor %}
+
     {{ modelform.errors }}
     <form action="" method="POST"> {% csrf_token %}
     <table>

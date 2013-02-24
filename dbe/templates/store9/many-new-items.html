@@ -1,0 +1,72 @@
+{% extends "base-store9.html" %}
+{# this template handles both the original and confirmation URLs #}
+
+{% block "browsertitle" %}{{ title }}{% endblock %}
+
+{% block "left_content" %}
+    <h2>{{ title }}</h2>
+
+    {% if create_errors %}
+        <div class="error">There were processing errors:</div>
+        <ul>
+            {% for error in create_errors %}
+                <ul>{{ error }}</ul>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if items %}
+        <div class="pre_list">The following products were added to your database and to shopping
+                cart:</div>
+        <ul>
+            {% for item in items %}
+                {# don't expose the id since it gives away info #}
+                <li><a href="/store/item/{{ item.item_id }}/"
+                            target="_blank">{{ item.sequence }}</a></li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if duplicates %}
+        <div class="pre_list">
+        These products are already in your database, so the new information was ignored:</div>
+        <ul>
+            {% for duplicate in duplicates %}
+                {# don't expose the id since it gives away info #}
+                <li><a class="slug_link" href="/store/item/{{ duplicate.item_id }}/"
+                            target="_blank">{{ duplicate.sequence }}</a></li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {# TBD: add file upload after downloading BioPython #}
+
+    {% if form and not items and not duplicates %}
+        {# TBD: use the 'url' tag to compute the url from urls.py #}
+        <form action="" method="post" id="import_form">{% csrf_token %}
+        <!-- <form action="../new-done/" method="post" id="import_form">{% csrf_token %}  -->
+
+            {% if form.other_errors %}<div class="errors">{{ form.other_errors }}</div>{% endif %}
+            <div>Paste one or more sequences below. (Use tabs or commas to include
+                    optional 'Name' and/or 'Notes' columns.)</div>
+
+            <table border="0">
+                <tr>
+                    <td class="results-right"><label for="id_records">Sequences:</label></td>
+                    <td class="results-left">
+                        <span class="errors">{{ form.records.errors }}</span>
+                        {{ form.records }}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="results-right" colspan="2">
+                        <input type="submit" value="Add sequences">
+                    </td>
+                </tr>
+            </table>
+
+        </form>
+    {% endif %}
+
+{% endblock %}
+

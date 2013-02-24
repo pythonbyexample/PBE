@@ -1,0 +1,18 @@
+{% extends "base-store9.html" %}
+{% block "browsertitle" %}Store{% endblock %}
+
+{% block "left_content" %}
+    <h1>Welcome to the Gen9 store.</h1>
+
+    <p><a href="{% url 'items' %}">List your sequences</a></p>
+
+    <p><a href="{% url 'many_new_items' %}">Add a new sequence</a></p>
+
+    {% if user.is_authenticated %}
+        <p><a href="{% url 'sprofile' %}">View / Edit Profile</a></p>
+    {% endif %}
+
+    <hr />
+    <p>(see login/logout info on upper right)</p>
+
+{% endblock %}

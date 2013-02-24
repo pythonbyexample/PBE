@@ -1,0 +1,37 @@
+<form action="/protein/advanced-search/" method="get">
+	<table>
+		<tr>
+			<th>{{ form.available.label_tag }}</th>
+			<th>{{ form.status_star.label_tag }}</th>
+			<th>{{ form.status_cell.label_tag }}</th>
+			<th>{{ form.name.label_tag }}</th>
+			<th>{{ form.protein.label_tag }}</th>
+			<th>{{ form.description.label_tag }}</th>
+			<th>{{ form.direction.label_tag }}</th>
+			<th>{{ form.tag.label_tag }}</th>
+			<th>{{ form.length.label_tag }}</th>
+		</tr>
+		
+		<tr>
+			<td>{{ form.available }}</td>
+			<td>{{ form.status_star }}</td>
+			<td>{{ form.status_cell }}</td>
+			<td>{{ form.name }}</td>
+			<td>{{ form.protein }}</td>
+			<td>{{ form.description }}</td>
+			<td>{{ form.direction }}</td>
+			<td>{{ form.tag }}</td>
+			<td>{{ form.length }}</td>
+		</tr>
+	
+		<tr><td><input type="submit" value="Search" /></td></tr>
+	</table>
+{# if switch to POST then may want: csrf_token #}
+</form>
+
+<p>Searches use "contains"; prefix with "-" to OMIT.</p>
+	
+{% if form.errors %}
+<div id="form-error">Errors: {{ form.errors }}
+</div>
+{% endif %}

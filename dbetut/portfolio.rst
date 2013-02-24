@@ -127,7 +127,7 @@ Main and Slideshow Views
 
 .. sourcecode:: python
 
-    from dbe.mcbv.list_custom import ListRelated, DetailListFormsetView
+    from dbe.mcbv.list_custom import ListRelated, DetailListFormSetView
 
     class Main(ListView):
         list_model    = Group
@@ -147,7 +147,7 @@ GroupView
 
 .. sourcecode:: python
 
-    class GroupView(DetailListFormsetView):
+    class GroupView(DetailListFormSetView):
         """List of images in an group, optionally with a formset to update image data."""
         detail_model       = Group
         formset_model      = Image

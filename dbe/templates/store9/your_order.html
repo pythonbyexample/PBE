@@ -1,0 +1,13 @@
+{% extends "base-store9.html" %}
+{% load store9_extras %}
+{% block "browsertitle" %}Thank You{% endblock %}
+{% block "left_content" %}
+
+<p>
+    Thank you for your order.<br />
+    Your order number is: #{{ order_num }}<br />
+    {% if po_num %} Your purchase order number is: PO#{{ po_num }}<br /> {% endif %}
+    Please save this information for your records.
+</p>
+
+{% endblock %}

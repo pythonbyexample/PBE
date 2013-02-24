@@ -1,0 +1,9 @@
+- extends "sbbase.html"
+- block content
+    %br
+    %p
+        %form{"action": '', "method": "post", "accept-charset": "utf-8"}
+            - csrf_token
+            %table= modelform.as_table
+            %p
+                %input{"type":"submit", "value":"Send", "style": "margin-left:300px; "}

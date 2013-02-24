@@ -1,5 +1,3 @@
-Z aa Z
-
 {% extends "sbbase.html" %}
 
 <!-- LIST OF POSTS -->
@@ -7,14 +5,14 @@ Z aa Z
 {% block content %}
 
     <br />
-    <form action="" method="post" accept-charset="utf-8">{% csrf_token %}
+    <P><form action="" method="post" accept-charset="utf-8"> {% csrf_token %}
         {{ modelform.body }}
     <p><input type="submit" value="Send" /></p>
     </form>
     <div class="main">
         {% for message in message_list %}
-            <ul>
-                <div class="time">{{ message.created }}</div>
+            <ul {% if message in unread %} class="unread" {% endif %}>
+                <div class="time">{{ message.sender }} | {{ message.created }}</div>
                 <div class="body">{{ message.body|linebreaksbr }}</div>
             </ul>
         {% endfor %}

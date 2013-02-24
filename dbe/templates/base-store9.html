@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+<title>
+Gen9 - {% block "browsertitle" %}{% endblock %}
+</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+{% block extrahead %}
+{% endblock %}
+
+<link rel="stylesheet" type="text/css" href="/media/css/store.css" />
+<link rel="stylesheet" type="text/css" href="/media/css/parts.css" />
+{% block "extrastyle" %}
+{% endblock %}
+
+</head>
+
+<body{% block onLoad %}{% endblock %}>
+
+      <div id="top_portion" style="border: 0px solid; width: 100%; overflow: default;">
+        <span id="logo"><a href="/store/">Gen9</a></span>
+        <span class="tagline"> Tagline goes here.</span>
+    </div>
+
+    <div class="main_separator">
+        <div class="user_or_login">
+                {% block user %}
+                {% if user.is_authenticated %}
+                    Account:
+                    {% if user.get_full_name %}{{ user.get_full_name }}
+                    {% else %}{{ user.username }}{% endif %}
+
+                    {% if user.is_staff %}(staff){% endif %}
+                    <a href="{% url 'auth_logout' %}">Log out</a>
+                {% else %}
+                    <a href="{% url 'auth_login' %}">Log in</a></p>
+                {% endif %}
+
+                {% if user.is_staff %}| <a href="/admin/">admin</a>{% endif %}
+                {% endblock user %}
+        </div>
+    </div>
+
+    <div id="main_portion">
+        {% if user.is_authenticated %}
+            <a href="{% url 'items' %}">my sequences</a> |
+            <a href="{% url 'many_new_items' %}">add sequences</a> |
+            <a href="{% url 'sprofile' %}">my profile</a>
+
+            {% if num_citems %}
+                | <a href="{% url 'cart' %}"><b>shopping cart ({{ num_citems }})</b></a>
+            {% endif %}
+        {% endif %}
+        <br /><br />
+
+
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <div id='left_content'>
+            {% block "left_content" %}{% endblock %}
+
+            {# support django-registration and others that look for 'content' block #}
+            {% block content %}{% endblock %}
+        </div>
+
+
+        <div id="right_content">
+            {% block "right_content" %}{% endblock %}
+        </div>
+
+    </div>
+
+</body>
+</html>

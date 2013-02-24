@@ -1,0 +1,20 @@
+- extends "sbbase.html"
+- block content
+    %br
+    %p
+
+    .main
+      From:
+          = msg.sender
+
+      %br
+      To:
+          = msg.recipient
+
+        .body
+            = msg.body|linebreaksbr
+
+      - if reply
+          %br
+          %a{'href': '{% url "send" msg.sender.pk %}'} Reply
+      - include "paginator.html"

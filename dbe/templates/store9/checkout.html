@@ -1,0 +1,72 @@
+{% extends "base-store9.html" %}
+{% load store9_extras %}
+{% block "browsertitle" %}Checkout{% endblock %}
+{% block "left_content" %}
+
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<h4>Your Order</h4>
+<div id="order">
+<table cellpadding="0" cellspacing="8" border="0">
+    <tr>
+        <th>Name</th>
+        <th>Sequence</th>
+        <th>Length</th>
+        <th>Variation of</th>
+        <th>Notes</th>
+        <th>Contact</th>
+        <th>Owner</th>
+        <th>Royalty rate</th>
+        <th>Added</th>
+        <th>Quantity</th>
+        <th>Total Price</th>
+    </tr>
+
+    <form action="" method="POST">{% csrf_token %}
+    {% for citem in citems %}
+    <tr class="centered">
+        <td>{{ citem.item.name|default_if_none:'' }}</td>
+        <td class="left">{{ citem.item.sequence|truncate2:"10" }}</td>
+        <td>{{ citem.item.product.length }}</td>
+        <td>TBD {# citem.item.variation_of #}</td>
+        <td>{{ citem.item.product.description }}</td>
+        <td>{{ citem.item.product.contact|default_if_none:'' }}</td>
+        <td>{{ citem.item.product.owner|default_if_none:'' }}</td>
+        <td>{{ citem.item.product.royalty_rate|default_if_none:'' }}</td>
+
+        <td>{{ citem.item.date_added }}</td>
+        <td>{{ citem.quantity }}</td>
+        <td>{{ citem.total|currency }}</td>
+    </tr>
+    {% endfor %}
+
+    <tr class="centered">
+        <td colspan="10"></td>
+        <td>{{ total|currency }}</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td></td>
+        <td colspan="11"> PO Number (optional): <input type="text" name="po_num" />
+        </td>
+    </tr>
+    <tr>
+        <td></td>
+        <td colspan="11"> Notes/Comments<br />
+            <textarea name="notes" id="notes"></textarea>
+        </td>
+    </tr>
+</table>
+</div>
+
+<br />
+<input type="submit" value="Confirm Order  >>" id="confirm">
+</form>
+
+{% endblock %}

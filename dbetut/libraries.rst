@@ -1,3 +1,11 @@
+.. raw:: html
+
+    <style type="text/css">
+        li.attrs span { border: solid 1px #ddd; margin-left: 10px; padding: 3px; }
+        li { margin-top: 20px; }
+        li.methods span { border: solid 1px #ddd; background: #f5f5f5; margin-left: 10px; padding: 3px; }
+    </style>
+
 Libraries
 =========
 
@@ -64,6 +72,7 @@ link is at the top of this page.
 MCBV Class attributes and methods
 ---------------------------------
 
+
 Only the most important and useful attributes and methods are listed below -- these are the
 ones you would normally want to override; look in the source files to get the full list.
 
@@ -71,59 +80,176 @@ ones you would normally want to override; look in the source files to get the fu
 
 
 `ContextMixin`
+--------------
 
-    * add_context() -- return a dictionary to be injected into context -- this happens in
-      get_context_data()
+.. raw:: html
+
+    <ul>
+        <li>
+            add_context() -- return a dictionary to be injected into context -- this happens in
+              get_context_data()
+        </li>
+    </ul>
 
 `View`
+------
 
-    * self.user is created together with self.request, self.args, self.kwargs
-    * initsetup() runs inside dispatch() method and may be overridden to provide common setup
-      before a specific request method is called
+.. raw:: html
+
+    <ul>
+        <li>
+            self.user is created together with self.request, self.args, self.kwargs
+        </li>
+        <li>
+            initsetup() runs inside dispatch() method and may be overridden to provide common setup
+              before a specific request method is called
+        </li>
+    </ul>
 
 `SingleObjectMixin`
+-------------------
 
-    * detail_model, detail_context_object_name, detail_pk_url_kwarg='dpk'
-    * get_detail_object(), get_detail_queryset(), get_detail_context_data()
+.. raw:: html
+
+    <ul>
+        <li class="attrs">
+             <span>detail_model</span>
+             <span>detail_context_object_name</span>
+             <span>detail_pk_url_kwarg='dpk'</span>
+        </li>
+
+        <li class="methods">
+             <span>get_detail_object()</span>
+             <span>get_detail_queryset()</span>
+             <span>get_detail_context_data()</span>
+        </li>
+    </ul>
 
 `FormSetMixin`
+--------------
 
-    * formset_model, formset_form_class, formset_class=BaseFormSet, extra=3
-    * get_formset(), get_formset_kwargs(), formset_valid(), formset_invalid(), process_form()
+.. raw:: html
+
+    <ul>
+        <li class="attrs">
+            <span>formset_model</span>
+            <span>formset_form_class</span>
+            <span>formset_class=BaseFormSet</span>
+            <span>extra=3</span>
+        </li>
+        <li class="methods">
+            <span>get_formset()</span>
+            <span>get_formset_kwargs()</span>
+            <span>formset_valid()</span>
+            <span>formset_invalid()</span>
+            <span>process_form()</span>
+        </li>
+    </ul>
+
 
 `ModelFormMixin`
+----------------
 
-    * form_model, modelform_class, modelform_pk_url_kwarg="mfpk"
-    * get_modelform(), get_modelform_kwargs(), modelform_valid(), modelform_invalid(),
-      get_modelform_context_data()
+.. raw:: html
+
+    <ul>
+        <li class="attrs">
+            <span>form_model</span>
+            <span>modelform_class</span>
+            <span>modelform_pk_url_kwarg="mfpk"</span>
+        </li>
+        <li class="methods">
+            <span>get_modelform()</span>
+            <span>get_modelform_kwargs()</span>
+            <span>modelform_valid()</span>
+            <span>modelform_invalid()</span>
+            <span>get_modelform_context_data()</span>
+        </li>
+    </ul>
+
 
 `ProcessFormView`
+-----------------
 
-    * form_get(), formset_get(), modelform_get()
+.. raw:: html
+
+    <ul>
+        <li class="attrs">
+         <span>form_get()</span>
+         <span>formset_get()</span>
+         <span>modelform_get()</span>
+        </li>
+    </ul>
 
 `BaseCreateView`
+----------------
 
-    * create_get(), create_post()
+.. raw:: html
+
+    <ul>
+        <li class="methods">
+         <span>create_get()</span>
+         <span>create_post()</span>
+        </li>
+    </ul>
 
 `BaseUpdateView`
+----------------
 
-    * update_get(), update_post()
+.. raw:: html
+
+    <ul>
+        <li class="methods">
+            <span>update_get()</span>
+            <span>update_post()</span>
+        </li>
+    </ul>
 
 `CreateUpdateView(CreateView)`
+------------------------------
 
-    * Update object if modelform_pk_url_kwarg is in kwargs, otherwise create it.
+.. raw:: html
+
+    <ul>
+        <li>
+             Update object if modelform_pk_url_kwarg is in kwargs, otherwise create it
+        </li>
+    </ul>
 
 `MultipleObjectMixin`
+---------------------
 
-    * list_model, list_context_object_name
-    * get_list_context_data()
-    * when view is paginated, context["object_list"] contains the subset of objects for the
-      current page instead of the full list
+.. raw:: html
+
+    <ul>
+        <li class="attrs">
+            <span>list_model</span>
+            <span>list_context_object_name</span>
+        </li>
+        <li class="methods">
+            <span>get_list_context_data()</span>
+        </li>
+        <li>
+            when view is paginated, context["object_list"] contains the subset of objects for the
+              current page instead of the full list
+        </li>
+    </ul>
+
 
 `BaseListView`
+--------------
 
-    * list_get()
+.. raw:: html
 
+    <ul>
+        <li class="attrs">
+         <span class="methods"> list_get() </span>
+        </li>
+    </ul>
+
+.. raw:: html
+
+    <p><br /><br /></p>
 
 There is also a number of combined views in `edit_custom` and `list_custom` modules; for example,
 `ListRelated` provides a view of a detail object and a list of objects related to the first via

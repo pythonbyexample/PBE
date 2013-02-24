@@ -1,0 +1,45 @@
+{% extends "base-store9.html" %}
+{% load store9_extras %}
+{% block "browsertitle" %}Address Book{% endblock %}
+
+{% block "left_content" %}
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% load i18n %}
+
+<P></P>
+<form action="" method="POST"> {% csrf_token %}
+    {{ formset.management_form }}
+    <table>
+        {% for form in formset.forms %}
+            {{ form.id }}
+            <tr>
+                <td><br /><br />
+                    {% if forloop.last %}<h4>Add a New Address</h4>{% endif %}
+                </td>
+                <td>
+                    {% if forloop.last %}
+                        <input class="save" type="submit" value="Save" />
+                    {% endif %}
+                </td>
+            </tr>
+            {{ form.as_table }}
+            {% if forloop.last %}
+            <tr><td></td>
+                <td>
+                    <br /><input class="save" type="submit" value="Save" />
+                </td>
+            </tr>
+            {% endif %}
+        {% endfor %}
+    </table>
+
+</form>
+
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends "base-store9.html" %}
+{% load store9_extras %}
+{% block "browsertitle" %}Shopping Cart{% endblock %}
+
+{% block "left_content" %}
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<P></P>
+{% if not citems %}
+    There are no items in your cart.
+{% endif %}
+
+{% if citems %}
+<table cellpadding="0" cellspacing="8" border="0">
+    <tr>
+        <th>Name</th>
+        <th>Sequence</th>
+        <th>Length</th>
+        <th>Variation of</th>
+        <th>Notes</th>
+        <th>Contact</th>
+        <th>Owner</th>
+        <th>Royalty rate</th>
+        <th>Added</th>
+        <th>Quantity</th>
+        <th>Total Price</th>
+        <th>Remove</th>
+    </tr>
+
+    <form action="" method="POST">{% csrf_token %}
+    {% for citem in citems %}
+    <tr class="centered">
+        <td>{{ citem.item.name|default_if_none:'' }}</td>
+        <td class="left">{{ citem.item.sequence|truncate2:"10" }}</td>
+        <td>{{ citem.item.product.length }}</td>
+        <td>TBD {# citem.item.variation_of #}</td>
+        <td>{{ citem.item.product.description }}</td>
+        <td>{{ citem.item.product.contact|default_if_none:'' }}</td>
+        <td>{{ citem.item.product.owner|default_if_none:'' }}</td>
+        <td>{{ citem.item.product.royalty_rate|default_if_none:'' }}</td>
+
+        <td>{{ citem.item.date_added }}</td>
+        <td><input type="text" name="q_{{ citem.cart_item_id }}" size="3"
+                value="{{ citem.quantity }}" /></td>
+        <td>{{ citem.total|currency }}</td>
+        <td><input type="checkbox" name="r_{{ citem.cart_item_id }}" /></td>
+    </tr>
+    {% endfor %}
+
+    <tr class="centered">
+        <td colspan="10"></td>
+        <td>{{ total|currency }}</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td colspan="11"></td>
+        <td><input type="submit" value="Update" /></td>
+    </tr>
+    <tr>
+        <td colspan="11"></td>
+        <td>
+        {% if have_addresses %}
+            <INPUT TYPE="button" value="Checkout"
+                onClick="parent.location='{% url 'checkout' %}'">
+        {% endif %}
+
+        </td>
+    </tr>
+    </form>
+
+</table>
+
+<p>
+{% if not have_addresses %}
+    You need to fill in your shipping and billing address in the
+    <a href="{% url store9.views.addresses %}">Address Book</a> before you can checkout.
+{% endif %}
+</p>
+
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base-store9.html" %}
+{% load store9_extras %}
+{% block "browsertitle" %}Products{% endblock %}
+
+{% block "left_content" %}
+
+<table cellpadding="0" cellspacing="8" border="0">
+    <tr>
+        <td>{# edit: avoid the border by using td instead of th #}</td>
+        <th>Name</th>
+        <th>Sequence</th>
+        <th>Length</th>
+        <th>Variation of</th>
+        <th>Notes{# "Description" #}</th>
+        <th>Contact</th>
+        <th>Owner</th>
+        <th>Royalty rate</th>
+        <th>Added</th>
+        <th>Sort order</th>
+        <th>Active?</th>
+        <td></td>
+    </tr>
+
+    {% for item in items %}
+    <tr class="centered">
+        <td><a href="{{ item.item_id }}/edit/">Edit</a></td>
+        <td>{{ item.name|default_if_none:'' }}</td>
+        {# TBD: get the URL via code #}
+        <td class="left"><a class="sequence_link"
+                href="/store/item/{{ item.item_id }}/">{{ item.sequence|truncate2:"10" }}</a></td>
+        <td>{{ item.product.length }}</td>
+        <td>TBD {# item.variation_of #}</td>
+        <td>{{ item.product.description }}</td>
+        <td>{{ item.product.contact|default_if_none:'' }}</td>
+        <td>{{ item.product.owner|default_if_none:'' }}</td>
+        <td>{{ item.product.royalty_rate|default_if_none:'' }}</td>
+        <td>{{ item.date_added }}</td>
+        <td>{{ item.sort_order }}</td>
+        <td>{{ item.active }}</td>
+        <td><a href="{{ item.item_id }}/add/">add to cart</a></td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

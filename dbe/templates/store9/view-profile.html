@@ -1,0 +1,30 @@
+{% extends "base-store9.html" %}
+{% block "browsertitle" %}View profile: {{ contact }} {% endblock %}
+{% block "left_content" %}
+
+{% load i18n %}
+<ul class="profile">
+    <a href="{% url 'addresses' %}">Add / Edit Addresses</a><br /><br />
+
+    <form action="" method="POST" /> {% csrf_token %}
+    <table border='0'>
+    {% for field in modelform %}
+        <div class="fieldWrapper">
+            {% if field.name == "billing_same_shipping" %}
+                <tr><td colspan='2'><h3>Shipping Information</h3></td></tr>
+            {% endif %}
+            {% if field.name == "b_description" %}
+                <tr><td colspan='2'><h3>Billing Information</h3></td></tr>
+            {% endif %}
+            <tr>
+                <td> {{ field.label_tag }}:</td>
+                <td>{{ field.errors }} {{ field }} </td>
+            </tr>
+        </div>
+    {% endfor %}
+
+    </table>
+    <p><input id="update" type="submit" value="Update" /></p>
+    </form>
+</ul>
+{% endblock %}

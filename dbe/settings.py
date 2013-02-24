@@ -42,8 +42,9 @@ INTERNAL_IPS            = ['127.0.0.1']
 DEBUG_TOOLBAR_CONFIG    = {'INTERCEPT_REDIRECTS' : False}
 # LOGIN_URL            = '/admin'
 
-
 TEMPLATE_LOADERS = (
+    'hamlpy.template.loaders.HamlPyFilesystemLoader',
+    'hamlpy.template.loaders.HamlPyAppDirectoriesLoader',
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
 )
@@ -68,6 +69,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'dbe.forum.views.forum_context',
     'dbe.portfolio.views.portfolio_context',
     'dbe.cal.views.cal_context',
+    'dbe.sb.views.sbcontext',
     # 'dbe.photo.views.photo_context',
 )
 

@@ -8,46 +8,17 @@ from dbe.sb.forms import *
 from dbe.shared.utils import *
 
 from dbe.mcbv.detail import DetailView
-from dbe.mcbv.edit_custom import SearchFormView, CreateUpdateView, CreateView
-from dbe.mcbv.list_custom import DetailListCreateView, ListFilterView, PaginatedSearch, ListView
+from dbe.mcbv.edit_custom import SearchFormView, CreateUpdateView, CreateView, ModelFormSetView
+from dbe.mcbv.list_custom import DetailListCreateView, ListFilterView, PaginatedModelFormSetView, ListView
 # }}}
 
+####  CHAT
 
-class PostView(DetailListCreateView):
-    """Show post, associated comments and an 'add comment' form."""
-    detail_model    = Post
-    list_model      = Comment
-    modelform_class = CommentForm
-    related_name    = "comments"
-    fk_attr         = "post"
-    template_name   = "sb/post.html"
+def sbcontext(request):
+    return dict(unread=new_msgs(request.user))
 
-
-class CommentSearch2(PaginatedSearch):
-    form_class               = SearchForm
-    paginate_by              = 2
-    list_context_object_name = "comments"
-    template_name            = "csearch.html"
-
-    def form_valid(self, form):
-        q                = form.cleaned_data.q.strip()
-        self.object_list = Comment.obj.filter(body__icontains=q) if q else None
-        return dict(form=form)
-
-
-class CommentSearch(ListFilterView):
-    list_model    = Comment
-    form_class    = SearchForm
-    paginate_by   = 2
-    start_blank   = False
-    template_name = "csearch.html"
-
-    def get_query(self, q):
-        return Q(body__icontains=q)
-
-    def get_list_queryset(self):
-        order_by = self.request.GET.get("order_by", "period")
-        return super(CommentSearch, self).get_list_queryset().order_by(order_by)
+def new_messages(user):
+    return Message.obj.filter(recipient=user, is_read=False)
 
 
 class ChatView(ListView, CreateView, DetailView):
@@ -57,25 +28,86 @@ class ChatView(ListView, CreateView, DetailView):
     modelform_class = MessageForm
     paginate_by     = 4
     success_url     = "#"
-    template_name   = "chat.html"
+    template_name   = "chat.haml"
 
     def get_list_queryset(self):
-        other = self.get_detail_object()
-        user  = self.user
-        return Message.objects.filter( Q(sender=user, recipient=other) | Q(sender=other, recipient=user) )
+        u = self.get_detail_object()
+        return Message.obj.filter( Q(sender=self.user, recipient=u) | Q(sender=u, recipient=self.user) )
 
     def list_get(self, request, *args, **kwargs):
-        context  = super(ChatView, self).list_get(request, *args, **kwargs)
-        messages = Message.obj.filter(recipient=self.user)
-        if messages:
-            profile = SBProfile.obj.get_or_create(user=self.user)[0]
-            profile.update( last_viewed_message=first(messages) )
+        context = super(ChatView, self).list_get(request, *args, **kwargs)
+        unread  = new_messages(self.user)
+        context.update( dict(unread=list(unread)) )   # need list() because next line will clear queryset
+        unread.update(is_read=True)
         return context
 
     def modelform_valid(self, form):
         body = escape(form.cleaned_data.get("body"))
-        self.modelform_object = Message.obj.create(body=body, sender=self.user, recipient=self.get_detail_object())
-        return redir(self.get_success_url())
+        Message.obj.create(body=body, sender=self.user, recipient=self.detail_object)
+        return redir(self.success_url)
+
+
+####  inbox messages (Msg model)
+
+def new_msgs(user):
+    return Msg.obj.filter(recipient=user, inbox=True, is_read=False)
+
+class SendView(CreateView, DetailView):
+    detail_model    = User
+    form_model      = Msg
+    modelform_class = MsgForm
+    template_name   = "send.haml"
+
+    def modelform_valid(self, form):
+        """TODO: validate cc users in form."""
+        data   = form.cleaned_data
+        to     = self.detail_object
+        kwargs = dict(body=escape(data.body), sender=self.user, recipient=to, subject=escape(data.subject))
+
+        Msg.obj.create(sent=True, **kwargs)
+        Msg.obj.create(inbox=True, **kwargs)
+        for name in data.cc.split():
+            user = first(User.objects.filter(username=name))
+            if user:
+                Msg.obj.create( **dict(kwargs, recipient=user, inbox=True) )
+        return redir("msglist", inbox=1)
+
+
+class MsgListView(PaginatedModelFormSetView):
+    """ Inbox or Sent Folder view.
+
+        NOTE: when a msg is deleted from Sent folder, the copy still exists in recipient's Inbox.
+        TODO: add pagination mixin.
+    """
+    list_model         = Msg
+    formset_model      = Msg
+    formset_form_class = MsgDelForm
+    can_delete         = True
+    paginate_by        = 3
+    success_url        = '#'
+    template_name      = "msglist.haml"
+
+    def get_list_queryset(self):
+        """ Note: we need to use get_list_queryset() instead of get_formset_queryset() because ListView
+            adds pagination info to context based on get_list_queryset().
+        """
+        self.inbox = bool( int(self.kwargs.get("inbox")) )      # used in template
+
+        if self.inbox : return Msg.obj.filter(recipient=self.user, inbox=True)
+        else          : return Msg.obj.filter(sender=self.user, sent=True)
+
+
+class MsgView(DetailView):
+    detail_model  = Msg
+    template_name = "msg.haml"
+
+    def add_context(self):
+        self.detail_object.update(is_read=True)
+        reply = bool(self.detail_object.recipient==self.user)
+        return dict(reply=reply)
+
+
+####  BLOG
 
 
 class Main(ListView):
@@ -113,10 +145,26 @@ class ArchiveMonth(Main):
         year, month = self.args
         return Post.obj.filter(created__year=year, created__month=month).order_by("created")
 
+class PostView(DetailListCreateView):
+    """Show post, associated comments and an 'add comment' form."""
+    detail_model    = Post
+    list_model      = Comment
+    modelform_class = CommentForm
+    related_name    = "comments"
+    fk_attr         = "post"
+    template_name   = "sb/post.html"
 
-def new_messages(user):
-    """Return True if `user` has any new message(s)."""
-    messages = Messages.obj.filter(recipient=user)
-    profile  = SBProfile.obj.get_or_create(user=user)[0]
-    if messages and first(messages) != profile.last_viewed_message:
-        return True
+
+class CommentSearch(ListFilterView):
+    list_model    = Comment
+    form_class    = SearchForm
+    paginate_by   = 2
+    start_blank   = False
+    template_name = "csearch.html"
+
+    def get_query(self, q):
+        return Q(body__icontains=q)
+
+    def get_list_queryset(self):
+        order_by = self.request.GET.get("order_by", "created")
+        return super(CommentSearch, self).get_list_queryset().order_by(order_by)

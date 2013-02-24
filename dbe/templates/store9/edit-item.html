@@ -1,0 +1,52 @@
+{% extends "base-store9.html" %}
+{% block "browsertitle" %}Edit item: {{ item }} {% endblock %}
+
+{% block "left_content" %}
+<p>(If you need a different sequence, create a new one.  Set 'Active' to false if you no longer need this sequence.)</p>
+
+    {% if edit %}
+        <form action="" method="post" id="edit_item_form">{% csrf_token %}
+        <input type="submit" value="Save Changes" />
+        {{ form.errors }}
+    {% else %}
+        <ul>[ <a href="?edit=1">Edit</a> ]</ul>
+    {% endif %}
+
+
+    <table cellpadding="0" cellspacing="4" border="0">
+    {% if edit %}
+        <tr><th>Name</th><td>{{ form.name }}</td> <td>{{ form.name.errors }}</td></tr>
+        <tr><th>Gene</th><td>{{ item.sequence }}</td>{# NOT editable #}</tr>
+        <tr><th>Length</th><td>{{ item.product.length }}</td>{# NOT editable #}</tr>
+        <tr><th>Variation of</th><td>TBD {# form.variation_of #}</td></tr>
+        <tr><th>Notes</th><td>{{ form.notes }}</td> <td>{{ form.notes.errors }}</td></tr>
+        <tr><th>Contact</th><td>{{ form.contact }}</td> <td>{{ form.contact.errors }}</td></tr>
+        <tr><th>Owner</th><td>{{ form.owner }}</td> <td>{{ form.owner.errors }}</td></tr>
+        <tr><th>Royalty rate</th><td>{{ form.royalty_rate }}</td> <td>{{ form.royalty_rate.errors }}</td>
+        </tr>
+        <tr></tr>
+        <tr><th>Added</th><td>{{ item.date_added }}</td>{# NOT editable #}</tr>
+        <tr><th>Sort order</th><td>{{ form.sort_order }}</td> <td>{{ form.sort_order.errors }}</td></tr>
+        <tr><th>Active?</th><td>{{ form.active }}</td> <td>{{ form.active.errors }}</td></tr>
+    {% else %}
+        <tr><th>Name</th><td>{{ item.name|default_if_none:'' }}</td> </tr>
+        <tr><th>Sequence</th><td>{{ item.sequence }}</td> </tr>
+        <tr><th>Length</th><td>{{ item.product.length }}</td> </tr>
+        <tr><th>Variation of</th><td>TBD {# item.variation_of|default_if_none:'' #}</td> </tr>
+        <tr><th>Notes</th><td>{{ item.notes }}</td> </tr>
+        <tr><th>Contact</th><td>{{ item.product.contact|default_if_none:'' }}</td> </tr>
+        <tr><th>Owner</th><td>{{ item.product.owner|default_if_none:'' }}</td> </tr>
+        <tr><th>Royalty rate</th><td>{{ item.product.royalty_rate|default_if_none:'' }}</td> </tr>
+        <tr></tr>
+        <tr><th>Added</th><td>{{ item.date_added }}</td> </tr>
+        <tr><th>Sort order</th><td>{{ item.sort_order }}</td> </tr>
+        <tr><th>Active?</th><td>{{ item.active }}</td> </tr>
+    {% endif %}
+    </table>
+
+    {% if edit %}
+        <input type="submit" value="Save Changes" />
+        </form>
+    {% endif %}
+
+{% endblock %}

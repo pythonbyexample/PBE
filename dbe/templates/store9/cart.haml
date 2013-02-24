@@ -1,0 +1,35 @@
+- extends "base-store9.html"
+- block content
+    %br
+    .main
+        - if not formset.forms
+            No items in the cart
+        - else
+
+            %form{"action": '', "method": "post", "accept-charset": "utf-8"}
+                - csrf_token
+                = formset.management_form
+
+                = formset.forms.0.fields
+
+                %table.msglist
+                    %tr
+                        %th{'width':'150px'} Sequence
+                        %th{'width':'150px'} Quantity
+                        %th{'width':'150px'} Total
+                        %th{'width':'150px'} Remove
+
+                    - for form in formset
+                        = form.id
+
+                        - with form.instance as item
+                            %tr
+                                %td= item.item.sequence
+                                %td= form.quantity
+                                %td= item.total
+                                %td= form.DELETE
+
+                %p
+                    %input#del{"type":"submit", "value":"Update", 'style':'margin-left: 550px'}
+
+      - include "paginator.html"

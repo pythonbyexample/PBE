@@ -3,13 +3,15 @@ from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponseRedirect
 from django.utils.encoding import force_text
 from django.db import models
+from django.contrib import messages
 
 from django.utils.functional import curry
 from django.forms.formsets import formset_factory, BaseFormSet, all_valid
 from django.forms.models import modelformset_factory
 
 from base import TemplateResponseMixin, ContextMixin, View
-from detail import SingleObjectMixin, SingleObjectTemplateResponseMixin, BaseDetailView
+from detail import SingleObjectMixin, SingleObjectTemplateResponseMixin, BaseDetailView, DetailView
+from list import MultipleObjectMixin, ListView
 
 
 class FormMixin(ContextMixin):
@@ -87,10 +89,11 @@ class FormSetMixin(FormMixin):
     formset_form_class = None
     formset_initial    = {}
     formset_class      = BaseFormSet
-    extra              = 3
+    extra              = 0
     can_delete         = False
+    # ignore_get_args    = ("page", )     # TODO this may be better moved to the form class?
 
-    formset_kwarg_user = False     # provide request user to form
+    formset_kwarg_user = False       # provide request user to form
     success_url        = None
 
     def get_formset_initial(self):
@@ -103,7 +106,7 @@ class FormSetMixin(FormMixin):
         return self.formset_form_class
 
     def get_formset(self, form_class=None):
-        form_class = form_class or self.formset_form_class
+        form_class = form_class or self.get_formset_form_class()
         kwargs     = dict()
         Formset    = formset_factory(form_class, extra=self.extra, can_delete=self.can_delete)
 
@@ -172,7 +175,7 @@ class ModelFormSetMixin(FormSetMixin):
         return queryset
 
     def get_formset(self, form_class=None):
-        form_class = form_class or self.formset_form_class
+        form_class = form_class or self.get_formset_form_class()
         kwargs     = dict()
         Formset    = modelformset_factory(self.formset_model, extra=self.extra, can_delete=self.can_delete)
 
@@ -212,6 +215,7 @@ class ModelFormMixin(FormMixin, SingleObjectMixin):
     modelform_queryset            = None
     modelform_context_object_name = None
     modelform_pk_url_kwarg        = 'mfpk'
+    modelform_valid_msg           = None
 
     def get_modelform_class(self):
         """Returns the form class to use in this view."""
@@ -256,6 +260,8 @@ class ModelFormMixin(FormMixin, SingleObjectMixin):
 
     def modelform_valid(self, modelform):
         self.modelform_object = modelform.save()
+        if self.modelform_valid_msg:
+            messages.info(self.request, self.modelform_valid_msg)
         return HttpResponseRedirect(self.get_success_url())
 
     def modelform_invalid(self, modelform):
@@ -313,6 +319,12 @@ class ProcessFormView(View):
         POST variables and then checked for validity.
         """
         form = formset = modelform = None
+
+        if isinstance(self, DetailView):
+            self.detail_object = self.get_detail_object()
+
+        if isinstance(self, ListView):
+            self.object_list = self.get_list_queryset()
 
         if isinstance(self, FormView):
             form = self.get_form()

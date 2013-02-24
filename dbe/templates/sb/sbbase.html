@@ -5,7 +5,7 @@
 <head>
     <title>{% block title %}SB{% endblock %}</title>
     {% block extrahead %}{% endblock %}
-    <link rel="stylesheet" href="/media/css/blog.css" type="text/css" media="screen" charset="utf-8" />
+    <link rel="stylesheet" href="/media/css/sb.css" type="text/css" media="screen" charset="utf-8" />
 
 </head>
 
@@ -26,6 +26,9 @@
                     <a href="{% url 'admin:index' %}">Admin</a>
                     <a href="{% url 'admin:sb_post_add' %}">Add post</a>
                 {% endif %}
+
+                <a href="{% url 'msglist' '0' %}">Sent Folder</a>
+                <a href="{% url 'msglist' '1' %}">Inbox {% if unread %} ({{ unread.count }}) {% endif %}</a>
 
             {% endblock %}
         </div>

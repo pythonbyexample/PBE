@@ -1,0 +1,29 @@
+{% if objects %}
+<table cellpadding="2" cellspacing="0" border="1">
+	<tr>
+		<th>available</th>
+		<th>status_star</th>
+		<th>status_cell</th>
+		<th>name</th>
+		<th>protein</th>
+		<th>description</th>
+		<th>direction</th>
+		<th>tag</th>
+		<th>length</th>
+	</tr>
+	
+	{% for object in objects %}
+	<tr>
+		<td>{{ object.available }}</td>
+		<td>{{ object.status_star }}</td>
+		<td>{{ object.status_cell }}</td>
+		<td>{{ object.name }}</td>
+		<td>{{ object.protein }}</td>
+		<td>{{ object.description }}</td>
+		<td>{{ object.direction }}</td>
+		<td>{{ object.tag }}</td>
+		<td>{{ object.length }}</td>
+	</tr>
+	{% endfor %}
+</table>
+{% endif %}

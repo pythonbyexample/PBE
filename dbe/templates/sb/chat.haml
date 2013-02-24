@@ -1,0 +1,17 @@
+- extends "sbbase.html"
+- block content
+    %br
+    %p
+        %form{"action": '', "method": "post", "accept-charset": "utf-8"}
+            - csrf_token
+            = modelform.body
+            %p
+                %input{"type":"submit", "value":"Send"}
+    .main
+        - for message in message_list
+            %ul{ "class": "{% if message in unread %}unread{% endif %}" }
+                .time
+                    ={message.sender} | ={message.created}
+                .body
+                    = message.body|linebreaksbr
+        - include "paginator.html"
