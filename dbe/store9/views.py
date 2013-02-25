@@ -1,31 +1,18 @@
-# views.py for store9, Aug 2010 by Scott S. Lawton
-
 import re
-import locale
-from string import join
 
-from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import get_object_or_404, render_to_response
-from django.views.generic.simple import direct_to_template    # for csrf
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.core.context_processors import csrf
 from django.core.mail import send_mail
-from django.template import RequestContext
-from django.forms.models import modelformset_factory
-from django.core.urlresolvers import reverse
 from django.utils.http import urlencode
 from django.core.urlresolvers import reverse_lazy
 
 from dbe.store9.models import Product, Item, CartItem, Order, Contact, AddressBook
 from dbe.store9.forms import *
 from dbe.store9.email import *
-# from dbe.store9.changelist import changelist_view
 
 from dbe.shared.utils import *
 
 from dbe.mcbv.base import TemplateView, View
-from dbe.mcbv.edit import UpdateView, ModelFormSetView, FormView
+from dbe.mcbv.edit import UpdateView, ModelFormSetView, FormView, CreateView
 from dbe.mcbv.list import ListView
 
 
@@ -45,11 +32,20 @@ def add_item(user, item_id):
 class IndexView(TemplateView):
     template_name = "store9/index.html"
 
-
 class AddToCartView(View):
     def get(self, request, *args, **kwargs):
         add_item(self.user, self.kwargs.get("dpk"))
         return redir("items")
+
+class ItemsView(ListView):
+    list_model    = Item
+    template_name = "items.haml"
+
+class YourOrderView(TemplateView):
+    template_name = "your-order.html"
+
+    def add_context(self):
+        return dict(self.request.GET.items())   # items() to get items, not lists
 
 
 class AddressBookView(ModelFormSetView):
@@ -67,43 +63,37 @@ class AddressBookView(ModelFormSetView):
         form.instance.update( contact=Contact.obj.get(user=self.user) )
 
 
-class CheckoutView(ListView, FormView):
-    list_model    = CartItem
-    form_class    = ConfirmForm
-    template_name = "checkout.html"
-    confirmtpl    = "Gen9 Order #%s Confirmation"
-    receivedtpl   = "Order #%s received"
+class CheckoutView(ListView, CreateView):
+    list_model      = CartItem
+    form_model      = Order
+    modelform_class = OrderForm
+    template_name   = "checkout.html"
+    confirmtpl      = "Gen9 Order #%s Confirmation"
+    receivedtpl     = "Order #%s received"
 
     def get_list_queryset(self):
         return CartItem.obj.filter(item__user=self.user)
 
-    def add_context(self):
-        total = sum(i.total() for i in self.get_list_queryset())
-        return dict(total=total)
+    def initsetup(self):
+        self.total = sum(i.total() for i in self.get_list_queryset())      # used in template
 
-    def form_valid(self, form):
+    def modelform_valid(self, form):
         user        = self.user
-        p           = request.POST
-        citems_text = join(["%s, %d" % (i, i.quantity) for i in citems], '\n')
-        notes       = p.get("notes")
-        po_num      = p.get("po_num", '')
-        order       = Order.obj.create(items=citems_text, user=user, notes=notes, po_num=po_num)
-        order_num   = order.order_num
+        citems_text = njoin(["%s, %d" % (i, i.quantity) for i in self.object_list])
+        order       = form.save(commit=False)
+        total       = self.total
+
+        order.update(items=citems_text, user=user)
+        order_num, notes, po_num = order.order_num, order.notes, order.po_num
         self.object_list.delete()
 
         c_body  = cust_order_tpl % (order_num, po_num, user, order.created, citems_text, notes, total)
         g9_body = gen9_order_tpl % (order_num, po_num, user, order.created, citems_text, notes, total, order_num)
+
         send_mail(self.confirmtpl % order_num, c_body, from_address, [user.email], fail_silently=False)
         send_mail(self.receivedtpl % order_num, g9_body, from_address, [copy_order_to], fail_silently=False)
 
-        return redir(reverse("your_order") + '?' + urlencode(dict(order_num=order_num, po_num=po_num)))
-
-
-class YourOrderView(TemplateView):
-    template_name = "your-order.html"
-
-    def add_context(self):
-        return self.request.GET
+        return redir(reverse2("your_order") + '?' + urlencode(dict(order_num=order_num, po_num=po_num)))
 
 
 class CartView(ListView, ModelFormSetView):
@@ -111,12 +101,11 @@ class CartView(ListView, ModelFormSetView):
     formset_model      = CartItem
     formset_form_class = CartItemForm
     can_delete         = True
+    success_url        = '#'
     template_name      = "cart.html"
 
     def get_formset_queryset(self):
         return CartItem.obj.filter(item__user=self.user)
-
-    get_list_queryset = get_formset_queryset
 
     def add_context(self):
         total          = sum(i.total() for i in self.get_formset_queryset())
@@ -129,24 +118,6 @@ class CartView(ListView, ModelFormSetView):
         if form.instance.quantity < 1 : form.instance.delete()
         else                          : form.instance.save()
 
-    def form_valid(self, form):
-        user        = self.user
-        p           = request.POST
-        citems_text = join(["%s, %d" % (i, i.quantity) for i in citems], '\n')
-        notes       = p.get("notes")
-        po_num      = p.get("po_num", '')
-        order       = Order.obj.create(items=citems_text, user=user, notes=notes, po_num=po_num)
-        order_num   = order.order_num
-
-        self.object_list.delete()
-
-        c_body  = cust_order_tpl % (order_num, po_num, user, order.created, citems_text, notes, total)
-        g9_body = gen9_order_tpl % (order_num, po_num, user, order.created, citems_text, notes, total, order_num)
-
-        send_mail(self.confirmtpl % order_num, c_body, from_address, [user.email], fail_silently=False)
-        send_mail(self.receivedtpl % order_num, g9_body, from_address, [copy_order_to], fail_silently=False)
-
-        return redir(reverse("your_order") + '?' + urlencode(dict(order_num=order_num, po_num=po_num)))
 
 
 class ProfileView(UpdateView):
@@ -158,11 +129,6 @@ class ProfileView(UpdateView):
 
     def get_modelform_object(self):
         return Contact.obj.get_or_create(user=self.user)[0]
-
-
-class ItemsView(ListView):
-    list_model    = Item
-    template_name = "items.haml"
 
 
 class ItemView(UpdateView):

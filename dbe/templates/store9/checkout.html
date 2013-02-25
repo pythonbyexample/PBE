@@ -29,40 +29,36 @@
     </tr>
 
     <form action="" method="POST">{% csrf_token %}
-    {% for citem in citems %}
+    {% for citem in cartitem_list %}
     <tr class="centered">
-        <td>{{ citem.item.name|default_if_none:'' }}</td>
-        <td class="left">{{ citem.item.sequence|truncate2:"10" }}</td>
-        <td>{{ citem.item.product.length }}</td>
-        <td>TBD {# citem.item.variation_of #}</td>
-        <td>{{ citem.item.product.description }}</td>
-        <td>{{ citem.item.product.contact|default_if_none:'' }}</td>
-        <td>{{ citem.item.product.owner|default_if_none:'' }}</td>
-        <td>{{ citem.item.product.royalty_rate|default_if_none:'' }}</td>
+        {% with citem.item as item %}
+            <td>{{ item.name|default_if_none:'' }}</td>
+            <td class="left">{{ item.sequence|truncate2:"10" }}</td>
+            <td>{{ item.product.length }}</td>
+            <td>TBD {# item.variation_of #}</td>
+            <td>{{ item.product.description }}</td>
+            <td>{{ item.product.contact|default_if_none:'' }}</td>
+            <td>{{ item.product.owner|default_if_none:'' }}</td>
+            <td>{{ item.product.royalty_rate|default_if_none:'' }}</td>
 
-        <td>{{ citem.item.date_added }}</td>
-        <td>{{ citem.quantity }}</td>
-        <td>{{ citem.total|currency }}</td>
+            <td>{{ item.date_added }}</td>
+            <td>{{ citem.quantity }}</td>
+            <td>{{ citem.total|currency }}</td>
+        {% endwith %}
     </tr>
     {% endfor %}
 
     <tr class="centered">
         <td colspan="10"></td>
-        <td>{{ total|currency }}</td>
+        <td>{{ view.total|currency }}</td>
         <td></td>
-    </tr>
-    <tr>
-        <td></td>
-        <td colspan="11"> PO Number (optional): <input type="text" name="po_num" />
-        </td>
-    </tr>
-    <tr>
-        <td></td>
-        <td colspan="11"> Notes/Comments<br />
-            <textarea name="notes" id="notes"></textarea>
-        </td>
     </tr>
 </table>
+
+<table>
+    {{ modelform.as_table }}
+</table>
+
 </div>
 
 <br />

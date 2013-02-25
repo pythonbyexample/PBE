@@ -1,0 +1,16 @@
+{% extends "regbase.html" %}
+{% load i18n %}
+
+{% block content %}
+<form method="post" action=".">
+  {% csrf_token %}
+  <table border="0" cellpadding="2" cellspacing="2">
+      {{ form.as_table }}
+  </table>
+
+  <div >
+  </div>
+
+  <p><input style="margin-left: 220px" type="submit" value="{% trans 'Submit' %}" /></p>
+</form>
+{% endblock %}

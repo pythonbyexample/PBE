@@ -17,20 +17,25 @@ DATABASES = {
 }
 
 FROM_ADDRESS            = 'ak@ak-desktop.org'
+DEFAULT_FROM_EMAIL      = 'ak@ak-desktop.org'
 DEBUG                   = True
 TEMPLATE_DEBUG          = True
+
 EMAIL_BACKEND           = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST              = 'localhost'
 EMAIL_PORT              = 25
 EMAIL_HOST_USER         = ''
 EMAIL_HOST_PASSWORD     = ''
+
 SAVE_ON_TOP             = True
 TIME_ZONE               = 'America/New_York'  # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 LANGUAGE_CODE           = 'en-us'         # http://www.i18nguy.com/unicode/language-identifiers.html
 SITE_ID                 = 1
 USE_I18N                = True
 USE_L10N                = True
+
 ACCOUNT_ACTIVATION_DAYS = 2
+
 SITE_ROOT               = '~/pytut/dbe/'
 MEDIA_ROOT              = '/home/ak/pytut/dbe/media/'
 MEDIA_URL               = 'http://localhost:8001/media/'
@@ -70,6 +75,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'dbe.portfolio.views.portfolio_context',
     'dbe.cal.views.cal_context',
     'dbe.sb.views.sbcontext',
+    'dbe.store9.views.cart_processor',
     # 'dbe.photo.views.photo_context',
 )
 

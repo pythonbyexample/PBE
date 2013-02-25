@@ -37,25 +37,16 @@ class ItemForm(forms.ModelForm):
         model   = Item
         exclude = ("sequence", "date_added", "item_id", "product", "user")
 
+class OrderForm(forms.ModelForm):
+    class Meta:
+        model  = Order
+        fields = ("notes", "po_num")
+
 class CartItemForm(forms.ModelForm):
     class Meta:
         model   = CartItem
         exclude = "date_added item cart_iid".split()
         widgets = dict(quantity=forms.TextInput(attrs=dict(size=2)))
-
-    def __init__(self, *args, **kwargs):
-        super(CartItemForm, self).__init__(*args, **kwargs)
-        # del self.fields["cart_item_id"]
-
-    def X__iter__(self):
-        print "self.exclude", self.exclude
-        for name in self.fields:
-            if name != "cart_iid": yield self[name]
-
-    def __iter__(self):
-        """Workaround for a bug in modelformset factory."""
-        for name in self.fields:
-            if name!="cart_iid": yield self[name]
 
 
 class AddressForm(FormsetModelForm):

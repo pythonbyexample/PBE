@@ -259,9 +259,9 @@ class Order(GenIDMixin, BaseModel):
     created   = DateTimeField(auto_now_add=True)
     user      = ForeignKey(User, blank=True, null=True)
     items     = TextField(_("Items"), max_length=20000, blank=True)
-    notes     = TextField(_("Notes"), max_length=500, blank=True)
-    shipped   = BooleanField(_("Shipped"), default=False)
     po_num    = CharField(max_length=30, blank=True, null=True)
+    shipped   = BooleanField(_("Shipped"), default=False)
+    notes     = TextField(_("Notes"), max_length=500, blank=True)
     order_num = CharField(max_length=8, primary_key=True)
 
     id_field  = "order_num"

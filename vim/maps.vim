@@ -105,6 +105,7 @@
 " \c      - toggle conceal level 1/2; hide
 " \g      - edit logs potl file, outline, open
 " \x     - :wqa, write all buffers and quit; exit, save
+" \s S   - change between 4 line if else block and 1 line; single, one, convert, expand
 
 " _V     - vertically split window
 " _M     - vim command list; cmd, open, edit, notes
@@ -188,13 +189,15 @@
 " Alt   - m n t
 " ,     - b k y  1 6 7
 " g     - a s n z  1 4 5 7  (gz something with folding?!)
-" \     - a e n o r s  \ 0 4 6 7 9
+" \     - a e n o r  \ 0 4 6 7 9
 " _     - A E K N S W, 012345679, _
 " [     - / [ ]   a b d g h i j k l m n o p q r u v w x y       A B E F G H I J K L M N Q R T U V W X Y
 " ]     - / [ ]   a b e g h i j k l m n o p q r t u v w x y   A B E F G H I J K L M N O P Q R S T U V W X Y
 "
 " Available after ,g    - a b g i j t u x z  ABCDEFGHIJKLMNOPQRTUVWXYZ [and some others...]
 
+nnoremap \s ^daWk$xkk$xjddkP<<JJJ
+nnoremap \S ^/if<cr>hs<cr><esc>/else<cr>hs<cr><esc>ea:<cr><esc>kkA:<esc>kddp>>2yaWjjP
 nnoremap <m-i> :call GrepQuickFixToggle()<CR>
 
 command! -count=1 Go :call GotoLine(<count>)
@@ -262,8 +265,8 @@ nnoremap <c-j>) /)\+$\\|]\+$\\|$/s-1<CR>:nohl<CR>
 vnoremap <c-j>) /)\+$\\|]\+$\\|$/s-1<CR><esc>:nohl<CR>gv
 
 nnoremap dD dF,
-nnoremap ,4 :b models.py<CR>
-nnoremap ,5 :b views.py<CR>
+" nnoremap ,4 :b models.py<CR>
+" nnoremap ,5 :b views.py<CR>
 nnoremap <c-j>T :call Trak("calc_current")<CR>|    " trak current total
 nnoremap ,9 V']|                               " visual select last pasted lines
 
@@ -282,7 +285,7 @@ nnoremap _d "_dd|                                         " delete line into bla
 vnoremap _d "_dd|
 nnoremap <Leader>gs :e ~/win-projects/scripts.txt<CR>|    " scripts list file
 nnoremap ,gx :syntax sync fromstart<CR>|                  " sync syntax from start
-nnoremap ,o :!python "%"<CR>|                         " run current file through python
+nnoremap ,o :!python3 "%"<CR>|                         " run current file through python
 
 nnoremap <c-j>< :FixIndentUp<CR>
 nnoremap <c-j>> :FixIndentDown<CR>
@@ -331,7 +334,7 @@ nnoremap Y y$
 nnoremap j :<c-u>call DownUp('j')<cr>
 nnoremap k :<c-u>call DownUp('k')<cr>
 
-nnoremap ,, zt5<c-y>|      " zt then scroll 5 lines up
+nnoremap ,, zt5<c-y>kj|      " zt then scroll 5 lines up; kj to update line numbers
 nnoremap _M :e ~/.vim/vimnotes.potl<CR>
 nnoremap <Leader>F :set ft=txtfmt.
 nnoremap <c-q>c :!pychecker --limit 100 %<CR>

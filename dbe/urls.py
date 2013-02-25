@@ -7,7 +7,7 @@ admin.site.root_path = "/admin/"
 
 urlpatterns = patterns('',
     (r'^admin/'          , include(admin.site.urls)),
-    (r'^accounts/'       , include('registration.urls')),
+    # (r'^accounts/'       , include('registration.urls')),
     (r'^bombquiz/'       , include('dbe.bombquiz.urls')),
     (r'^forum/'          , include('dbe.forum.urls')),
     (r'^portfolio/'      , include('dbe.portfolio.urls')),
@@ -17,6 +17,7 @@ urlpatterns = patterns('',
     (r'^issues/'         , include('dbe.issues.urls')),
     (r'^cal/'            , include('dbe.cal.urls')),
     (r'^store9/'         , include('dbe.store9.urls')),
+    (r'^creg/'           , include('dbe.cregistration.urls')),
 
     # (r''                     , 'django.views.generic.simple.redirect_to', {'url': '/questionnaires/'}),
 
@@ -45,5 +46,5 @@ if settings.DEBUG:
    )
 
 urlpatterns += patterns('',
-    (r''                 , direct_to_template, {'template': "index.html"}),
+    (r''                 , direct_to_template, {'template': "index.html"}, "index"),
 )

@@ -10,9 +10,7 @@
                 - csrf_token
                 = formset.management_form
 
-                = formset.forms.0.fields
-
-                %table.msglist
+                %table.sequences
                     %tr
                         %th{'width':'150px'} Sequence
                         %th{'width':'150px'} Quantity
@@ -20,7 +18,7 @@
                         %th{'width':'150px'} Remove
 
                     - for form in formset
-                        = form.id
+                        = form.cart_iid
 
                         - with form.instance as item
                             %tr
@@ -32,4 +30,4 @@
                 %p
                     %input#del{"type":"submit", "value":"Update", 'style':'margin-left: 550px'}
 
-      - include "paginator.html"
+            %a.checkout{'href':'{% url "checkout" %}'} Checkout

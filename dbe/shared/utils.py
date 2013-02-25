@@ -162,8 +162,8 @@ def defdict_to_odict(defdict):
     from collections import OrderedDict
     return defdict_to_dict(defdict, OrderedDict)
 
-def cjoin(lst):
-    return join(lst, ", ")
+def cjoin(lst): return join(lst, ", ")
+def njoin(lst): return join(lst, "\n")
 
 def float_or_none(val):
     return float(val) if val not in ('', None) else None
