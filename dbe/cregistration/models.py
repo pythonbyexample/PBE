@@ -42,7 +42,6 @@ class RegistrationManager(models.Manager):
 
     def create_inactive_user(self, username, password, email, send_email=True, profile_callback=None):
         """ Note: Use `profile_callback` function to create a custom user profile. """
-        print "in create_inactive_user()"
         new_user = User.objects.create_user(username, email, password)
         new_user.is_active = False
         new_user.save()
@@ -59,11 +58,6 @@ class RegistrationManager(models.Manager):
                  'expiration_days' : settings.ACCOUNT_ACTIVATION_DAYS,
                  'site'            : current_site }
             message = render_to_string('activation_email.txt', c)
-
-            print "subject", subject
-            print "message", message
-            print "settings.DEFAULT_FROM_EMAIL", settings.DEFAULT_FROM_EMAIL
-            print "new_user.email", new_user.email
             send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [new_user.email])
         return new_user
 

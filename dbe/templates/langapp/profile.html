@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% load utils %}
+{% block title %} Profile: {{ profile }} {% endblock %}
+{% block extrastyle %}
+    <style type="text/css">
+        table { background: #f7f7f7; margin-top: 8px; width: 350px; margin-left: 50px; }
+        th { border-bottom: 1px solid #eee; text-align: right; }
+        td { border-bottom: 1px solid #eee; padding: 4px; }
+        input.submit { margin-left: 280px; }
+        #form { width: 550px; }
+        #edit-view { margin-left: 450px; }
+        div#preview { width: 400px; margin-left: 100px; }
+        h4 { margin-bottom: -20px; padding-left: 140px; margin-top: 40px; border: 0;}
+    </style>
+{% endblock %}
+{% block content %}
+
+    <div><a href="{% url profiles %}">back to profiles</a></div>
+
+    {{ LANGUAGE_CODE }}
+
+    <form action="/langapp/i18n/setlang/" method="post"> {% csrf_token %}
+        <select name="language">
+            {% get_language_info_list for LANGUAGES as languages %}
+            {% for language in languages %}
+                <option value="{{ language.code }}" {% if language.code == LANGUAGE_CODE %} selected {% endif %}>{{ language.name_local }} ({{ language.code }})</option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="Go" />
+    </form>
+
+    <form action="" method="post" accept-charset="utf-8">{% csrf_token %}
+        <div id="form">
+        <table>
+            {% if edit %}
+                {{ form.as_table }}
+            {% else %}
+                {% for field in form %}
+                    {% with form.instance|getattribute:field.name as val %}
+                        {% if val %}
+                        <tr>
+                            <th>{{ field.label }}</th>
+                            <td> {{ val }} </td>
+                        </tr>
+                        {% endif %}
+                    {% endwith %}
+                {% endfor %}
+            {% endif %}
+        </table>
+        {% if edit %}
+            <p><input type="submit" value="Save" class="submit" /></p>
+        {% endif %}
+        </div>
+    </form>
+
+    <div id="edit-view">
+        {% if not edit %} <a href="?edit=1">edit</a> | {% endif %}
+        {% if profile.pk %}
+            <a href="{% url styles %}?back={% url profile profile.pk %}">change style</a>
+        {% endif %}
+    </div>
+
+    {% if profile.pk %}
+        <a href="{% url delete_profile profile.pk %}">delete</a>
+    {% endif %}
+
+    {% if preview %}
+        <h4>PREVIEW</h4>
+        <div id="preview">{{ preview|safe }}</div>
+    {% endif %}
+
+{% endblock %}

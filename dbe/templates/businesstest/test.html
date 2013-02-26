@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load extras %}
+{% block title %}Task #{{ num }}{% endblock %}
+
+{% block content %}
+
+{# H1 Header and SUBMENU  {{{ #}
+<h1>Task #{{ num }}</h1>
+{{ form.errors }}
+{#  }}} #}
+
+<div> {{ task.question }} </div>
+
+<div>
+    {% if task.attachment %}
+        <a href="/media/{{ task.attachment }}">{{ task.attachment.name }}</a>
+    {% endif %}
+</div>
+
+<form action="" method="POST">{% csrf_token %}
+    <table class="columns" cellpadding="0" cellspacing="10" border="0">
+        {% for f in form %}
+            <tr>
+                <td>
+                    <div class="label1">{{ f.label }}</div>
+                    {{ f }}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <div class="button_below"><input type="submit" value="Next >>" /></div>
+</form>
+
+{% endblock %}

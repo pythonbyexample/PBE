@@ -9,7 +9,7 @@ from dbe.cregistration.models import RegistrationProfile
 from dbe.shared.utils import ContainerFormMixin
 
 
-class RegistrationForm(ContainerFormMixin, f.Form):
+class RegistrationForm(f.Form):
     """ Form for registering a new user account.
         Validates that the requested username is not already in use.
     """
@@ -23,10 +23,11 @@ class RegistrationForm(ContainerFormMixin, f.Form):
 
     def clean_username(self):
         """ Validate that the username is alphanumeric and is not already in use. """
+        username = self.cleaned_data['username']
         try:
-            user = User.objects.get(username__iexact=self.cleaned_data['username'])
+            user = User.objects.get(username__iexact=username)
         except User.DoesNotExist:
-            return self.cleaned_data['username']
+            return username
         raise f.ValidationError(_(u'This username is already taken. Please choose another.'))
 
     def clean(self):
@@ -41,7 +42,7 @@ class RegistrationForm(ContainerFormMixin, f.Form):
     def save(self, profile_callback=None):
         """ Create the new ``User`` and ``RegistrationProfile``, and returns the ``User``. """
         data = self.cleaned_data
-        args = data.get('username'), data.get('password1'), data.get('email')
+        args = data.get("username"), data.get("password1"), data.get("email")
         return RegistrationProfile.obj.create_inactive_user(*args, profile_callback=profile_callback)
 
 
@@ -56,7 +57,7 @@ class RegistrationFormUniqueEmail(RegistrationForm):
     def clean_email(self):
         email = self.cleaned_data.get('email')
         if User.objects.filter(email__iexact=email):
-            raise f.ValidationError(_(u'This email address is already in use. Please supply a different email address.'))
+            raise f.ValidationError(_(u"This email address is already in use. Please supply a different email address."))
         return email
 
 
@@ -66,7 +67,8 @@ class RegistrationFormNoFreeEmail(RegistrationForm):
                    'msn.com', 'mail.ru', 'mailinator.com', 'live.com']
 
     def clean_email(self):
-        email = self.cleaned_data.get('email')
+        errmsg = u'Registration using free email addresses is prohibited. Please supply a different email address.'
+        email  = self.cleaned_data.get("email")
         if email.split('@')[1] in self.bad_domains:
-            raise f.ValidationError(_(u'Registration using free email addresses is prohibited. Please supply a different email address.'))
+            raise f.ValidationError(_(errmsg))
         return email

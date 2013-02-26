@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load extras %}
+{% block title %}{% if edit %}Edit {% endif %}{{ itemtype }}: "{{ item }}" {% endblock %}
+
+{% block content %}
+
+{# H1 Header and SUBMENU  {{{ #}
+<h1>{% if edit %}Edit {% endif %}{{ itemtype }}: "{{ item }}"</h1>
+
+<!-- edit form and button -->
+{% if edit %}
+    <form action="" method="post" id="edit_item_form">{% csrf_token %}
+    <div class="button_above"><input type="submit" value="Save Changes" /></div>
+    {{ form.errors }}
+{% endif %}
+{#  }}} #}
+
+    <table class="columns" cellpadding="0" cellspacing="10" border="0">
+        <tr> <th colspan="2"><h2>{% if edit %}Edit {% endif %}Details</h2></th> </tr>
+        <tr>
+            <td>
+            {% for f in form %}
+                <!-- EDIT -->
+                {% if edit %}
+                    <tr> <th class="row">{{ f.label }}:</th> <td>{{ f }}</td> </tr>
+
+                <!-- VIEW -->
+                {% else %}
+                    <tr>
+                        <th class="row">{{ f.label }}:</th>
+                        <td> {{ form.instance|getattribute:f.name as inst }} </td>
+                    </tr>
+                {% endif %}
+
+            {% endfor %}
+            </td>
+        </tr>
+    </table>
+
+    <!-- save button or edit link  -->
+    {% if edit %}
+        <div class="button_below"><input type="submit" value="Save Changes" /></div>
+        </form>
+    {% else %}
+        <p><a href="?edit=1">Edit this {{ itemtype }}</a></p>
+    {% endif %}
+
+    <!-- Admin link -->
+    <p align="right"><a href="/admin/stockslog/{{ itemtype }}/{{ item.pk }}/">Admin page for this {{ itemtype }}</a></p>
+
+{% endblock %}

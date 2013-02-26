@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load extras %}
+{% block title %}Messages{{ num }}{% endblock %}
+{% block extrastyle %}
+    <style type="text/css">
+        td { vertical-align: top; }
+        #id_body { width: 300px; height: 75px; }
+
+        #msg-form { border: 4px solid #eee; padding: 4px; margin-top: 5px; background: #f7f7f7; }
+        #msg-lst { width: 500px; margin-top: 20px; }
+        #msg-lst td { padding-top: 5px; padding-bottom: 12px; }
+        #msg-lst td.last, th.last { text-align: right; }
+        #msg-lst td.last { font-size: x-small; font-style: italic; }
+    </style>
+{% endblock %}
+{% block content %}
+
+<h3>Send message</h3>
+{{ form.non_field_errors }}
+
+<br /><br />
+
+    {# FORM #}
+
+    <form action="" method="POST">{% csrf_token %}
+        <table id="msg-form" cellpadding="0" cellspacing="10" border="0">
+            <tr>
+                {% for f in form %}
+                    <td>
+                        <div class="label1">{{ f.label }}</div>
+                    </td>
+                {% endfor %}
+                <td></td>
+            </tr>
+            <tr>
+                {% for f in form %}
+                    <td> {{ f.errors }}{{ f }} </td>
+                {% endfor %}
+                <td><div class="button_below"><input type="submit" value="Send" /></div></td>
+            </tr>
+        </table>
+    </form>
+
+    {# Message List #}
+
+    <table id="msg-lst" border="0" cellpadding="2" cellspacing="2">
+        <tr>
+            <th>From</th>
+            <th>To</th>
+            <th>Message</th>
+            <th class="last">Date/Time</th>
+        </tr>
+
+        {% for m in page_obj.object_list %}
+            <tr>
+                <td><b>{{ m.sender }}</b></td>
+                <td>
+                    {% if m.global_msg %} [global] {% endif %}
+                    {% if m.to_factory %} [factory] {% endif %}
+                    {% if m.recipient %} {{ m.recipient }} {% endif %}
+                </td>
+                <td>{{ m.body|safe }}</td>
+                <td class="last">{{ m.created }}</td>
+            </tr>
+        {% endfor %}
+
+    </table>
+
+    {% include "paginator.html" %}
+
+{% endblock %}

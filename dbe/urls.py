@@ -6,8 +6,8 @@ admin.autodiscover()
 admin.site.root_path = "/admin/"
 
 urlpatterns = patterns('',
-    (r'^admin/'          , include(admin.site.urls)),
     # (r'^accounts/'       , include('registration.urls')),
+    (r'^admin/'          , include(admin.site.urls)),
     (r'^bombquiz/'       , include('dbe.bombquiz.urls')),
     (r'^forum/'          , include('dbe.forum.urls')),
     (r'^portfolio/'      , include('dbe.portfolio.urls')),

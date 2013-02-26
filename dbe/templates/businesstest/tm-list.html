@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}x{% endblock %}
+{% block content %}
+
+<form action="" method="GET"> {{ form.as_table }} <input type="submit" value="sort" /> </form>
+    {% if not items.object_list %}
+        <i>No records in your database yet</i>
+    {% else %}
+        <table id="results">
+            <tr>
+                <th>x</th>
+            </tr>
+            {% for item in items.object_list %}
+                <tr>
+                    <td>{{ item.sequence }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        {% include "paginator.html" %}
+    {% endif %}
+{% endblock %}
+

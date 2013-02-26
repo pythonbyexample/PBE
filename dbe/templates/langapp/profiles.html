@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block extrastyle %}
+    <style type="text/css">
+        table { background: #f7f7f7; margin-top: 8px; width: 550px; }
+        #form { width: 550px; }
+        th { border-bottom: 1px solid #eee; text-align: left; }
+        td { border-bottom: 1px solid #eee; padding: 4px; }
+        input.submit { float: right; }
+        .smaller { font-size: 0.7em; display: inline; }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+{% if pmax %}
+    {% trans "You have reached the maximum allowed number of Language Profiles" %}  ({{ max_profiles }})
+{% else %} <a href="{% url new_profile %}?edit=1">+ add profile</a> {% endif %}
+
+<table border="0" cellpadding="2" cellspacing="2">
+    <tr>
+        <th>{% trans "profile" %}</th>
+        <th>{% trans "profile language" %}</th>
+        <th>{% trans "known language(s)" %}</th>
+        <th></th>
+        <th></th>
+    </tr>
+    {% for profile in profiles %}
+    <tr>
+        <td>
+            <a href="{% url profile profile.pk %}">{{ profile }}</a>
+            <p class="smaller"><a href="{% url profile profile.pk %}?edit=1">{% trans "edit" %}</a></p>
+        </td>
+        <td>{{ profile.flag.img|safe }}</td>
+        <td>{{ profile.languages }}</td>
+        <td>
+            {% if not pmax %}
+                <a href="{% url duplicate_profile profile.pk %}">{% trans "duplicate" %}</a>
+            {% endif %}
+        </td>
+        <td><a href="{% url delete_profile profile.pk %}">{% trans "delete" %}</a></td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

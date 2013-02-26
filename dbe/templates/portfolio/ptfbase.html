@@ -15,8 +15,9 @@
 
                 <!-- MENU -->
                 <h3><a href="{% url 'portfolio' %}">PortfolioApp</a></h3>
+                <a href="/">home</a>
                 {% if user.is_staff %}
-                    <a href="{% url 'admin:index' %}">Admin</a>
+                    <a href="{% url 'admin:app_list' 'portfolio' %}">Admin</a>
                     <a href="{% url 'admin:portfolio_image_add' %}">Add Image</a>
                 {% endif %}
 

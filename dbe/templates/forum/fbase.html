@@ -14,12 +14,16 @@
                 <h3><a id="homelink" href="{% url 'forum_main' %}">ForumApp</a></h3>
 
                 <!-- MENU -->
-                {% if user.is_staff %} <a href="{% url 'admin:index' %}">Admin</a> {% endif %}
+                <a href="/">home</a>
+                {% if user.is_staff %}
+                    <a href="{% url 'admin:app_list' "forum" %}">Admin</a>
+                {% endif %}
                 {% if user.is_authenticated %}
                     <a href="{% url 'profile' user.profile.pk %}">Edit profile</a>
-                    <a href="/accounts/logout/?next=/forum/">logout</a>
+                    <a href="{% url 'auth_logout' %}?next=/forum/">logout</a>
                 {% else %}
-                    <a href="/accounts/login/?next=/forum/">login</a> <a href="/accounts/register/">register</a>
+                    <a href="{% url 'auth_login' %}?next=/forum/">login</a>
+                    <a href="{% url 'reg_register' %}">register</a>
                 {% endif %}
 
             {% endblock %}

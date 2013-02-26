@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% include "elements/main_navigation.html" %}
+
+
+<div class="row first-row">
+    <div class="span6">
+        <h1>{{ student.first_name }} {{ student.last_name }}</h1>
+
+        <h3>Total Mastery: {{ student.get_total_mastery|floatformat:"1" }}%</h3>
+        <h3>Total Points: {{ student.get_total_points }}</h3>
+        <h3>Games Played: {{ student.game_set.count }}</h3>
+        
+        <h3>Badges Earned: {{ student.get_badge_total }}</h3>
+        <div id="badge_wrapper" >
+            {% for badge in student.get_badges %}
+                <span rel="tooltip" title="{{ badge.tooltip }}" class="badge badge-warning">{{ badge.name }}</span>
+            {% endfor %}
+        </div>
+
+
+        <h3>Careers Unlocked: {{ student.get_career_total }}</h3>
+        <div>
+            {% for career in student.get_careers %}
+                <span class="label label-success">{{ career.name }}</span>
+            {% endfor %}
+        </div>
+
+        
+    </div>
+
+    <div class="span6">
+        <h3>Total Points Earned</h3>
+        <div class="chart_wrapper clear-both" id="points_chart_wrapper" >
+            <div id="points_chart"></div>
+        </div>
+    </div>
+</div>
+
+<div class="row clear-both">
+    <br/><br/>
+
+    <div class="span4">
+        <h3>Thematic Mastery<select id="theme_select" class="span2 float-right">
+        {% with 'theme' as filter %}
+            {% include "elements/filter_simple.html" %}
+        {% endwith %}
+        </select></h3>
+        <div class="chart_wrapper" id="theme_chart_wrapper" >
+            <img src="/static/img/loader.gif" class="ajax-loader" />
+            <div id="theme_chart"></div>
+        </div>
+    </div>
+
+    <div class="span4">
+        <h3>Regional Mastery<select id="region_select" class="span2 float-right">
+        {% with 'region' as filter %}
+            {% include "elements/filter_simple.html" %}
+        {% endwith %}
+        </select></h3>
+        <div class="chart_wrapper" id="region_chart_wrapper" >
+            <img src="/static/img/loader.gif" class="ajax-loader" />
+            <div id="region_chart"></div>
+        </div>
+    </div>
+
+    <div class="span4">
+        <h3>Periodic Mastery<select id="period_select" class="span2 float-right">
+        {% with 'period' as filter %}
+            {% include "elements/filter_simple.html" %}
+        {% endwith %}
+        </select></h3>
+        <div class="chart_wrapper" id="period_chart_wrapper" >
+            <img src="/static/img/loader.gif" class="ajax-loader" />
+            <div id="period_chart"></div>
+        </div>
+    </div>
+
+</div>
+
+
+<script type="text/javascript">
+    student_id = "{{ student.id }}";
+
+    points_data = [
+        {% for tup in student.get_points_data %}
+            [ Date.UTC({{ tup.0|date:"Y, m, d"}}), {{ tup.1 }}],
+        {% endfor %}
+    ];
+</script>
+
+
+{% endblock %}

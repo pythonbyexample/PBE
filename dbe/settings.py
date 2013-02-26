@@ -87,7 +87,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.admin',
     'south',
-    'registration',
+    # 'registration',
 ]
 
 try:

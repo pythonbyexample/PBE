@@ -16,6 +16,7 @@
         <div id="menu">
             {% block nav-global %}
                 <h3>Questionnaires</h3>
+                <a href="/">home</a>
                 <a href="{% url 'questionnaires' %}">Questionnaires</a>
                 <a href="{% url 'admin:questionnaire_questionnaire_changelist' %}">Questionnaire Admin</a>
             {% endblock %}

@@ -20,6 +20,7 @@
         <div id="menu">
             {% block nav-global %}
                 <h3>IssuesApp</h3>
+                <a href="/">home</a>
                 <a href="{% url 'admin:issues_issue_changelist' %}">Issues</a>
                 <a href="{% url 'add_issues' %}">Add New Issues</a>
             {% endblock %}

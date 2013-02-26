@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% include "elements/main_navigation.html" %}
+
+{% if user.classroom_set.all %}
+
+<div class="row">
+    <div class="span12">
+        <h2>Class Overview</h2>
+
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>class</th>
+                    <th>score</th>
+                    <th>best theme</th>
+                    <th>worst theme</th>
+                    <th>best period</th>
+                    <th>worst period</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for c in user.classroom_set.all %}
+                <tr>
+                    <td>{{ c.name }}</td>
+                    <td>{{ c.get_total_score }} pts</td>
+
+                    <td>{{ c.get_best_theme|lower|capfirst }}</td>
+                    <td>{{ c.get_worst_theme|lower|capfirst }}</td>
+                    <td>{{ c.get_best_period|lower|capfirst }}</td>
+                    <td>{{ c.get_worst_period|lower|capfirst }}</td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+<br/>
+
+<div class="row student_tables_wrapper">
+
+    <div id="leaderboard" class="span6">
+
+        <h2>Student Leaderboard
+        <select id="leaderboard_select" class="span2 pull-right">
+        {% include "elements/filter_select.html" %}
+        </select></h2>
+
+        <img src="/static/img/loader.gif" class="ajax-loader" />
+
+        <div class="table_wrapper"></div>
+
+    </div>
+
+    <div id="struggleboard" class="span6">
+        <h2>Struggling Students
+        <select id="struggleboard_select" class="span2 pull-right">
+            {% include "elements/filter_select.html" %}
+        </select></h2>
+
+        <img src="/static/img/loader.gif" class="ajax-loader" />
+
+        <div class="table_wrapper"></div>
+
+    </div>
+
+</div>
+
+<br/>
+
+<div class="row">
+
+    <div class="span6">
+        <h2>Total Badges Earned</h2>
+        <div class="table_wrapper" id="badges_chart"></div>
+    </div>
+
+    <div class="span6" id="pie_chart_wrapper">
+        <h2>Average Mastery
+        <select id="pie_select" class="span2 float-right">
+            {% with 'pie' as chart %}
+                {% include "elements/filter_select.html" %}
+            {% endwith %}
+        </select></h2>
+
+        <img src="/static/img/loader.gif" class="ajax-loader" />
+
+        <div class="table_wrapper" id="pie_chart"></div>
+    </div>
+
+</div>
+
+<script type="text/javascript">
+
+    teacher_id = "{{ teacher.id }}";
+
+    badges_data = [
+        {% for tup in badges_data %}
+            [ Date.UTC({{ tup.0|date:"Y, m, d"}}), {{ tup.1 }}],
+        {% endfor %}
+    ];
+</script>
+
+{% else %}
+<div class="row">
+    <div class="span12">
+        <div style="text-align: center;" class="centered-img">
+            <br/><h1>Welcome to Fate of Civilizations</h1><br/><h3>Add a class to get started</h3>
+        </div>
+    </div>
+</div>
+
+
+{% endif %}
+
+{% endblock %}

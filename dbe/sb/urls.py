@@ -5,7 +5,7 @@ from dbe.sb.views import *
 urlpatterns = patterns("dbe.sb.views",
    (r"^search/$"                      , CommentSearch.as_view(), {}, "csearch"),
    (r"^post/(?P<dpk>\d+)/$"           , PostView.as_view(), {}, "sbpost"),
-   (r"^archive_month/(\d+)/(\d+)/$"   , ArchiveMonth.as_view(), {}, "archive_month"),
+   (r"^archive_month/(\d+)/(\d+)/$"   , ArchiveMonth.as_view(), {}, "sb_archive_month"),
 
    (r"^send/(?P<dpk>\d+)/$"           , SendView.as_view(), {}, "send"),
    (r"^msg/(?P<dpk>\d+)/$"            , MsgView.as_view(), {}, "msg"),

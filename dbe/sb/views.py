@@ -2,6 +2,7 @@
 import time
 from calendar import month_name
 from django.utils.html import escape
+from django.contrib.auth.models import User
 
 from dbe.sb.models import *
 from dbe.sb.forms import *
@@ -50,7 +51,8 @@ class ChatView(ListView, CreateView, DetailView):
 ####  inbox messages (Msg model)
 
 def new_msgs(user):
-    return Msg.obj.filter(recipient=user, inbox=True, is_read=False)
+    if user.is_authenticated():
+        return Msg.obj.filter(recipient=user, inbox=True, is_read=False)
 
 class SendView(CreateView, DetailView):
     detail_model    = User

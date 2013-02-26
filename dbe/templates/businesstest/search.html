@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load extras %}
+{% block title %}Search {{ itemtype|capfirst }}s{% endblock %}
+
+{% block extrastyle %}
+    <style type="text/css"> </style>
+{% endblock %}
+
+{% block content %}
+
+    <h1>Search {{ itemtype|capfirst }}s</h1>
+
+    <!-- FORM (we can't use action="" because that retains page GET args)  -->
+    <form action="{# url stockslog.views.search itemtype #}" method="post" id="import_form">{% csrf_token %}
+        <table id="searchform" cellpadding="0" cellspacing="0">
+            <tr>
+                {% for field, ord in flds %}
+                    <th> {{ field.label|safe }} </th>
+                {% endfor %}
+            </tr>
+            <tr>
+                {% for field in flds %}
+                    <td>{{ field }} {{ field.errors }}</td>
+                {% endfor %}
+            </tr>
+        </table>
+        <p><input type="submit" value="Search"></p>
+    </form>
+
+    {% if not items.object_list %}
+        <i>No matches found.</i>
+
+    {% else %}
+        <!-- RESULTS -->
+        {% with items.paginator.count as n %}
+            <p><i>Found {{ n }} match{{ n|pluralize:"es" }}</i></p>
+        {% endwith %}
+
+        <table id="results" cellpadding="0" cellspacing="0">
+        <!-- headers  -->
+            <tr>
+                <th>detail link</th>
+            </tr>
+
+        <!-- items -->
+        {% for item in items.object_list %}
+            <tr>
+                <td><a href="{% url stockslog.views.detail itemtype item.pk %}">{{ itemtype }} {{ item.pk }}</a></td>
+
+                <!-- Admin link -->
+                <td><a href="/admin/stockslog/{{ itemtype }}/{{ item.pk }}/">admin</a></td>
+            </tr>
+        {% endfor %}
+        </table>
+
+        {% include "paginator.html" %}
+    {% endif %}
+
+{% endblock %}
+

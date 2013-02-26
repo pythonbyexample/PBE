@@ -19,10 +19,9 @@ urlpatterns = patterns("dbe.store9.views",
 )
 
 # the default django-registration url spans 2 lines in email, which is not reliable so add a custom url
-urlpatterns += patterns('',
-   url(r"^pwd/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$",
-       auth_views.password_reset_confirm,
-       name="auth_password_reset_confirm"),
-)
+# urlpatterns += patterns('',
+   # url(r"^pwd/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$",
+       # auth_views.password_reset_confirm, name="auth_password_reset_confirm"),
+# )
 
 # urlpatterns += patterns('', (r"^account/", include("registration.urls")),)

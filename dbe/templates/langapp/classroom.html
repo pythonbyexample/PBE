@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% include "elements/main_navigation.html" %}
+
+<a href="{% url test_setup pk=tsetup %}">Test Setup</a>
+
+| student sign-up URL: <code>{% url registration_register classroom.pk %}</code>
+
+<div id="alertWrapper">
+{% if form.errors %}
+    <div class="alert alert-error">
+        <strong>Student not Saved:</strong> Please enter a first and last name.
+    </div>
+{% endif %}
+
+{% if student %}
+    <div class="alert alert-success">
+        <strong>Success:</strong> New student record saved.
+    </div>
+{% endif %}
+
+{% if game %}
+    <div class="alert alert-success">
+        <strong>Success:</strong> New student game scores saved.
+    </div>
+{% endif %}
+</div>
+
+<div class="row">
+    <div class="span6">
+        <h1>{{ classroom.name }}</h1>
+        <h3>Total Points: {{ classroom.get_total_score }}</h3>
+        <h3>Games Played: {{ classroom.calc_games_played }}</h3>
+        <h3>Badges Earned: {{ classroom.get_badge_total }}</h3>
+        <br/>
+
+        <div class="accordion" id="accordion2">
+            <div class="accordion-group">
+                <div class="accordion-heading">
+                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">
+                        <h3>Thematic Mastery<select id="theme_select" class="span2 float-right">
+                        {% with 'theme' as filter %}
+                            {% include "elements/filter_simple.html" %}
+                        {% endwith %}
+                        </select></h3>
+                    </a>
+                </div>
+                <div id="collapseOne" class="accordion-body collapse in">
+                    <div class="accordion-inner">
+                        <div class="chart_wrapper" id="theme_chart_wrapper" >
+                            <img src="/static/img/loader.gif" class="ajax-loader" />
+                            <div id="theme_chart"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-group">
+                <div class="accordion-heading">
+                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">
+                        <h3>Regional Mastery<select id="region_select" class="span2 float-right">
+                        {% with 'region' as filter %}
+                            {% include "elements/filter_simple.html" %}
+                        {% endwith %}
+                        </select></h3>
+                    </a>
+                </div>
+                <div id="collapseTwo" class="accordion-body collapse">
+                    <div class="accordion-inner">
+                        <div class="chart_wrapper" id="region_chart_wrapper" >
+                            <img src="/static/img/loader.gif" class="ajax-loader" />
+                            <div id="region_chart"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="accordion-group">
+                <div class="accordion-heading">
+                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseThree">
+
+                        <h3>Periodic Mastery<select id="period_select" class="span2 float-right">
+                        {% with 'period' as filter %}
+                            {% include "elements/filter_simple.html" %}
+                        {% endwith %}
+                        </select></h3>
+                    </a>
+                </div>
+                <div id="collapseThree" class="accordion-body collapse">
+                    <div class="accordion-inner">
+                        <div class="chart_wrapper" id="period_chart_wrapper" >
+                            <img src="/static/img/loader.gif" class="ajax-loader" />
+                            <div id="period_chart"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-group">
+                <div class="accordion-heading">
+                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseFour">
+                        <h3>% Student Mastery
+                        <select id="pie_select" class="span2 float-right">
+                            {% with 'pie' as chart %}
+                                {% include "elements/filter_select.html" %}
+                            {% endwith %}
+                        </select></h3>
+                    </a>
+                </div>
+
+                <div id="collapseFour" class="accordion-body collapse">
+                    <div class="accordion-inner">
+                        <div class="chart_wrapper" id="pie_chart_wrapper">
+                            <img src="/static/img/loader.gif" class="ajax-loader" />
+                            <div id="pie_chart"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="span6">
+        <h2>Students
+            <a class="input_scores float-right" >
+                <i class="icon-list-alt"></i> <strong>Input Scores</strong>
+            </a>
+        </h2>
+
+        <div id="student_data" >
+            <table id="student_data_read" class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th style="min-width:70px;">first name</th>
+                        <th style="min-width:70px;">last name</th>
+                        <th>total points</th>
+                        <th>total badges</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for s in classroom.student_set.all %}
+                    <tr>
+                        <td><a href="/student/{{ s.id }}/" >{{ s.first_name }}</a></td>
+                        <td><a href="/student/{{ s.id }}/" >{{ s.last_name }}</a></td>
+                        <td>{{ s.get_total_points }}</td>
+                        <td>{{ s.get_badge_total }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div id="student_data_input" class="hidden">
+            <table id="student_data_write" class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th style="min-width:70px;">first name</th>
+                        <th style="min-width:70px;">last name</th>
+                        <th>won game?<i class="card_ex"><br/>toggle w/spacebar</i></th>
+                        <th>cards won <i class="card_ex">(ex: w12 s2 N12)<br/>press tab to move to next field</i></th>
+                        <th><i class="card_ex">press enter to save</i></th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% csrf_token %}
+                {% for s in classroom.student_set.all %}
+                    <tr>
+                        <form id="student_score_form_{{ s.id }}" class="student_score_form" method="post" action="">
+                            <td>{{ s.first_name }}</td>
+                            <td>{{ s.last_name }}</td>
+                            <td><input class="won_box" name="won_{{ s.id }}" type="checkbox" >
+                                <input name="s_id" type="hidden" value="{{ s.id }}" ></td>
+                            <td><input id="cards_{{ s.id }}" name="cards_{{ s.id }}" class="span3" type="text" ></td>
+                            <td><button id="student_score_button_{{ s.id }}" data-ref="{{ s.id }}" data-loading-text="saving..." class="btn btn-primary pull-right save_score_btn">Save</button></td>
+                        </form>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <a class="add_a_student btn" data-toggle="collapse" data-target="#add_student"><i class="icon-user"></i> <strong>Add a Student</strong></a>
+
+        <form id="add_student" class="form-vertical collapse" method="post" action="">
+            {% csrf_token %}
+            {{ add_student_form.as_p }}
+            <button type="submit" class="btn btn-primary">Save Student</button>
+        </form>
+
+
+        <h3>Newest Career Unlocks</h3>
+        <table class="table table-bordered table-striped">
+        {% for sc in classroom.get_recent_careers %}
+        <tr>
+            <td>{{ sc.career.name }}</td>
+            <td>{{ sc.student.first_name }} {{ sc.student.last_name }}</a></td>
+            <td>{{ sc.date|date:"M, d" }}</td>
+        </tr>
+        {% endfor %}
+        </table>
+
+    </div>
+
+</div>
+
+<script type="text/javascript">
+    classroom_id = "{{ classroom.id }}";
+</script>
+
+
+{% endblock %}

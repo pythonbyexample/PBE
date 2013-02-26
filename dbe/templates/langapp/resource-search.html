@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% include "elements/main_navigation.html" %}
+
+<style type="text/css" media="screen">
+    table td { padding: 4px; margin: 4px; width: 100px;
+                border-bottom: 1px solid #ccc;
+                border-right: 1px solid #ccc;
+    }
+    table th { border-bottom: 5px solid #ddd; }
+    table a { text-decoration: underline; }
+</style>
+
+<form action="" method="get" accept-charset="utf-8">{% csrf_token %}
+    {{ form.q.help_text }}
+    {{ form.q }}
+    <input type="submit" value="Search" />
+</form>
+
+<table border="0" cellpadding="2" cellspacing="8">
+    <tr>
+        <th><a href="?sort_by=period{{ extra_vars }}">Period</a></th>
+        <th><a href="?sort_by=region{{ extra_vars }}">Region</a></th>
+        <th><a href="?sort_by=theme{{ extra_vars }}">Theme</a></th>
+        <th>Description</th>
+        <th>File</th>
+    </tr>
+    {% for resource in resources %}
+        <tr>
+            <td>{{ resource.period|default_if_none:'' }}</td>
+            <td>{{ resource.region|default_if_none:'' }}</td>
+            <td>{{ resource.theme|default_if_none:'' }}</td>
+            <td>{{ resource.description }}</td>
+            <td><a href="{{ MEDIA_URL }}{{ resource.file }}">{{ resource.file.name }}</a></td>
+        </tr>
+    {% endfor %}
+</table>
+{% endblock %}

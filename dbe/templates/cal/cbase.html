@@ -18,8 +18,11 @@
 
                 <!-- MENU -->
                 <h3><a href="{% url 'main' %}">CalApp</a></h3>
+                <a href="/">home</a>
 
-                {% if user.is_staff %} <a href="/admin/cal/">Admin</a> {% endif %}
+                {% if user.is_staff %}
+                    <a href="{% url 'admin:app_list' "cal" %}">Admin</a>
+                {% endif %}
 
                 {% if user.is_authenticated %}
                     <a href="{% url 'settings' user.pk %}">Settings</a> {% endif %}

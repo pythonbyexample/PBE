@@ -22,8 +22,9 @@
             {% block nav-global %}
 
                 <h3>MyBlog</h3>
+                <a href="/">home</a>
                 {% if user.is_staff %}
-                    <a href="{% url 'admin:index' %}">Admin</a>
+                    <a href="{% url 'admin:app_list' "blog" %}">Admin</a>
                     <a href="{% url 'admin:blog_post_add' %}">Add post</a>
                 {% endif %}
 

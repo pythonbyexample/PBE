@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load utils %}
+{% block title %} Change Style {% endblock %}
+{% block extrastyle %}
+    <style type="text/css">
+        table { background: #f7f7f7; margin-top: 8px; width: 350px; margin-left: 50px; }
+        th { border-bottom: 1px solid #eee; text-align: right; }
+        td { border-bottom: 1px solid #eee; padding: 4px; }
+        input.submit { margin-left: 180px; }
+        #form { width: 550px; }
+    </style>
+{% endblock %}
+{% block content %}
+
+    <div><a href="{{ back }}">back to profile</a></div>
+
+    <form action="" method="post" accept-charset="utf-8">{% csrf_token %}
+        <div id="form">
+        <table>
+            {{ form.style }}
+        </table>
+        <p><input type="submit" value="Save" class="submit" /></p>
+        </div>
+    </form>
+
+{% endblock %}

@@ -17,7 +17,9 @@ from dbe.mcbv.list import ListView
 
 
 def cart_processor(request):
-    return {"num_citems": CartItem.obj.filter(item__user=request.user).count()}
+    if request.user.is_authenticated():
+        return {"num_citems": CartItem.obj.filter(item__user=request.user).count()}
+    return {}
 
 
 def add_item(user, item_id):

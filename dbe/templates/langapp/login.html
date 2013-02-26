@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    {% if form.errors %}
+        <div class="alert alert-error">
+            <strong>Uh oh!</strong> That's not a valid username or password.
+        </div>
+    {% endif %}
+    
+    <div class="row">
+        <div class="span12">
+            <div id="login-border" class="centered-img">
+            <div id="login-wrapper" >
+                <form class="form-vertical" action="" method="post">
+                    {% csrf_token %}
+                    <input type="text" name="username" placeholder="user name" value="" id="username">
+                    <input type="password" name="password" placeholder="password" value="" id="password">
+                    <br/>
+                    <button type="submit" class="btn btn-primary pull-right" value="login">Sign In</button>
+
+                    <input type="hidden" name="next" value="{{ next|escape|default:'/' }}" />
+                </form>
+            </div>
+                </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="span12">
+            <img id="drawerHandle" class="centered-img" src="/static/img/Handle.png" width="280px" />
+            <br/>
+            <img id="keyhole" class="centered-img" src="/static/img/KeyHole.png" width="50px" />
+            <br/>
+            <img id="topSecret" class="float-right" src="/static/img/TopSecret.png" width="400px" />
+
+        </div>
+    </div>
+  
+
+{% endblock %}

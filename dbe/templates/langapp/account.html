@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% include "elements/main_navigation.html" %}
+
+{% if password == 'success' %}
+    <div class="alert alert-success">
+        <strong>Success:</strong> Password changed.
+    </div>
+{% endif %}
+
+{% if password == 'different' %}
+    <div class="alert alert-error">
+        <strong>Uh Oh:</strong> Your passwords didn't match.
+    </div>
+{% endif %}
+
+{% if password == 'fail' %}
+    <div class="alert alert-error">
+        <strong>Uh Oh:</strong> Password didn't save. Try again. Maybe you used a disallowed character.
+    </div>
+{% endif %}
+
+
+<div class="row">
+    <div class="span12">
+        <h1>Manage Account</h1>
+        <br/>
+    </div>
+</div>
+
+<div class="row">
+    <div class="span6">
+        {% for classroom in classrooms %}
+            <h2><span id="classname_{{ classroom.id }}">{{ classroom.name }}</span>&nbsp;
+                <button id="classroom_edit_{{ classroom.id }}" class="classroom_edit btn btn-small">edit</button>
+                &nbsp;<button id="classroom_delete_{{ classroom.id }}" class="classroom_delete btn btn-small btn-danger">delete</button>
+            </h2>
+            <table class="table account-table">
+            {% for s in classroom.get_students %}
+                <tr id="row_{{ s.id }}">
+                    <td>
+                        <span id="name_{{ s.id }}">{{ s.first_name }} {{ s.last_name }}</span>
+                        <span id="student_name_form_{{s.id}}" class="hidden">
+                            <input type="text" id="first_{{s.id}}" value="{{ s.first_name }}"/>
+                            <input type="text" id="last_{{s.id}}" value="{{ s.last_name }}"/>
+                        </span>
+                    </td>
+                    <td>
+                        <button id="student_delete_{{ s.id }}" class="btn btn-small btn-danger student_delete float-right">delete</button>
+                        <button id="student_edit_{{s.id}}" class="student_edit btn btn-small float-right">edit</button>
+                        <button id="student_save_{{s.id}}" class="student_save btn btn-small btn-primary hidden float-right">save</button>
+                    </td>
+                </tr>
+            {% endfor %}
+            </table>
+        {% endfor %}
+
+    </div>
+
+    <div class="span3 offset1">
+        
+        <a class="change_password btn" data-toggle="collapse" data-target="#password_form"><strong>Change your password</strong></a>
+
+        <form id="password_form" class="form-vertical collapse" method="post" action="">
+            {% csrf_token %}
+            <br/>
+            <label for="pass_1" >password:</label>
+            <input type="password" name="pass_1" />
+
+            <label for="pass_1" >re-type password:</label>
+            <input type="password" name="pass_2" />
+            <button type="submit" class="btn btn-primary">Save Password</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

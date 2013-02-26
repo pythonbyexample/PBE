@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% include "elements/main_navigation.html" %}
+
+<form action="" method="post" accept-charset="utf-8">{% csrf_token %}
+    <table border="0" cellpadding="2" cellspacing="2">
+        {{ form.as_table }}
+    </table>
+<p><input type="submit" value="Submit" /></p>
+</form>
+{% endblock %}

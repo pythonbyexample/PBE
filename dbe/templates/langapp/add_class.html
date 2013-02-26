@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% include "elements/main_navigation.html" %}
+
+{% if success %}
+    <div class="alert alert-success">
+        <strong>Success:</strong> New class created.
+    </div>
+{% endif %}
+
+
+<div class="row">
+    <div class="span12">
+        <h2>{{ title }}</h2>
+
+        <form class="form-inline" method="post" action="">
+            {% csrf_token %}
+            <p><label class="control-label" for="class_name"><strong>Class Name</strong></label><br/>
+                <input id="class_name" type="text" name="class_name" maxlength="100" /> &nbsp; <i>don't leave this empty</i></p>
+
+            <p><strong>Students</strong><br/></p>
+
+            {% for form in student_forms %}
+                {% for field in form %}
+                    {{ field.label_tag }}: &nbsp; {{ field }} &nbsp;
+                {% endfor %}<br/>
+            {% endfor %}
+            <br/>
+            <button type="submit" class="btn btn-primary pull-left">Save Class</button>
+             &nbsp; <i>you can add more students later</i>
+        </form>
+
+        
+    </div>
+</div>
+
+{% endblock %}
