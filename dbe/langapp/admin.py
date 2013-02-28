@@ -1,4 +1,4 @@
-from langapp.models import *
+from dbe.langapp.models import *
 from django.contrib import admin
 from django.conf import settings
 

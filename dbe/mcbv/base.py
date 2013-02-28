@@ -25,7 +25,9 @@ class ContextMixin(object):
     def get_context_data(self, **kwargs):
         if 'view' not in kwargs:
             kwargs['view'] = self
-        kwargs.update(self.add_context())
+        context = self.add_context()
+        if context:
+            kwargs.update(context)
         return kwargs
 
 
@@ -158,7 +160,7 @@ class TemplateResponseMixin(object):
             return [self.template_name]
 
     def get(self, request, *args, **kwargs):
-        from detail import DetailView
+        from detail import BaseDetailView
         from edit import FormView, FormSetView, ModelFormSetView, CreateView, UpdateView
         from list import ListView
 
@@ -166,7 +168,7 @@ class TemplateResponseMixin(object):
         context = dict()
         update  = context.update
 
-        if isinstance(self, DetailView)                      : update( self.detail_get(*args, **kwargs) )
+        if isinstance(self, BaseDetailView)                  : update( self.detail_get(*args, **kwargs) )
         if isinstance(self, FormView)                        : update( self.form_get(*args, **kwargs) )
         if isinstance(self, (FormSetView, ModelFormSetView)) : update( self.formset_get(*args, **kwargs) )
         if isinstance(self, CreateView)                      : update( self.create_get(*args, **kwargs) )

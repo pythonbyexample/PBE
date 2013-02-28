@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load utils %}
+{% block title %} Delete '{{ languageprofile }}'? {% endblock %}
+{% block extrastyle %}
+    <style type="text/css">
+        table { background: #f7f7f7; margin-top: 8px; width: 350px; margin-left: 50px; }
+        th { border-bottom: 1px solid #eee; text-align: right; }
+        td { border-bottom: 1px solid #eee; padding: 4px; }
+        input.submit { margin-left: 20px; }
+        #form { width: 550px; }
+    </style>
+{% endblock %}
+{% block content %}
+
+    <div><a href="{% url 'profiles' %}">back to profiles</a></div>
+
+    <p><br /></p>
+    <form action="" method="post" accept-charset="utf-8">{% csrf_token %}
+        Delete '{{ languageprofile }}'?
+        <input type="submit" value="Delete" class="submit" />
+        </div>
+    </form>
+
+{% endblock %}

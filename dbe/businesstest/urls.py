@@ -1,6 +1,5 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 from django.contrib.auth import views as auth_views
-from django.views.generic.simple import direct_to_template, redirect_to
 from businesstest.views import Messages
 
 urlpatterns = patterns("businesstest.views",

@@ -11,6 +11,11 @@
 {% static 'admin/css/rtl.css' %}{% endblock %}" />{% endif %}
 <script type="text/javascript">window.__admin_media_prefix__ = "{% filter escapejs %}{% static 'admin/' %}{% endfilter %}";</script>
 {% block extrahead %}{% endblock %}
+<style type="text/css" media="screen">
+    #user-tools { color: #666; margin-top: 15px; margin-right: 80px; }
+    #user-tools a:link { color: #666; }
+    #user-tools a:visited { color: #666; }
+</style>
 {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE" />{% endblock %}
 </head>
 {% load i18n %}
@@ -23,31 +28,14 @@
     {% if not is_popup %}
     <!-- Header -->
     <div id="header">
-        <div id="branding">
-        {% block branding %}{% endblock %}
-        </div>
         {% if user.is_active and user.is_staff %}
         <div id="user-tools">
             {% trans 'Welcome,' %}
             <strong>{% filter force_escape %}{% firstof user.first_name user.username %}{% endfilter %}</strong>.
             {% block userlinks %}
-                {% url 'django-admindocs-docroot' as docsroot %}
-                {% if docsroot %}
-                    <a href="{{ docsroot }}">{% trans 'Documentation' %}</a> /
-                {% endif %}
-                {% url 'admin:password_change' as password_change_url %}
-                {% if password_change_url %}
-                    <a href="{{ password_change_url }}">
-                {% else %}
-                    <a href="{{ root_path }}password_change/">
-                {% endif %}
+                <a href="{% url 'auth_password_change' %}">
                 {% trans 'Change password' %}</a> /
-                {% url 'admin:logout' as logout_url %}
-                {% if logout_url %}
-                    <a href="{{ logout_url }}">
-                {% else %}
-                    <a href="{{ root_path }}logout/">
-                {% endif %}
+                <a href="{% url 'auth_logout' %}">
                 {% trans 'Log out' %}</a>
             {% endblock %}
         </div>

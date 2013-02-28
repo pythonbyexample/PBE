@@ -58,7 +58,8 @@ class SingleObjectMixin(ContextMixin):
         return obj
 
     def get_detail_object(self, queryset=None):
-        return self.get_object( queryset or self.get_detail_queryset(), self.detail_pk_url_kwarg )
+        self.detail_object = self.get_object( queryset or self.get_detail_queryset(), self.detail_pk_url_kwarg )
+        return self.detail_object
 
     def get_queryset(self, model):
         """
@@ -122,10 +123,12 @@ class BaseDetailView(SingleObjectMixin, View):
 
 
 class SingleObjectTemplateResponseMixin(TemplateResponseMixin):
-    template_name_field = None
+    template_name_field  = None
     template_name_suffix = '_detail'
+    detail_object        = None
 
     def get_template_names(self):
+        # obj = getattr(self, "detail_object", self.get_detail_object())
         return self._get_template_names(self.detail_object, self.detail_model)
 
     def _get_template_names(self, object=None, model=None):

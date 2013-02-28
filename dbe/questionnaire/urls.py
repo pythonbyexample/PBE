@@ -1,5 +1,6 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 from dbe.questionnaire.views import *
+from dbe.mcbv.base import TemplateView
 from django.contrib.auth.decorators import login_required
 
 urlpatterns = patterns("dbe.questionnaire.views",
@@ -21,6 +22,6 @@ urlpatterns = patterns("dbe.questionnaire.views",
      login_required( QuestStats.as_view() ), {}, "quest_stats"),
 )
 
-urlpatterns += patterns("django.views.generic",
-    (r"^done/$", "simple.direct_to_template", dict(template="questionnaire/done.html"), "done"),
+urlpatterns += patterns("",
+    (r"^done/$", TemplateView.as_view(template_name="questionnaire/done.html"), {}, "done"),
 )

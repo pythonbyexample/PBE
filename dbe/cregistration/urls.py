@@ -5,7 +5,7 @@
     message instead of a confusing 404.
 """
 
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 # from django.views.generic.simple import direct_to_template
 from django.views.generic.base import TemplateView
 from django.contrib.auth import views as auth_views

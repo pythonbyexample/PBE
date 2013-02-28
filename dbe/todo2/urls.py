@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 
 urlpatterns = patterns("dbe.todo.views",
     (r"^update_item/(\d+)/(delete)/$", "update_item", {}, "update_item"),

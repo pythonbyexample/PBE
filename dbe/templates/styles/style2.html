@@ -1,0 +1,22 @@
+<style type="text/css" media="screen">
+    h3 { border-bottom: 1px solid #777; }
+    #preview th { border-right: 1px solid #777; width: 150px; padding-right: 4px; }
+    #preview { width: 250px; }
+    div#previewbox {
+         border: 2px solid #ddd; padding: 20px; width: 290px; margin: 8px;
+         padding-top: 0px; margin-top: 20px; font-size: 0.7em;
+    }
+</style>
+
+<div id="previewbox">
+<h3>Language Profile</h3>
+
+<table id="preview">
+{% for name, val in fields %}
+    <tr>
+        <th>{{ name }}</th>
+        <td>{{ val }}</td>
+    </tr>
+{% endfor %}
+</table>
+</div>

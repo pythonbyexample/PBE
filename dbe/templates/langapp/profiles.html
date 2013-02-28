@@ -12,11 +12,15 @@
     </style>
 {% endblock %}
 
+{% block title %}LangApp{% endblock %}
+
 {% block content %}
 
-{% if pmax %}
+{% if can_add %}
+    <a href="{% url 'profile' %}?edit=1">+ add profile</a>
+{% else %}
     {% trans "You have reached the maximum allowed number of Language Profiles" %}  ({{ max_profiles }})
-{% else %} <a href="{% url new_profile %}?edit=1">+ add profile</a> {% endif %}
+{% endif %}
 
 <table border="0" cellpadding="2" cellspacing="2">
     <tr>
@@ -26,20 +30,20 @@
         <th></th>
         <th></th>
     </tr>
-    {% for profile in profiles %}
+    {% for profile in languageprofile_list %}
     <tr>
         <td>
-            <a href="{% url profile profile.pk %}">{{ profile }}</a>
-            <p class="smaller"><a href="{% url profile profile.pk %}?edit=1">{% trans "edit" %}</a></p>
+            <a href="{% url 'profile' profile.pk %}">{{ profile }}</a>
+            <p class="smaller"><a href="{% url 'profile' profile.pk %}?edit=1">{% trans "edit" %}</a></p>
         </td>
         <td>{{ profile.flag.img|safe }}</td>
         <td>{{ profile.languages }}</td>
         <td>
             {% if not pmax %}
-                <a href="{% url duplicate_profile profile.pk %}">{% trans "duplicate" %}</a>
+                <a href="{% url 'duplicate_profile' profile.pk %}">{% trans "duplicate" %}</a>
             {% endif %}
         </td>
-        <td><a href="{% url delete_profile profile.pk %}">{% trans "delete" %}</a></td>
+        <td><a href="{% url 'delete_profile' profile.pk %}">{% trans "delete" %}</a></td>
     </tr>
     {% endfor %}
 </table>

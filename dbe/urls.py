@@ -1,6 +1,6 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 from django.contrib import admin
-from django.views.generic.simple import direct_to_template
+from django.views.generic.base import TemplateView
 import settings
 admin.autodiscover()
 admin.site.root_path = "/admin/"
@@ -18,6 +18,7 @@ urlpatterns = patterns('',
     (r'^cal/'            , include('dbe.cal.urls')),
     (r'^store9/'         , include('dbe.store9.urls')),
     (r'^creg/'           , include('dbe.cregistration.urls')),
+    (r'^langapp/'        , include('dbe.langapp.urls')),
 
     # (r''                     , 'django.views.generic.simple.redirect_to', {'url': '/questionnaires/'}),
 
@@ -46,5 +47,6 @@ if settings.DEBUG:
    )
 
 urlpatterns += patterns('',
-    (r''                 , direct_to_template, {'template': "index.html"}, "index"),
+    # (r''                 , direct_to_template, {'template': "index.html"}, "index"),
+    (r''                 , TemplateView.as_view(template_name="index.html"), {}, "index"),
 )

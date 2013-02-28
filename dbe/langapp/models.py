@@ -1,18 +1,26 @@
+from collections import OrderedDict
 from django.db import models
 from django.db.models import *
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
+from django.template import Context, loader
 
-from languages.settings import MEDIA_URL
+from dbe.settings import MEDIA_URL
+from dbe.shared.utils import BaseModel
 
-class BaseManager(manager.Manager):
-    def get_or_none(self, **kwargs):
-        try                            : return self.get(**kwargs)
-        except self.model.DoesNotExist : return None
+max_profiles  = 11
 
 
-class Language(Model):
-    obj         = objects = BaseManager()
+class ProfileQueryset(query.QuerySet):
+    def can_add(self):
+        return self.count() < max_profiles
+
+class ProfileManager(models.Manager):
+    def get_query_set(self):
+        return ProfileQueryset(self.model)
+
+
+class Language(BaseModel):
     description = CharField(max_length=40, blank=True, null=True)
     code        = CharField(max_length=10)
     name_eng    = CharField(max_length=255)
@@ -28,8 +36,8 @@ class Language(Model):
         return unicode(self.name_eng)
 
 
-class LanguageProfile(Model):
-    obj                     = objects = BaseManager()
+class LanguageProfile(BaseModel):
+    obj                     = objects = ProfileManager()
     user                    = ForeignKey(User)
     profile_language        = ForeignKey(Language, verbose_name=_("Profile Language"))
     languages               = CharField(_("Language(s)"), max_length=255)
@@ -53,9 +61,13 @@ class LanguageProfile(Model):
     def flag(self):
         return Flag.obj.get(language=self.profile_language)
 
+    def show_fields(self):
+        fields  = [(f, getattr(self, f.name)) for f in self._meta.fields]
+        exclude = "id user".split()
+        return [(f.verbose_name, val) for f, val in fields if val and f.name not in exclude]
 
-class Flag(Model):
-    obj         = objects = BaseManager()
+
+class Flag(BaseModel):
     language    = ForeignKey(Language)
     icon        = ImageField(upload_to="flags/", max_length=255)
     description = CharField(max_length=255, blank=True, null=True)
@@ -69,16 +81,14 @@ class Flag(Model):
         return unicode(self.language)
 
 
-class RIDocumentation(Model):
-    obj         = objects = BaseManager()
+class RIDocumentation(BaseModel):
     user        = ForeignKey(User)
     language    = ForeignKey(Language)
     file        = FileField(upload_to="docs/", max_length=255)
     title       = CharField(max_length=255)
     description = TextField(max_length=2000)
 
-class RIEmploymentHistory(Model):
-    obj               = objects = BaseManager()
+class RIEmploymentHistory(BaseModel):
     user              = ForeignKey(User)
     language          = ForeignKey(Language)
     employer          = CharField(max_length=255)
@@ -90,8 +100,7 @@ class RIEmploymentHistory(Model):
     completion_date   = DateField(blank=True, null=True)
     duties            = TextField(max_length=2000, blank=True, null=True)
 
-class UserSettings(Model):
-    obj                               = objects = BaseManager()
+class UserSettings(BaseModel):
     user                              = ForeignKey(User)
     primary_language                  = ForeignKey(Language, related_name="setting_languages")
     resume_style                      = ForeignKey("TypeResumeStyle")
@@ -102,10 +111,10 @@ class UserSettings(Model):
     primary_virtual_keyboard_language = ForeignKey(Language)
     display_primary_virtual_keyboard  = BooleanField(default=False)
 
+
 # ==== DROPDOWN OPTION MODELS ===================================================================
 
-class TypeIndustrySector(Model):
-    obj              = objects = BaseManager()
+class TypeIndustrySector(BaseModel):
     language         = ForeignKey(Language)
     description_intl = CharField(max_length=255)
     description_eng  = CharField(max_length=255)
@@ -114,8 +123,7 @@ class TypeIndustrySector(Model):
     def __unicode__(self):
         return self.description_eng
 
-class TypeLanguageCertification(Model):
-    obj              = objects = BaseManager()
+class TypeLanguageCertification(BaseModel):
     language         = ForeignKey(Language)
     description_intl = CharField(max_length=255)
     description_eng  = CharField(max_length=255)
@@ -124,8 +132,7 @@ class TypeLanguageCertification(Model):
     def __unicode__(self):
         return self.description_eng
 
-class TypeLanguageCompetency(Model):
-    obj              = objects = BaseManager()
+class TypeLanguageCompetency(BaseModel):
     language         = ForeignKey(Language)
     description_intl = CharField(max_length=255)
     description_eng  = CharField(max_length=255)
@@ -134,8 +141,7 @@ class TypeLanguageCompetency(Model):
     def __unicode__(self):
         return self.description_eng
 
-class TypeLanguageSpoken(Model):
-    obj              = objects = BaseManager()
+class TypeLanguageSpoken(BaseModel):
     language         = ForeignKey(Language)
     description_intl = CharField(max_length=255)
     description_eng  = CharField(max_length=255)
@@ -144,8 +150,7 @@ class TypeLanguageSpoken(Model):
     def __unicode__(self):
         return self.description_eng
 
-class TypeLanguageWritten(Model):
-    obj              = objects = BaseManager()
+class TypeLanguageWritten(BaseModel):
     language         = ForeignKey(Language)
     description_intl = CharField(max_length=255)
     description_eng  = CharField(max_length=255)
@@ -154,8 +159,7 @@ class TypeLanguageWritten(Model):
     def __unicode__(self):
         return self.description_eng
 
-class TypeWork(Model):
-    obj              = objects = BaseManager()
+class TypeWork(BaseModel):
     language         = ForeignKey(Language)
     description_intl = CharField(max_length=255)
     description_eng  = CharField(max_length=255)
@@ -164,8 +168,7 @@ class TypeWork(Model):
     def __unicode__(self):
         return self.description_eng
 
-class TypeResumeStyle(Model):
-    obj              = objects = BaseManager()
+class TypeResumeStyle(BaseModel):
     language         = ForeignKey(Language)
     style            = IntegerField(unique=True)
     name_intl        = CharField(max_length=255)
@@ -175,3 +178,7 @@ class TypeResumeStyle(Model):
 
     def __unicode__(self):
         return self.description_eng or "style%02d" % self.style
+
+    def render(self, fields):
+        tpl = "styles/style%d.html"
+        return loader.get_template(tpl % self.style).render( Context(dict(fields=fields)) )

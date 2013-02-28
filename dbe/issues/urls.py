@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 from dbe.issues.views import *
 from django.contrib.auth.decorators import login_required
 

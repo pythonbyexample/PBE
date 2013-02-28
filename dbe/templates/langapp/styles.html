@@ -3,10 +3,10 @@
 {% block title %} Change Style {% endblock %}
 {% block extrastyle %}
     <style type="text/css">
-        table { background: #f7f7f7; margin-top: 8px; width: 350px; margin-left: 50px; }
+        table { border: 1px solid #eee; margin-top: 8px; width: 350px; margin-left: 50px; }
         th { border-bottom: 1px solid #eee; text-align: right; }
         td { border-bottom: 1px solid #eee; padding: 4px; }
-        input.submit { margin-left: 180px; }
+        input.submit { margin: 10px; margin-left: 280px; }
         #form { width: 550px; }
     </style>
 {% endblock %}
@@ -14,10 +14,11 @@
 
     <div><a href="{{ back }}">back to profile</a></div>
 
+    {{ modelform.non_field_errors }}
     <form action="" method="post" accept-charset="utf-8">{% csrf_token %}
         <div id="form">
         <table>
-            {{ form.style }}
+            {{ modelform.as_table }}
         </table>
         <p><input type="submit" value="Save" class="submit" /></p>
         </div>

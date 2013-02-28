@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 from dbe.sb.models import *
 from dbe.sb.views import *
 

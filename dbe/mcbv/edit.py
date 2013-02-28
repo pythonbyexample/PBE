@@ -261,7 +261,7 @@ class ModelFormMixin(FormMixin, SingleObjectMixin):
     def modelform_valid(self, modelform):
         self.modelform_object = modelform.save()
         if self.modelform_valid_msg:
-            messages.info(self.request, self.modelform_valid_msg)
+            messages.success(self.request, self.modelform_valid_msg)
         return HttpResponseRedirect(self.get_success_url())
 
     def modelform_invalid(self, modelform):
@@ -444,6 +444,10 @@ class CreateUpdateView(CreateView):
         else:
             return self.modelform_create_class
 
+    def initsetup(self):
+        self.is_update = "mfpk" in self.kwargs
+        self.is_create = not self.is_update
+
     def create_get(self, request, *args, **kwargs):
         if self.modelform_pk_url_kwarg in self.kwargs:
             self.modelform_object = self.get_modelform_object()
@@ -469,8 +473,8 @@ class DeletionMixin(object):
         Calls the delete() method on the fetched object and then
         redirects to the success URL.
         """
-        self.modelform_object = self.get_modelform_object()
-        self.modelform_object.delete()
+        self.detail_object = self.get_detail_object()
+        self.detail_object.delete()
         return HttpResponseRedirect(self.get_success_url())
 
     # Add support for browsers which only accept GET and POST for now.
@@ -499,3 +503,10 @@ class DeleteView(SingleObjectTemplateResponseMixin, BaseDeleteView):
     with a response rendered by template.
     """
     template_name_suffix = '_confirm_delete'
+    confirm              = True
+
+    def get(self, *args, **kwargs):
+        resp = super(DeleteView, self).get(*args, **kwargs)
+        if not self.confirm:
+            return self.delete(*args, **kwargs)
+        return resp

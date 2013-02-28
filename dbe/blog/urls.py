@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 from dbe.blog.models import *
 from dbe.blog.views import PostView, Main, ArchiveMonth
 
