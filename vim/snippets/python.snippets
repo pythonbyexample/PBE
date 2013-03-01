@@ -1,0 +1,207 @@
+# LIST of snippets
+# tpls   - simple template
+# tplm   - medium template
+# exc    - exception class
+# #!
+# prog   - progress message
+# empty  - remove empties from list
+# for
+# cl     - new class, __init__
+# def    - function
+# deff   - function, no string
+# defs   - method
+# .      - .self
+# try    - try/except
+# ifmain - if __name__ ....
+# _      - __init__
+
+snippet sup
+	super(${1}, self).${2}(*args, **kwargs)
+snippet rf
+	 required=False
+snippet ftf
+	CharField(label="${1}", help_text="${2}", widget=forms.Textarea(), required=False)
+snippet fcf
+	CharField(label="${1}", help_text="${2}", required=False)
+snippet fk
+	ForeignKey(${1}, related_name="${2}")
+snippet tf
+	TextField(max_length=${1})
+snippet cf
+	CharField(max_length=${1})
+snippet bf
+	BooleanField(default=${1})
+snippet df auto_now_add
+	DateField(${1:auto_now_add=True})
+snippet df auto_now
+	DateField(${1:auto_now=True})
+snippet dtf auto_now_add
+	DateTimeField(${1:auto_now_add=True})
+snippet dtf auto_now
+	DateTimeField(${1:auto_now=True})
+snippet bn
+	 blank=True, null=True
+snippet pr
+	print "${1}"
+snippet pri
+	print "${1}" % (${2})
+snippet if
+	if ${1}:
+		${2}
+snippet if=
+	if ${1} == ${2}:
+		${3}
+snippet ifel
+	if ${1}:
+		${2}
+	else:
+		${3}
+snippet ifelif
+	if   ${1}:
+		${2}
+	elif ${3}:
+		${4}
+	else:
+		${5}
+snippet time
+	print "took %ss" % (time()-start)
+snippet stript
+	def strip_tags(value):
+		"Strip tags from HTML and return."
+		return re.sub(r'<[^>]*?>', '', value, re.U)
+snippet arg
+	parser.add_option("-t", "--test", dest="test", help="Run test function(s)",
+	  default=False, action="store_true")
+snippet tpls
+	#!/usr/bin/env python
+	"""${1}"""
+	import ${2:os}
+snippet tplm
+	#!/usr/bin/env python
+
+	"""${1:`Filename()`}
+
+	Usage: ${2}
+
+	Written by AK <ak@lightbird.net>
+	"""
+
+	import os
+	import sys
+	from os.path import join as pjoin
+	from string import join
+	${3}
+
+	__version__ = "0.1"
+
+	def main(options):
+		"""Main function."""
+		${4}
+
+	if __name__ == "__main__":
+		parser = OptionParser()
+		(options, args) = parser.parse_args()
+		main(options)
+snippet exc
+	class ${1}Error(Exception):
+		def __init__(self, value): self.value = value
+		def __str__(self): return repr(self.value)
+snippet #!
+	#!/usr/bin/env python
+snippet prog
+	print "\r${1} %s/%s" % (${2}),
+	sys.stdout.flush()
+snippet empty
+	${1:lines} = [x.strip() for x in ${2} if x.strip()]
+# Module Docstring
+snippet for
+	for ${1} in ${2}:
+		${3}
+# New Class
+snippet cls
+	class ${1}(object):
+		${2}
+snippet cl
+	class ${1}(object):
+		"""${2}"""
+		def __init__(self, ${3}):
+			self.$3 = $3
+			${4}
+snippet clBK
+	class ${1:ClassName}(${2:object}):
+		"""${3:docstring for $1}"""
+		def __init__(self, ${4:arg}):
+			${5:super($1, self).__init__()}
+			self.$4 = $4
+			${6}
+# New Function
+snippet def
+	def ${1:fname}(`indent('.') ? 'self' : ''`${2}):
+		${3}
+# New Method
+snippet defs
+	def ${1:mname}(self, ${2}):
+		${3}
+# New Property
+snippet property
+	def ${1:foo}():
+		doc = "${2}"
+		def fget(self):
+			${3:return self._$1}
+		def fset(self, value):
+			${4:self._$1 = value}
+# Lambda
+snippet ld
+	${1:var} = lambda ${2:vars} : ${3:action}
+snippet try Try/Except
+	try:
+		${1}
+	except ${2:Exception}, ${3:e}:
+		${4}
+		${5:raise $3}
+#snippet try Try/Except/Else
+#	try:
+#		${1:pass}
+#	except ${2:Exception}, ${3:e}:
+#		${4:raise $3}
+#	else:
+#		${5:pass}
+#snippet try Try/Except/Finally
+#	try:
+#		${1:pass}
+#	except ${2:Exception}, ${3:e}:
+#		${4:raise $3}
+#	finally:
+#		${5:pass}
+#snippet try Try/Except/Else/Finally
+#	try:
+#		${1:pass}
+#	except ${2:Exception}, ${3:e}:
+#		${4:raise $3}
+#	else:
+#		${5:pass}
+#	finally:
+#		${6:pass}
+# if __name__ == '__main__':
+snippet ifmain
+	if __name__ == "__main__":
+		${1:main()}
+# __magic__
+snippet _
+	def __${1:init}__(self${2}):
+		${3}
+snippet str
+	"${1:%s} ${2:%s} ${3}" % (${4})
+snippet s
+	"${1}" % ${2}
+snippet from
+	from ${1} import ${2}
+snippet impf
+	# Imports {{{
+	# }}}
+snippet sp
+	.split(${1})
+snippet st
+	startswith(${1})
+snippet en
+	endswith(${1})
