@@ -13,8 +13,13 @@
                         = s.body
 
                 %a{'href': '{% url "add_comment" section.pk %}'} add comment
+
                 .comment
-                    - render_comment_list for section
+                    - get_comment_list for section as comments
+                    - for c in comments
+                        .cbody
+                            Posted by ={c.user} on ={c.submit_date}
+                            %br= c.comment
             .clear
 
     - include "paginator.html"

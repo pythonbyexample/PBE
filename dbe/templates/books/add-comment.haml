@@ -10,9 +10,8 @@
             - get_comment_form for section as form
 
             %table
-                - form{'action': '{# comment_form_target #}', 'method': 'post'}
+                %form{'action': '{% comment_form_target %}', 'method': 'post'}
                     - csrf_token
-                    = form
                     = form.comment
                     = form.honeypot
                     = form.content_type
@@ -22,10 +21,11 @@
 
                     %tr
                         %td
-                            %input{'type': 'hidden', 'name': 'next', 'value': '{% url "books" %}?{{ page }}'}
+                            %input{'type': 'hidden', 'name': 'next',
+                                'value': '{% url "book" section.book.pk %}?{{ page }}'}
                             %input{'type': 'submit', 'name': 'submit', 'value': 'Post'}
                             %input{'type': 'submit', 'name': 'preview', 'value': 'Preview'}
         - else
             Please
-            %a{'href': '{% url 'auth_login' %}'} log in
+            %a{'href': '{% url "auth_login" %}'} log in
             to leave a comment.

@@ -26,7 +26,7 @@ class BookView(ListRelated):
     template_name = "book.haml"
 
     def add_context(self):
-        return dict(page=urlencode(self.request.GET.items()))
+        return dict(bpk=self.detail_object.pk, page=urlencode(self.request.GET.items()))
 
 
 class AddComment(DetailView):

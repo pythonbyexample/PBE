@@ -217,5 +217,6 @@ th { text-align: left; border-bottom: 2px solid #eee; width: 120px; }
 .section { width: 900px; padding: 20px; border-top: 2px solid #f6f6f6; }
 .section .text { width: 450px; float: left; font-size: 13px; }
 .comment { float: right; margin: 5px; padding: 1px; width: 350px; }
-.cbody   { border: 3px solid #eee; padding: 5px; }
+.cbody   { border: 3px solid #eee; padding: 5px; margin: 3px; }
 .addcomment { float: right; border: 0px solid #eee; margin: 5px; padding: 5px; width: 350px; }
+#id_honeypot { display:none; }
