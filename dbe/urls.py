@@ -6,7 +6,7 @@ admin.autodiscover()
 admin.site.root_path = "/admin/"
 
 urlpatterns = patterns('',
-    # (r'^accounts/'       , include('registration.urls')),
+    (r'^accounts/'       , include('dbe.cregistration.urls')),
     (r'^admin/'          , include(admin.site.urls)),
     (r'^bombquiz/'       , include('dbe.bombquiz.urls')),
     (r'^forum/'          , include('dbe.forum.urls')),
@@ -17,27 +17,15 @@ urlpatterns = patterns('',
     (r'^issues/'         , include('dbe.issues.urls')),
     (r'^cal/'            , include('dbe.cal.urls')),
     (r'^store9/'         , include('dbe.store9.urls')),
-    (r'^creg/'           , include('dbe.cregistration.urls')),
     (r'^langapp/'        , include('dbe.langapp.urls')),
-
-    # (r''                     , 'django.views.generic.simple.redirect_to', {'url': '/questionnaires/'}),
+    (r'^books/'          , include('dbe.books.urls')),
+    (r'^comments/'       , include('dbe.comments.urls')),
 
     # (r'^todo/'      , include('dbe.todo.urls')),
-    # (r'^social/'     , include('dbe.social.urls')),
-    # (r'^social/'     , include('dbe.social.urls')),
+    # (r'^social/     , include('dbe.social.urls')),
     # (r'^photo/'     , include('dbe.photo.urls')),
-    # (r'^static/(?P<path>.*)$' , 'django.views.static.serve', {'document_root': settings.STATIC_ROOT}),
-    # (r'^photo/'              , include('dbe.photo.urls')),
-    # (r'^cal/'                , include('dbe.cal.urls')),
-    # (r''                     , 'django.views.generic.simple.redirect_to', {'url': '/questionnaires/'}),
-
-    # (r'^dbe/', include('dbe.todo.urls')),
-    # (r"^comments/", include("django.contrib.comments.urls")),
-    # (r'^objperms/', include('dbe.operms.urls')),
-
-    # Uncomment the admin/doc line below and add 'django.contrib.admindocs'
-    # to INSTALLED_APPS to enable admin documentation:
-    # (r'^admin/doc/', include('django.contrib.admindocs.urls')),
+    # (r"^comments/"  , include("django.contrib.comments.urls")),
+    # (r'^objperms/'  , include('dbe.operms.urls')),
 )
 
 if settings.DEBUG:
@@ -47,6 +35,5 @@ if settings.DEBUG:
    )
 
 urlpatterns += patterns('',
-    # (r''                 , direct_to_template, {'template': "index.html"}, "index"),
     (r''                 , TemplateView.as_view(template_name="index.html"), {}, "index"),
 )

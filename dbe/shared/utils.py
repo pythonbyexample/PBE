@@ -17,15 +17,7 @@ class UserForm(forms.Form):
         self.user = kwargs.pop("user", None)
         super(UserForm, self).__init__(*args, **kwargs)
 
-class BaseModelForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        """Fix issue with non-blank foreign key fields showing blank choice."""
-        super(BaseModelForm, self).__init__(*args, **kwargs)
-        for f in self.fields.values():
-            if isinstance(f, forms.models.ModelChoiceField) and f.required:
-                f.empty_label = None
-
-class UserModelForm(BaseModelForm):
+class UserModelForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
         super(UserModelForm, self).__init__(*args, **kwargs)
@@ -189,3 +181,7 @@ def first(iterable, default=None):
         return next(iter(iterable))
     except StopIteration:
         return default
+
+def flatten(iterable):
+    """One-level flattening."""
+    return [item for sublist in iterable for item in sublist]

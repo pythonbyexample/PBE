@@ -1,0 +1,15 @@
+- extends "base-store9.html"
+- block content
+    .main
+
+        %table
+            %tr
+                %th{'width':'150px;'} Name
+                %th{'width':'250px;'} Sequence
+                %th{'width':'250px;'} Add to Cart
+            - for item in item_list
+                %tr
+                    %td= item.name
+                    %td= item.sequence
+                    %td
+                        %a{'href':'{% url "additem" item.pk %}'} add

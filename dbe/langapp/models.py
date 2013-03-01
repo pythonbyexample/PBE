@@ -103,7 +103,8 @@ class RIEmploymentHistory(BaseModel):
 class UserSettings(BaseModel):
     user                              = ForeignKey(User)
     primary_language                  = ForeignKey(Language, related_name="setting_languages")
-    resume_style                      = ForeignKey("TypeResumeStyle")
+    resume_style                      = ForeignKey("TypeResumeStyle",
+                                                   default=lambda: TypeResumeStyle.obj.get(style=1))
 
     display_primary_language          = BooleanField(default=False)
     display_mutiple_languages         = BooleanField(default=False)

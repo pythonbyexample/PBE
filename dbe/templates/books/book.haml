@@ -1,0 +1,20 @@
+- extends "booksbase.html"
+- load comments
+
+- block content
+    .main
+        %h4= book
+        %br
+        - for section in section_list
+
+            .section
+                .text
+                    - for s in section.sentences.all
+                        = s.body
+
+                %a{'href': '{% url "add_comment" section.pk %}'} add comment
+                .comment
+                    - render_comment_list for section
+            .clear
+
+    - include "paginator.html"

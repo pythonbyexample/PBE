@@ -1,0 +1,17 @@
+- extends "booksbase.html"
+
+- block content
+    .main
+        %h4 Books
+        %br
+        %table#books
+            %tr
+                %th Author
+                %th Name
+            - for book in book_list
+                %tr
+                    %td= book.author
+                    %td
+                        %a{'href': '{% url "book" book.pk %}'}= book.name
+
+    - include "paginator.html"

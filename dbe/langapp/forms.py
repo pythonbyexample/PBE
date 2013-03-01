@@ -10,7 +10,7 @@ class ProfileForm(f.ModelForm):
         model = LanguageProfile
         exclude = ["user"]
 
-class StylesForm(BaseModelForm):
+class StylesForm(f.ModelForm):
     class Meta:
         model   = UserSettings
         fields  = ["resume_style"]

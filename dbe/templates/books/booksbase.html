@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <title>{% block title %}Books{% endblock %}</title>
+    <link rel="stylesheet" href="/media/css/books.css" type="text/css" media="screen" charset="utf-8" />
+</head>
+
+<body>
+    <div id="sidebar">
+        {% block sidebar %}
+        {% endblock %}
+    </div>
+    <div style="margin: auto; width: 800px;">
+    <div id="menu">
+        {% block nav-global %}
+            <h3><a id="homelink" href="{% url 'books' %}">BooksApp</a></h3>
+
+            <!-- MENU -->
+            <a href="/">home</a>
+            {% if user.is_staff %}
+                <a href="{% url 'admin:app_list' "books" %}">admin</a>
+            {% endif %}
+            {% if user.is_authenticated %}
+                <a href="{% url 'auth_logout' %}?next={% url 'books' %}">logout</a>
+            {% else %}
+                <a href="{% url 'auth_login' %}?next={% url 'books' %}">login</a>
+                <a href="{% url 'reg_register' %}">register</a>
+            {% endif %}
+        {% endblock %}
+    </div>
+
+    <div id="content">
+        {% block content %}{% endblock %}
+    </div></div>
+
+</body>
+</html>
+

@@ -1,0 +1,31 @@
+- extends "booksbase.html"
+- load comments
+
+- block content
+    .main
+        %h4 Add Comment
+        %br
+        %br
+        - if user.is_authenticated
+            - get_comment_form for section as form
+
+            %table
+                - form{'action': '{# comment_form_target #}', 'method': 'post'}
+                    - csrf_token
+                    = form
+                    = form.comment
+                    = form.honeypot
+                    = form.content_type
+                    = form.object_pk
+                    = form.timestamp
+                    = form.security_hash
+
+                    %tr
+                        %td
+                            %input{'type': 'hidden', 'name': 'next', 'value': '{% url "books" %}?{{ page }}'}
+                            %input{'type': 'submit', 'name': 'submit', 'value': 'Post'}
+                            %input{'type': 'submit', 'name': 'preview', 'value': 'Preview'}
+        - else
+            Please
+            %a{'href': '{% url 'auth_login' %}'} log in
+            to leave a comment.

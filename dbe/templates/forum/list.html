@@ -23,10 +23,9 @@
                 <td>{{ forum.last_post.short|linebreaksbr }}</td>
                 <td><a class="button" href="{% url 'forum' dpk=forum.pk %}">VIEW</a></td>
             </tr>
-
             {% endfor %}
+
+        </table>
         </div>
-
     </div>
-
 {% endblock %}
