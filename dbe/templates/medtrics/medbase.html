@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <title>{% block title %}Medtrics{% endblock %}</title>
+    <link rel="stylesheet" href="/media/css/medtrics.css" type="text/css" media="screen" charset="utf-8" />
+    {% block extrahead %}{% endblock %}
+</head>
+
+<body>
+    <div id="container">
+
+        <!-- MENU -->
+
+        <div id="menu">
+            {% block nav-global %}
+                <h3>Medtrics</h3>
+                <a href="/">home</a>
+                <a href="{% url 'medforms' %}">Medforms</a>
+                <a href="{% url 'admin:medtrics_medform_changelist' %}">Medtrics Admin</a>
+            {% endblock %}
+        </div>
+
+        <!-- CONTENT -->
+
+        <div id="content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+</body>
+</html>
+

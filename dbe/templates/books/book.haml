@@ -12,7 +12,7 @@
                     - for s in section.sentences.all
                         = s.body
 
-                %a{'href': '{% url "add_comment" section.pk %}'} add comment
+                %a{'href': '{% url "add_comment" section.pk %}?={page}'} add comment
 
                 .comment
                     - get_comment_list for section as comments
@@ -20,6 +20,10 @@
                         .cbody
                             Posted by ={c.user} on ={c.submit_date}
                             %br= c.comment
+                        .vote
+                            %a{'href': '{% url "vote" c.pk "-1" %}?={page}'} down
+                            ={c.score}
+                            %a{'href': '{% url "vote" c.pk "1" %}?={page}'} up
             .clear
 
     - include "paginator.html"

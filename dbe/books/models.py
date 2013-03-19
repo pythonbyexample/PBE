@@ -5,8 +5,22 @@ from os.path import join as pjoin, basename
 from django.db.models import *
 from django.core.files import File
 from django.contrib.auth.models import User
+from django.contrib.comments.models import Comment
+from django.contrib.comments.managers import CommentManager
 
 from dbe.shared.utils import *
+
+
+class BCommentQueryset(query.QuerySet):
+    def high_scored(self):
+        return [c for c in self if c.score()>5]
+
+    def controversial(self):
+        return [c for c in self if c.controversial()]
+
+class BCommentManager(CommentManager):
+    def get_query_set(self):
+        return BCommentQueryset(self.model)
 
 
 class Author(BaseModel):
@@ -73,27 +87,21 @@ class Sentence(BaseModel):
         return self.body
 
 
-class Comment(BaseModel):
-    section = ForeignKey(Section, related_name="comments", blank=True, null=True)
-    comment = ForeignKey("Comment", related_name="comments", blank=True, null=True)
-    creator = ForeignKey(User, related_name="book_comments", blank=True, null=True)
-    created = DateTimeField(auto_now_add=True)
-    body    = TextField(max_length=3000)
-
-    class Meta: ordering = ["created"]
-
-    def __unicode__(self):
-        return unicode(self.creator) + ' ' + unicode(self.created)
+class BComment(Comment):
+    obj = objects = BCommentManager
 
     def score(self):
-        return sum(v.value for v in self.votes)
+        score = sum(v.value for v in self.votes.all())
+        return "(%s%d)" % ('+' if score>0 else '', score)
 
-    def author(self):
-        return self.creator or "Anonymous"
+    def controversial(self):
+        plus  = self.votes.filter(value=1)
+        minus = self.votes.filter(value=-1)
+        return bool(plus>0 and minus>0)
 
 
 class Vote(BaseModel):
-    comment = ForeignKey(Comment, related_name="votes")
+    comment = ForeignKey(BComment, related_name="votes")
     creator = ForeignKey(User, related_name="votes")
     value   = IntegerField(default=1)
 

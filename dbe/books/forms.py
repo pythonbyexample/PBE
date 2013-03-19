@@ -1,10 +1,9 @@
 from django import forms as f
+from django.contrib.comments.forms import CommentForm
+
 from dbe.books.models import *
 from dbe.shared.utils import *
 
-class CommentForm(f.ModelForm):
-    class Meta:
-        model   = Comment
-        fields  = ["body"]
-        attrs   = dict(cols=40, rows=5)
-        widgets = dict( body=f.Textarea(attrs=attrs) )
+class BCommentForm(CommentForm):
+    def get_comment_model(self):
+        return BComment

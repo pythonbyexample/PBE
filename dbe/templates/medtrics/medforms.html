@@ -1,0 +1,16 @@
+{% extends "medbase.html" %}
+{% block content %}
+
+<div class="main">
+    <table border="0" cellpadding="2" cellspacing="2">
+        {% for medform in medform_list %}
+            <tr>
+                <td> {{ medform.name }} </td>
+                <td> <a href="{% url 'medform' medform.pk %}">Take!</a> </td>
+                <td> <a href="{% url 'submissions' medform.pk %}">Results</a> </td>
+                <td> <a href="{% url 'medstats' medform.pk %}">Stats</a> </td>
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}
