@@ -3,9 +3,9 @@
 
 <div class="main">
     <ul>
-        {% for quest in userquestionnaire_list %}
-            <li><a href="{% url 'user_questionnaire' quest.pk %}"
-                        >{{ quest.user }} - {{ quest.questionnaire.name }}</a></li>
+        {% for submission in formsubmission_list %}
+            <li><a href="{% url 'submission' submission.pk %}"
+                        >{{ submission.user }} - {{ submission.form.name }}</a></li>
         {% endfor %}
     </ul>
 </div>

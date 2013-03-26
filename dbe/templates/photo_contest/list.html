@@ -1,0 +1,17 @@
+{% extends "pcbase.html" %}
+
+{% block content %}
+    <div class="main">
+        {% include "messages.html" %}
+
+        <!-- Groups  -->
+        <ul>
+            {% for profile in imageprofile_list %}
+                <a href="{{ profile.get_absolute_url }}">{{ profile.thumbnail_tag|safe }}</a>
+                {{ profile.caption }}
+            {% endfor %}
+        </ul>
+
+        {% include "paginator.html" %}
+    </div>
+{% endblock %}

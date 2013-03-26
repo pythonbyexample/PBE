@@ -5,6 +5,7 @@
 <style type="text/css" media="screen">
     ul { border: 0px solid; list-style-type: none; }
     li { border: 0px solid; margin-left: 0; padding: 10px; }
+    .gray { background: #eee; border-bottom: 2px dotted #ccc; }
 </style>
 <div class="main">
     <form action="" method="POST">{% csrf_token %}
@@ -14,6 +15,10 @@
         <!-- see note in SectionForm docstring -->
         {% for form in formset %}
             {{ form.id }}
+            <div class="form-row gray">
+                <h4>{{ form.section }}</h4>
+            </div>
+
             {% for fld in form %}
                 <div class="form-row">
                     <label class="{% if fld.field.required %} required {% endif %}">

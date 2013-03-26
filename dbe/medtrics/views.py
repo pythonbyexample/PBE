@@ -21,7 +21,7 @@ class MedForms(ListView):
 class FormSubmissions(ListRelated):
     detail_model  = MedForm
     list_model    = FormSubmission
-    related_name  = "medforms"
+    related_name  = "submissions"
     template_name = "submissions.html"
 
 class Submission(DetailView):
@@ -34,13 +34,13 @@ class Stats(DetailView):
     template_name = "medtrics/stats.html"
 
     def stats(self):
-        submissions = FormSubmission.obj.filter(medform=self.detail_object)
+        submissions = FormSubmission.obj.filter(form=self.detail_object)
         d           = DefaultOrderedDict
         #             forms     sections  questions answers:nums
         medforms    = d( lambda:d( lambda:d( lambda:d(int) ) ) )
 
         for submission in submissions:
-            medform = submission.medform.name
+            medform = submission.form.name
 
             # add each answer in user questionnaire to respective sections sub-dict, add to counter
             for answer in submission.answers.all():

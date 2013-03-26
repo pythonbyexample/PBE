@@ -43,7 +43,4 @@ class SectionForm(f.Form):
                 kw.choices = [(c,c) for c in choices]
 
             self.fields[str(question.order)] = fld(**kw)
-
-            # milestones are only displayed, not modified here
-            # mc = [(m.pk, m.name) for m in Milestone.obj.all()]
-            # self.fields[str(question.order) + '-m'] = f.MultipleChoiceField(choices=mc)
+            # raise

@@ -63,7 +63,8 @@ class Section(OrderedModel, BaseModel):
     medform     = ForeignKey(MedForm, related_name="sections", blank=True, null=True)
 
     def __unicode__(self):
-        return "[%s] (%s) %s" % (self.medform, self.order, self.name or '')
+        # return "[%s] (%s) %s" % (self.medform, self.order, self.name or '')
+        return self.name
 
     def title(self):
         return "(%s) %s" % (self.order, self.name or '')

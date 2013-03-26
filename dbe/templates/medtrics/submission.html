@@ -4,11 +4,11 @@
 <div class="main">
     <table border="0" cellpadding="2" cellspacing="2">
 
-    {% for answer in userquestionnaire.answers.all %}
+    {% for answer in formsubmission.answers.all %}
 
-        {% with answer.question.section.title as title %}
-            {% ifchanged title %}
-                <tr><td colspan="2"><p class="title">{{ title }}</p></td></tr>
+        {% with answer.question.section.name as name %}
+            {% ifchanged name %}
+                <tr><td colspan="2"><p class="title">{{ name }}</p></td></tr>
             {% endifchanged %}
         {% endwith %}
 

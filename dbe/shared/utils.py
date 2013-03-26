@@ -2,6 +2,7 @@
 from collections import OrderedDict, Callable
 from string import join
 
+from django.contrib.auth.decorators import user_passes_test
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.core.context_processors import csrf
@@ -11,6 +12,19 @@ from django.shortcuts import render_to_response
 from django.db.models import Model, Manager
 from django import forms
 # }}}
+
+def group_required(*group_names):
+    """ Decorator - requires user membership in at least one of the groups passed in.
+
+        from: http://djangosnippets.org/snippets/1703/
+    """
+    def in_groups(u):
+        if u.is_authenticated():
+            if bool(u.groups.filter(name__in=group_names)) | u.is_superuser:
+                return True
+        return False
+    return user_passes_test(in_groups)
+
 
 class UserForm(forms.Form):
     def __init__(self, *args, **kwargs):
