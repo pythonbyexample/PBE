@@ -33,18 +33,32 @@ class ModerationForm(FormsetModelForm):
         return data
 
 
+class SignUpForm(f.ModelForm):
+    class Meta:
+        model   = EmailProfile
+        exclude = ["activation_key"]
+
+    def clean(self):
+        d = self.cleaned_data
+        # if d["email"] != d["confirm_email"]:
+            # raise f.ValidationError("Emails do not match")
+        return d
+
+
 class AddImageForm(f.ModelForm):
     accept_terms = f.BooleanField("Accept Site Terms")
     waive_rights = f.BooleanField("Waive image rights")
 
     class Meta:
         model   = ImageProfile
-        exclude = "active banned confirm_email created thumbnail".split()
-        # exclude = "active email confirm_email created promotion thumbnail".split()
+        exclude = "active banned created thumbnail email_profile promotion".split()
         attrs   = dict(cols=60, rows=4)
         widgets = dict( personal_info=f.Textarea(attrs=attrs) )
 
     def clean_image(self):
         img = self.cleaned_data["image"]
-        if not img: raise f.ValidationError("Select the image file to upload")
+        if not img:
+            raise f.ValidationError("Select the image file to upload")
+        if img.size > 5*1024*1024:
+            raise f.ValidationError("Images are limited to 5MB")
         return img

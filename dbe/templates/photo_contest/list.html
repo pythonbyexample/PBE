@@ -1,13 +1,12 @@
 {% extends "pcbase.html" %}
+{% load thumbnail %}
 
 {% block content %}
     <div class="main">
-        {% include "messages.html" %}
-
-        <!-- Groups  -->
         <ul>
             {% for profile in imageprofile_list %}
-                <a href="{{ profile.get_absolute_url }}">{{ profile.thumbnail_tag|safe }}</a>
+                <a href="{{ profile.get_absolute_url }}">
+                    <img src="{% thumbnail profile.image 80x80 crop %}" alt="" /></a>
                 {{ profile.caption }}
             {% endfor %}
         </ul>

@@ -1,4 +1,5 @@
 {% extends "pcbase.html" %}
+{% load thumbnail %}
 
 {% block extrahead %}
     <style type="text/css" media="screen">
@@ -14,7 +15,9 @@
 {% block content %}
 <div class="main">
     <form action="" method="POST" enctype="multipart/form-data">{% csrf_token %}
-    <div id="submit"><input id="submit-btn" type="submit" value="Apply"></div>
+    {% if formset.forms %}
+        <div id="submit"><input id="submit-btn" type="submit" value="Apply"></div>
+    {% endif %}
 
     <div class="clear"></div>
         {{ formset.management_form }}
@@ -22,8 +25,9 @@
         <!-- FOR EACH FORM -->
         {% for form in formset %}
             <span class="left">
-                {{ form.instance.thumbnail_tag|safe }}
-                <ul>Email: {{ form.instance.email }}</ul>
+                <a href="{{ form.instance.image_url }}">
+                <img src="{% thumbnail form.instance.image 80x80 crop %}" alt="" /></a>
+                <p>Email: {{ form.instance.email_profile.email }}</p>
             </span>
             <fieldset class="module aligned">
                 {{ form.id }}
@@ -42,7 +46,9 @@
             </fieldset><br />
         {% endfor %}
 
-        <div id="submit"><input id="submit-btn" type="submit" value="Apply"></div>
+        {% if formset.forms %}
+            <div id="submit"><input id="submit-btn" type="submit" value="Apply"></div>
+        {% endif %}
     </form>
 </div>
 {% endblock %}

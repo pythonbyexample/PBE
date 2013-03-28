@@ -16,7 +16,7 @@
                 <!-- MENU -->
                 <h3><a href="{% url 'pc-main' %}">PhotoContest</a></h3>
                 <a href="/">Root</a>
-                <!-- <a href="{# url 'pc-add-image' #}">Add Image</a> -->
+                <a href="{% url 'signup' %}">Sign Up</a>
                 <a href="{% url 'moderation' %}">Moderation</a>
                 {% if user.is_staff %}
                     <a href="{% url 'admin:app_list' 'photo_contest' %}">Admin</a>
