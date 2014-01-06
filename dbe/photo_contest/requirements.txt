@@ -1,1 +1,0 @@
-easy-thumbnails >= 1.2

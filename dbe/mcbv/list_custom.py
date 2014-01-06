@@ -110,7 +110,9 @@ class DetailListFormSetView(ListRelated, ModelFormSetView):
 
 
 class PaginatedModelFormSetView(ListView, ModelFormSetView):
-    detail_model               = None
+    """ Note: get_list_queryset() should be overridden instead of get_formset_queryset() because ListView adds
+        pagination info to context based on get_list_queryset().
+    """
     list_model                 = None
     formset_model              = None
     related_name               = None
@@ -122,7 +124,6 @@ class PaginatedModelFormSetView(ListView, ModelFormSetView):
     template_name              = None
 
     def get_formset_queryset(self):
-        # qset      = super(PaginatedModelFormSetView, self).get_formset_queryset()
         qset      = self.get_list_queryset()
         page_size = self.get_paginate_by(qset)
         if page_size : return self.paginate_queryset(qset, page_size)[2]

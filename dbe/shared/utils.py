@@ -126,7 +126,11 @@ class DefaultOrderedDict(OrderedDict):
 
 
 def redir(to, *args, **kwargs):
-    if not (to.startswith('/') or to.startswith("http://") or to.startswith("../") or to=='#'):
+    if not (to.startswith('/')
+            or to.startswith("http://")
+            or to.startswith("https://")
+            or to.startswith("../")
+            or to=='#'):
         to = reverse(to, args=args, kwargs=kwargs)
     return HttpResponseRedirect(to)
 
