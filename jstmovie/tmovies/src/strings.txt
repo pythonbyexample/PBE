@@ -1,0 +1,235 @@
+Python strings let you store and manipulate text! Easily!
+
+:pause 5
+
+Let's make a simple string:
+
+    >>> s = "Large space rock flies past Earth"
+
+:pause 6
+
+You can count the number of characters:
+
+    >>> s.count('a')
+    4
+
+:pause 4
+
+
+
+
+You can check if a string ends with something or not:
+
+    >>> s.endswith("Earth")
+    True
+
+    >>> s.endswith("Mars")
+    False
+
+:pause 4
+
+.. or starts with a substring:
+
+    >>> s.startswith("La")
+    True
+
+:pause 4
+
+
+
+
+You can also find the location of a substring:
+
+    >>> s = "Large space rock flies past Earth"
+    >>> s.find('s')
+    6
+
+:pause 4
+
+If not found, -1 is returned:
+
+    >>> s.find('z')
+    -1
+
+:pause 4
+
+.. of course you can also find from right:
+
+    >>> s.rfind('a')
+    29
+
+:pause 4
+
+
+
+
+You can check if it's alphanumeric (False because we have spaces in our string):
+
+    >>> s.isalnum()
+    False
+
+:pause 4
+
+You can check if it's all lower case:
+
+    >>> s.islower()
+    False
+
+:pause 4
+
+.. or upper case:
+
+    >>> s.isupper()
+    False
+
+:pause 4
+
+.. or if all characters are printable:
+
+    >>> s.isprintable()
+    True
+
+:pause 4
+
+
+
+
+You can strip characters:
+
+    >>> "savanna covers approximately 20% of the Earth's land area".lstrip('savn')
+    " covers approximately 20% of the Earth's land area"
+
+:pause 4
+
+(I've used a different string to demonstrate that multiple instances
+of given characters are stripped)
+
+One of the most useful methods is replace():
+
+    >>> s.replace("Large", "Small")
+    'Small space rock flies past Earth'
+
+:pause 4
+
+
+
+
+Justifying is also very easy to do:
+
+    >>> s.ljust(50)
+    'Large space rock flies past Earth                 '
+
+    >>> s.rjust(50)
+    '                 Large space rock flies past Earth'
+
+:pause 4
+
+This one must be useful for something! partition method:
+
+    >>> "x = something something".partition(" = ")
+    ('x', ' = ', 'something something')
+
+:pause 4
+
+If you wish to split your string by newline characters, use splitlines():
+
+    >>> "a \n b \n c".splitlines()
+    ['a ', ' b ', ' c']
+
+:pause 4
+
+
+
+
+Alongside with replace(), the next two methods are some of the most useful in string manipulation;
+split() produces a list split by whitespace:
+
+    >>> s.split()
+    ['Large', 'space', 'rock', 'flies', 'past', 'Earth']
+
+:pause 4
+
+.. but you can split by any substring:
+
+    >>> "feathers and beaks and tails and eggs".split(" and ")
+    ['feathers', 'beaks', 'tails', 'eggs']
+
+:pause 4
+
+You can join any list of strings with any separator:
+
+    >>> sep = ", "
+    >>> sep.join(s.split())
+    'Large, space, rock, flies, past, Earth'
+
+:pause 4
+
+
+
+
+Here's how you can capitalize every word in a string:
+
+    >>> s.title()
+    'Large Space Rock Flies Past Earth'
+
+:pause 4
+
+Changing to upper and lower case:
+
+    >>> s.upper()
+    'LARGE SPACE ROCK FLIES PAST EARTH'
+
+    >>> s.lower()
+    'large space rock flies past earth'
+
+:pause 4
+
+.. and getting length:
+
+    >>> len(s)
+    33
+
+:pause 4
+
+Testing for a substring can be done with the `in` keyword:
+
+    >>> "rock" in s
+    True
+
+    >>> "classical" in s
+    False
+
+
+
+
+
+The next few examples will show slicing operations.
+
+:pause 4
+
+    >>> s[8:16]
+    'ace rock'
+
+    >>> s[8:]
+    'ace rock flies past earth'
+
+:pause 2
+
+    >>> s[:8]
+    'Large sp'
+
+:pause 4
+
+You can even provide the step as the third slicing argument:
+
+    >>> s[::2]
+    'Lresaerc le aterh'
+
+:pause 4
+
+A negative step will reverse the string:
+
+    >>> s[::-1]
+    'htrae tsap seilf kcor ecaps egraL'
+
+:pause 4
